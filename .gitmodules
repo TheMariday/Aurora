@@ -1,0 +1,3 @@
+[submodule "lib/fadecandy"]
+	path = lib/fadecandy
+	url = https://github.com/CodeMaterial/fadecandy
