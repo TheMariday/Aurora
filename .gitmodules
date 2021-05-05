@@ -1,3 +1,12 @@
 [submodule "lib/fadecandy"]
 	path = lib/fadecandy
 	url = https://github.com/CodeMaterial/fadecandy
+[submodule "libs"]
+	path = lib/fakecandy
+	url = https://github.com/CodeMaterial/fakecandy
+[submodule "lib/fakecandy"]
+	path = lib/fakecandy
+	url = https://github.com/CodeMaterial/fakecandy
+[submodule "scripts/fakecandy"]
+	path = scripts/fakecandy
+	url = https://github.com/CodeMaterial/fakecandy

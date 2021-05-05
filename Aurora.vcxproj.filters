@@ -10,128 +10,71 @@
     <Filter Include="lib">
       <UniqueIdentifier>{7d073518-95a1-492f-bbf1-baa1a15da13b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="lib\fadecandy">
-      <UniqueIdentifier>{a32e8587-c329-44db-bfc5-3271daa8d110}</UniqueIdentifier>
-    </Filter>
     <Filter Include="data">
       <UniqueIdentifier>{a6a48ad5-2c56-4c51-b8da-a91d8fa4c78e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
+    <None Include="lib\fadecandy\examples\cpp\lib\svl\LICENSE" />
+    <None Include="lib\fadecandy\examples\cpp\lib\svl\README" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\effect.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\effectRunner.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\masterController.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safety.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensors.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smartFuse.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\testSuite.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userControl.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Basics.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\effect.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\brightness.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\effectRunner.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\color.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\masterController.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Constants.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\safety.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\document.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\sensors.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\effect.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\smartFuse.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\effect_mixer.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\sound.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\effect_runner.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\testSuite.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\filestream.h">
-      <Filter>lib\fadecandy</Filter>
+    <ClInclude Include="include\tef\aurora\userControl.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Mat.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Mat2.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Mat3.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Mat4.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\nanoflann.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\noise.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\opc_client.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\particle.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\picopng.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\internal\pow10.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\prettywriter.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\rapidjson.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\reader.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\internal\stack.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\internal\strfunc.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\stringbuffer.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\SVL.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\texture.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\tinythread.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Transform.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Utils.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Vec.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Vec2.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Vec3.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\svl\Vec4.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\fadecandy\examples\cpp\lib\rapidjson\writer.h">
-      <Filter>lib\fadecandy</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="data\layout\singleEye.json">
-      <Filter>data</Filter>
-    </None>
   </ItemGroup>
 </Project>
