@@ -13,10 +13,21 @@
     <Filter Include="data">
       <UniqueIdentifier>{a6a48ad5-2c56-4c51-b8da-a91d8fa4c78e}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lib\fadecandy\examples\cpp\lib\svl\LICENSE" />
-    <None Include="lib\fadecandy\examples\cpp\lib\svl\README" />
+    <Filter Include="effects">
+      <UniqueIdentifier>{b45c8682-12e3-4ffd-adee-c8d37d5c95d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\svl">
+      <UniqueIdentifier>{3d5b7cbb-f187-4207-9cb1-c9e63381d150}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson">
+      <UniqueIdentifier>{1d38225f-9cea-4493-b12f-1cecbf6ff192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\fadecandy">
+      <UniqueIdentifier>{08ecc654-9163-4a80-95aa-f75c17c6f8c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\rapidjson\internal">
+      <UniqueIdentifier>{3ad02be7-c1e6-4ad5-a7ff-92ab1dc8aba6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -47,6 +58,9 @@
     <ClCompile Include="src\userControl.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="include\tef\aurora\effects\simpleEffect.h">
+      <Filter>effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\effect.h">
@@ -76,5 +90,88 @@
     <ClInclude Include="include\tef\aurora\userControl.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="lib\svl\Basics.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Constants.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Mat.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Mat2.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Mat3.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Mat4.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\SVL.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Transform.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Utils.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Vec.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Vec2.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Vec3.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\svl\Vec4.h">
+      <Filter>lib\svl</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\fadecandy\opc_client.h">
+      <Filter>lib\fadecandy</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\document.h">
+      <Filter>lib\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\filestream.h">
+      <Filter>lib\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\prettywriter.h">
+      <Filter>lib\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\rapidjson.h">
+      <Filter>lib\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\reader.h">
+      <Filter>lib\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\stringbuffer.h">
+      <Filter>lib\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\writer.h">
+      <Filter>lib\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\internal\pow10.h">
+      <Filter>lib\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\internal\stack.h">
+      <Filter>lib\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\rapidjson\internal\strfunc.h">
+      <Filter>lib\rapidjson\internal</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lib\svl\LICENSE">
+      <Filter>lib\svl</Filter>
+    </None>
+    <None Include="lib\svl\README">
+      <Filter>lib\svl</Filter>
+    </None>
+    <None Include="lib\rapidjson\README.md">
+      <Filter>lib\rapidjson</Filter>
+    </None>
   </ItemGroup>
 </Project>

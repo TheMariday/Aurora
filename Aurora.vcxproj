@@ -47,14 +47,16 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>lib/fadecandy/examples/cpp</IncludePath>
+    <IncludePath>
+    </IncludePath>
     <SourcePath>
     </SourcePath>
     <ProjectPublicIncludePath>
     </ProjectPublicIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>lib/fadecandy/examples/cpp</IncludePath>
+    <IncludePath>
+    </IncludePath>
     <SourcePath>
     </SourcePath>
     <ProjectPublicIncludePath>
@@ -88,10 +90,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="lib\fadecandy\examples\cpp\lib\svl\LICENSE" />
-    <None Include="lib\fadecandy\examples\cpp\lib\svl\README" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="include\tef\aurora\effects\simpleEffect.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\effect.cpp" />
     <ClCompile Include="src\effectRunner.cpp" />
@@ -113,6 +112,35 @@
     <ClInclude Include="include\tef\aurora\sound.h" />
     <ClInclude Include="include\tef\aurora\testSuite.h" />
     <ClInclude Include="include\tef\aurora\userControl.h" />
+    <ClInclude Include="lib\fadecandy\opc_client.h" />
+    <ClInclude Include="lib\rapidjson\document.h" />
+    <ClInclude Include="lib\rapidjson\filestream.h" />
+    <ClInclude Include="lib\rapidjson\internal\pow10.h" />
+    <ClInclude Include="lib\rapidjson\internal\stack.h" />
+    <ClInclude Include="lib\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="lib\rapidjson\prettywriter.h" />
+    <ClInclude Include="lib\rapidjson\rapidjson.h" />
+    <ClInclude Include="lib\rapidjson\reader.h" />
+    <ClInclude Include="lib\rapidjson\stringbuffer.h" />
+    <ClInclude Include="lib\rapidjson\writer.h" />
+    <ClInclude Include="lib\svl\Basics.h" />
+    <ClInclude Include="lib\svl\Constants.h" />
+    <ClInclude Include="lib\svl\Mat.h" />
+    <ClInclude Include="lib\svl\Mat2.h" />
+    <ClInclude Include="lib\svl\Mat3.h" />
+    <ClInclude Include="lib\svl\Mat4.h" />
+    <ClInclude Include="lib\svl\SVL.h" />
+    <ClInclude Include="lib\svl\Transform.h" />
+    <ClInclude Include="lib\svl\Utils.h" />
+    <ClInclude Include="lib\svl\Vec.h" />
+    <ClInclude Include="lib\svl\Vec2.h" />
+    <ClInclude Include="lib\svl\Vec3.h" />
+    <ClInclude Include="lib\svl\Vec4.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lib\rapidjson\README.md" />
+    <None Include="lib\svl\LICENSE" />
+    <None Include="lib\svl\README" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
