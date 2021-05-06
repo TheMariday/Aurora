@@ -1,10 +1,19 @@
 #pragma once
 #include <thread>
 #include <atomic>
+#include <vector>
 #include "svl/SVL.h"
 
 namespace TEF::Aurora
 {
+	struct LED {
+		Vec3 position;
+
+		bool isValid() {
+			return position != Vec3(0, 0, 0);
+		}
+	};
+
 	class Effect
 	{
 	public:
@@ -13,7 +22,7 @@ namespace TEF::Aurora
 		virtual bool Start();
 		virtual bool Pause();
 		virtual bool Stop();
-		virtual bool Shader(Vec4& rgba, bool& metadata); // todo define metadata
+		virtual bool Shader(std::vector<Vec3>& rgb, std::vector<LED>& LEDs);
 		virtual bool MainLoopCallback();
 
 		bool StartMainLoop();

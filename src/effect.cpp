@@ -40,7 +40,7 @@ bool TEF::Aurora::Effect::Stop()
 	printf("Effect stopping\n");
 }
 
-bool TEF::Aurora::Effect::Shader(Vec4& rgba, bool& metadata)
+bool TEF::Aurora::Effect::Shader(std::vector<Vec3>& rgb, std::vector<LED>& LEDs)
 {
 	return true;
 }

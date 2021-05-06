@@ -103,6 +103,7 @@
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\effect.h" />
     <ClInclude Include="include\tef\aurora\effectRunner.h" />
+    <ClInclude Include="include\tef\aurora\led.h" />
     <ClInclude Include="include\tef\aurora\masterController.h" />
     <ClInclude Include="include\tef\aurora\safety.h" />
     <ClInclude Include="include\tef\aurora\sensors.h" />

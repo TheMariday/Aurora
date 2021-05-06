@@ -4,16 +4,20 @@
 #include <vector>
 
 #include "tef/aurora/effects/simpleEffect.h"
+#include "tef/aurora/masterController.h"
 
 int main(int argc, char** argv)
 {
-	TEF::Aurora::Effects::SimpleEffect se;
+	TEF::Aurora::MasterController mc;
 
-	se.StartMainLoop();
+	TEF::Aurora::Effects::SimpleEffect se;
+	mc.registerEffect(&se);
+
+	mc.StartMainLoop();
 
 	for (int i = 0; i < 10; i++)
 	{
-		printf("Utilisation: %f\n", se.GetUtilisation());
+		printf("Master Utilisation: %.2f%\n", mc.GetUtilisation()*100);
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 }

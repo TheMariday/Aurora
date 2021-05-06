@@ -162,6 +162,7 @@
     <ClInclude Include="lib\rapidjson\internal\strfunc.h">
       <Filter>lib\rapidjson\internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\tef\aurora\led.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\svl\LICENSE">
