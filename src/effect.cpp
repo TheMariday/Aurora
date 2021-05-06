@@ -34,6 +34,11 @@ bool TEF::Aurora::Effect::Stop()
 	printf("Effect stopping\n");
 }
 
+bool TEF::Aurora::Effect::Shader(Vec4& rgba, bool& metadata)
+{
+	return true;
+}
+
 bool TEF::Aurora::Effect::MainLoopCallback()
 {
 	printf("default mainloop callback\n");

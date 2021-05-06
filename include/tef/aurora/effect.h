@@ -1,10 +1,12 @@
 #pragma once
 #include <thread>
 #include <atomic>
+#include "../lib/svl/SVL.h"
 
-namespace TEF::Aurora {
-
-	class Effect {
+namespace TEF::Aurora 
+{
+	class Effect 
+	{
 	public:
 		Effect();
 		~Effect();
@@ -12,6 +14,7 @@ namespace TEF::Aurora {
 		virtual bool Start();
 		virtual bool Pause();
 		virtual bool Stop();
+		virtual bool Shader(Vec4& rgba, bool &metadata); // todo define metadata
 		virtual bool MainLoopCallback();
 
 		bool StartMainLoop();
