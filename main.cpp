@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
-
+#include <vector>
 
 #include "tef/aurora/effects/simpleEffect.h"
 
@@ -11,7 +11,11 @@ int main(int argc, char** argv)
 
 	se.StartMainLoop();
 
-	std::this_thread::sleep_for(std::chrono::seconds(10));
+	for (int i = 0; i < 10; i++)
+	{
+		printf("Utilisation: %f\n", se.GetUtilisation());
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
 }
 
 

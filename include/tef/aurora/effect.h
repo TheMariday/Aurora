@@ -1,31 +1,38 @@
 #pragma once
 #include <thread>
 #include <atomic>
-#include "../lib/svl/SVL.h"
+#include "svl/SVL.h"
 
-namespace TEF::Aurora 
+namespace TEF::Aurora
 {
-	class Effect 
+	class Effect
 	{
 	public:
 		Effect();
-		~Effect();
 		virtual bool Load();
 		virtual bool Start();
 		virtual bool Pause();
 		virtual bool Stop();
-		virtual bool Shader(Vec4& rgba, bool &metadata); // todo define metadata
+		virtual bool Shader(Vec4& rgba, bool& metadata); // todo define metadata
 		virtual bool MainLoopCallback();
 
 		bool StartMainLoop();
 
+		void SetFPS(const float fps);
+		const float GetFPS();
+
+		const float GetUtilisation() { return m_utilisation; }
+
 	protected:
+		~Effect();
 		virtual bool MainLoop();
 
-		float m_fps = 60;
+		std::chrono::nanoseconds m_timeDeltaTarget;
+		float m_utilisation = 0;
 		std::atomic<bool> m_running;
 	private:
 		std::thread m_mainLoopThread;
+		std::chrono::high_resolution_clock::time_point m_lastMainloop;
 	};
 
 };
