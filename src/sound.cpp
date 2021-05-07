@@ -32,7 +32,7 @@ std::string execCommand(const std::string cmd, int& out_exitStatus)
 
 TEF::Aurora::Sound::Sound(std::string device)
 {
-	SetFPS(-1);
+	SetFPS(0);
 	m_device = device;
 }
 

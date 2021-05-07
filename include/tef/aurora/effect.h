@@ -27,19 +27,24 @@ namespace TEF::Aurora
 
 		bool StartMainLoop();
 
-		void SetFPS(const float fps);
+		void SetFPS(const float fps, bool ignoreOverrun=false);
 		const float GetFPS();
 
 		const float GetUtilisation() { return m_utilisation; }
 
 	protected:
 		~Effect();
-		virtual bool MainLoop();
+
+	private:
+
+		bool MainLoop();
 
 		std::chrono::nanoseconds m_timeDeltaTarget;
 		float m_utilisation = 0;
+	
 		std::atomic<bool> m_running;
-	private:
+		bool m_ignoreOverrun = false;
+
 		std::thread m_mainLoopThread;
 		std::chrono::high_resolution_clock::time_point m_lastMainloop;
 	};

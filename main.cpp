@@ -17,8 +17,8 @@ int main(int argc, char** argv)
 	plantronics.StartMainLoop();
 	tail.StartMainLoop();
 
-	plantronics.Say("hello there i am a headset");
 	tail.Say("hello there i am a tail");
+	tail.Say("hello there i am a tail2");
 
 	std::this_thread::sleep_for(std::chrono::seconds(10));
 

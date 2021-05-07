@@ -59,19 +59,20 @@ bool TEF::Aurora::Effect::MainLoop()
 
 		MainLoopCallback();
 
-		if (m_timeDeltaTarget > std::chrono::nanoseconds(0)) {
-			auto nextFrame = m_lastMainloop + m_timeDeltaTarget;
+		if (m_timeDeltaTarget == std::chrono::nanoseconds(0)) continue;
 
-			auto remainingCycles = nextFrame - std::chrono::high_resolution_clock::now();
-			m_utilisation = 1 - (remainingCycles.count() / float(m_timeDeltaTarget.count()));
+		std::chrono::high_resolution_clock::time_point nextFrame = m_lastMainloop + m_timeDeltaTarget;
 
-			if (m_utilisation > 1)
-			{
-				printf("Warning! Over utilisation!\n");
-			}
+		std::chrono::high_resolution_clock::duration remainingCycles = nextFrame - std::chrono::high_resolution_clock::now();
+		m_utilisation = 1 - (remainingCycles.count() / float(m_timeDeltaTarget.count()));
 
-			std::this_thread::sleep_until(nextFrame);
+		if (m_utilisation > 1 and !m_ignoreOverrun)
+		{
+			printf("Warning! Over utilisation!\n");
 		}
+
+		std::this_thread::sleep_until(nextFrame);
+
 	}
 }
 
@@ -82,12 +83,15 @@ bool TEF::Aurora::Effect::StartMainLoop()
 	return true;
 }
 
-void TEF::Aurora::Effect::SetFPS(float fps)
+void TEF::Aurora::Effect::SetFPS(float fps, bool ignoreOverrun)
 {
+	m_ignoreOverrun = ignoreOverrun;
 	int nanoDelta = 1e+9 / fps;
-	if (fps == -1) {
+
+	if (fps <= 0) {
 		nanoDelta = 0;
 	}
+
 	m_timeDeltaTarget = std::chrono::nanoseconds(nanoDelta);
 }
 
