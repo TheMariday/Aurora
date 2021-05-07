@@ -4,22 +4,37 @@
 #include <vector>
 
 #include "tef/aurora/effects/simpleEffect.h"
+#include "tef/aurora/sound.h"
 #include "tef/aurora/masterController.h"
+
 
 int main(int argc, char** argv)
 {
-	TEF::Aurora::MasterController mc;
 
-	TEF::Aurora::Effects::SimpleEffect se;
-	mc.registerEffect(&se);
+	TEF::Aurora::Sound plantronics("sysdefault:CARD=Audio");
+	TEF::Aurora::Sound tail("");
 
-	mc.StartMainLoop();
+	plantronics.StartMainLoop();
+	tail.StartMainLoop();
 
-	for (int i = 0; i < 10; i++)
-	{
-		printf("Master Utilisation: %.2f%\n", mc.GetUtilisation()*100);
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
+	plantronics.Say("hello there i am a headset");
+	tail.Say("hello there i am a tail");
+
+	std::this_thread::sleep_for(std::chrono::seconds(10));
+
+
+	//TEF::Aurora::MasterController mc;
+
+	//TEF::Aurora::Effects::SimpleEffect se;
+	//mc.registerEffect(&se);
+
+	//mc.StartMainLoop();
+
+	//for (int i = 0; i < 10; i++)
+	//{
+	//	printf("Master Utilisation: %.2f%\n", mc.GetUtilisation()*100);
+	//	std::this_thread::sleep_for(std::chrono::seconds(1));
+	//}
 }
 
 
