@@ -11,7 +11,20 @@
 
 int main(int argc, char** argv)
 {
+	TEF::Aurora::MasterController mc;
 
+	mc.GetExternalSound()->AddSpeech("starting", true);
+
+	TEF::Aurora::Effects::SimpleEffect se;
+
+	mc.registerEffect(&se);
+
+	se.StartMainLoop();
+
+	std::this_thread::sleep_for(std::chrono::seconds(10));
+
+}
+	/*
 	TEF::Aurora::Sound plantronics("sysdefault:CARD=Audio");
 	TEF::Aurora::Sound tail("");
 
@@ -76,7 +89,8 @@ int main(int argc, char** argv)
 	//	printf("Master Utilisation: %.2f%\n", mc.GetUtilisation()*100);
 	//	std::this_thread::sleep_for(std::chrono::seconds(1));
 	//}
-}
+	*/
+
 
 
 

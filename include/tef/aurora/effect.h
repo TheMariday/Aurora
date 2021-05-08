@@ -14,6 +14,8 @@ namespace TEF::Aurora
 		}
 	};
 
+	class MasterController;
+
 	class Effect
 	{
 	public:
@@ -27,13 +29,16 @@ namespace TEF::Aurora
 
 		bool StartMainLoop();
 
-		void SetFPS(const float fps, bool ignoreOverrun=false);
+		void SetFPS(const float fps, bool ignoreOverrun = false);
 		const float GetFPS();
 
 		const float GetUtilisation() { return m_utilisation; }
 
+		bool RegisterMC(MasterController* mc);
+
 	protected:
 		~Effect();
+		MasterController* m_pMC;
 
 	private:
 
@@ -41,12 +46,13 @@ namespace TEF::Aurora
 
 		std::chrono::nanoseconds m_timeDeltaTarget;
 		float m_utilisation = 0;
-	
+
 		std::atomic<bool> m_running;
 		bool m_ignoreOverrun = false;
 
 		std::thread m_mainLoopThread;
 		std::chrono::high_resolution_clock::time_point m_lastMainloop;
+
 	};
 
 };

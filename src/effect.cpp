@@ -10,6 +10,12 @@ TEF::Aurora::Effect::Effect()
 	SetFPS(1);
 }
 
+bool TEF::Aurora::Effect::RegisterMC(MasterController* mc)
+{
+	m_pMC = mc;
+	return false;
+}
+
 TEF::Aurora::Effect::~Effect()
 {
 	m_running = false;

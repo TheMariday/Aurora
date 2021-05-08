@@ -1,4 +1,7 @@
+#pragma once
 #include "tef/aurora/effect.h"
+#include "tef/aurora/masterController.h"
+
 #include <chrono>
 #include <thread>
 
@@ -15,6 +18,7 @@ namespace TEF::Aurora::Effects
 		bool MainLoopCallback() override 
 		{
 			printf("simple main loop looping 2\n");
+			m_pMC->GetExternalSound()->AddSpeech("boop");
 			std::this_thread::sleep_for(std::chrono::microseconds(1000));
 			return true;
 		}
