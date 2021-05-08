@@ -15,13 +15,16 @@ int main(int argc, char** argv)
 	TEF::Aurora::Sound plantronics("sysdefault:CARD=Audio");
 	TEF::Aurora::Sound tail("");
 
-	plantronics.StartMainLoop();
+	//plantronics.StartMainLoop();
 	tail.StartMainLoop();
+	plantronics.StartMainLoop();
 
 	std::string longLorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 	std::string shortLorem = "Lorem ipsum dolor sit amet";
 
 	tail.AddSpeech("Starting audio test", true);
+	plantronics.AddSpeech("Headset test connection", true);
+
 	tail.AddSpeech("Playing audio file for 2 seconds", true); 
 
 	std::string testAudio = "/home/pi/media/test.wav";
@@ -30,7 +33,7 @@ int main(int argc, char** argv)
 	pause(2);
 	tail.StopAudio(testAudio);
 
-	tail.AddSpeech("Playing Audio file and speech at the same time", true);
+	tail.AddSpeech("testing async audio and speech", true);
 	tail.PlayAudio(testAudio);
 	tail.AddSpeech(longLorem);
 	pause(2)
@@ -44,6 +47,20 @@ int main(int argc, char** argv)
 	tail.InterruptSpeech("This is an interruption, resuming");
 	pause(5);
 	tail.RemoveSpeech(longLorem);
+
+	tail.AddSpeech("testing headset", true);
+
+	//stalls here
+
+	plantronics.AddSpeech("this is a headset test", true);
+
+	tail.AddSpeech("testing headset and tail", true);
+
+	plantronics.AddSpeech("this is a concurrent headset test");
+	tail.AddSpeech("this is a concurrent tail test");
+
+	plantronics.WaitFor();
+	tail.WaitFor();
 
 	tail.AddSpeech("Audio test complete", true);
 
