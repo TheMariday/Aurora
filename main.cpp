@@ -7,6 +7,7 @@
 #include "tef/aurora/sound.h"
 #include "tef/aurora/masterController.h"
 
+#define pause(x) std::this_thread::sleep_for(std::chrono::seconds(x));
 
 int main(int argc, char** argv)
 {
@@ -17,11 +18,34 @@ int main(int argc, char** argv)
 	plantronics.StartMainLoop();
 	tail.StartMainLoop();
 
-	tail.Say("hello there i am a tail");
-	tail.Say("hello there i am a tail2");
+	std::string longLorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+	std::string shortLorem = "Lorem ipsum dolor sit amet";
 
-	std::this_thread::sleep_for(std::chrono::seconds(10));
+	tail.AddSpeech("Starting audio test", true);
+	tail.AddSpeech("Playing audio file for 2 seconds", true); 
 
+	std::string testAudio = "/home/pi/media/test.wav";
+
+	tail.PlayAudio(testAudio);
+	pause(2);
+	tail.StopAudio(testAudio);
+
+	tail.AddSpeech("Playing Audio file and speech at the same time", true);
+	tail.PlayAudio(testAudio);
+	tail.AddSpeech(longLorem);
+	pause(2)
+	tail.StopAudio(testAudio);
+	tail.RemoveSpeech(longLorem);
+
+	tail.AddSpeech("Testing interrupts", true);
+
+	tail.AddSpeech(longLorem);
+	pause(2);
+	tail.InterruptSpeech("This is an interruption, resuming");
+	pause(5);
+	tail.RemoveSpeech(longLorem);
+
+	tail.AddSpeech("Audio test complete", true);
 
 	//TEF::Aurora::MasterController mc;
 
