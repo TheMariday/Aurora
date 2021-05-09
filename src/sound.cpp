@@ -1,5 +1,6 @@
 #include "tef/aurora/sound.h"
 #include <algorithm>
+#include <spdlog/spdlog.h>
 
 struct CMD
 {

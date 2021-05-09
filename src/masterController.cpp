@@ -22,8 +22,19 @@ bool TEF::Aurora::MasterController::MainLoopCallback()
 
 bool TEF::Aurora::MasterController::registerEffect(Effect* pEffect)
 {
+	if (!pEffect) {
+		printf("Error, cannot register null effect\n");
+		return false;
+	}
+
 	m_effectVector.push_back(pEffect);
-	pEffect->RegisterMC(this);
+
+	if (!pEffect->RegisterMC(this))
+	{
+		printf("Error, Master controller failed to reguster itself with this effect\n");
+		return false;
+	}
+	
 	return true;
 }
 

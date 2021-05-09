@@ -13,7 +13,7 @@ TEF::Aurora::Effect::Effect()
 bool TEF::Aurora::Effect::RegisterMC(MasterController* mc)
 {
 	m_pMC = mc;
-	return false;
+	return true;
 }
 
 TEF::Aurora::Effect::~Effect()
