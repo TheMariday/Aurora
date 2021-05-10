@@ -2,6 +2,7 @@
 #include <string>
 #include <list>
 #include <mutex>
+
 #include "tef/aurora/effect.h"
 
 namespace TEF::Aurora {
@@ -16,9 +17,8 @@ namespace TEF::Aurora {
 		bool RemoveSpeech();
 		bool InterruptSpeech(std::string speech);
 
-
-		bool WaitFor(std::string speech);
-		bool WaitFor();
+		void WaitFor(std::string speech);
+		void WaitFor();
 
 		bool MainLoopCallback() override;
 
@@ -42,7 +42,5 @@ namespace TEF::Aurora {
 		std::mutex m_speechesMutex;
 		std::list<std::string> m_speeches;
 
-
 	};
-
 }

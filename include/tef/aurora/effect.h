@@ -4,16 +4,10 @@
 #include <vector>
 #include "svl/SVL.h"
 
+#include "tef/aurora/led.h"
+
 namespace TEF::Aurora
 {
-	struct LED {
-		Vec3 position;
-
-		bool isValid() {
-			return position != Vec3(0, 0, 0);
-		}
-	};
-
 	class MasterController;
 
 	class Effect
@@ -52,7 +46,5 @@ namespace TEF::Aurora
 
 		std::thread m_mainLoopThread;
 		std::chrono::high_resolution_clock::time_point m_lastMainloop;
-
 	};
-
-};
+}

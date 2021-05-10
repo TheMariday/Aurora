@@ -1,9 +1,11 @@
 #pragma once
 #include "tef/aurora/effect.h"
-#include "tef/aurora/masterController.h"
-
 #include <chrono>
 #include <thread>
+#include <spdlog/spdlog.h>
+
+#include "tef/aurora/masterController.h"
+
 
 namespace TEF::Aurora::Effects
 {
@@ -12,14 +14,15 @@ namespace TEF::Aurora::Effects
 		SimpleEffect()
 		{
 			SetFPS(1);
-			printf("simple effect created 2\n");
+			spdlog::debug("Simple Effect created 2\n");
 		};
 
 		bool MainLoopCallback() override 
 		{
-			printf("simple main loop looping 2\n");
-			m_pMC->GetExternalSound()->AddSpeech("boop");
-			std::this_thread::sleep_for(std::chrono::microseconds(1000));
+			spdlog::debug("Simple Effect main loop looping 2\n");
+			if(m_pMC)
+				m_pMC->GetExternalSound()->AddSpeech("boop");
+			std::this_thread::sleep_for(std::chrono::seconds(2));
 			return true;
 		}
 	};

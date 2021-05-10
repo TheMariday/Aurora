@@ -2,16 +2,23 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
+#include "spdlog/spdlog.h"
 
 TEF::Aurora::Effect::Effect()
 {
-	printf("Effect created!\n");
+	spdlog::debug("Base Effect created!");
 	m_running = false;
 	SetFPS(1);
 }
 
 bool TEF::Aurora::Effect::RegisterMC(MasterController* mc)
 {
+	if (!mc) 
+	{
+		spdlog::error("Base Effect cannot register null master controller");
+		return false;
+	}
+
 	m_pMC = mc;
 	return true;
 }
@@ -23,27 +30,27 @@ TEF::Aurora::Effect::~Effect()
 		m_mainLoopThread.join();
 	}
 
-	printf("Effect destroyed\n");
+	spdlog::debug("Base Effect destroyed");
 }
 
 bool TEF::Aurora::Effect::Load()
 {
-	printf("Effect loaded\n");
+	spdlog::debug("Base Effect loaded");
 }
 
 bool TEF::Aurora::Effect::Start()
 {
-	printf("Effect starting\n");
+	spdlog::debug("Base Effect starting");
 }
 
 bool TEF::Aurora::Effect::Pause()
 {
-	printf("Effect paused\n");
+	spdlog::debug("Base Effect paused");
 }
 
 bool TEF::Aurora::Effect::Stop()
 {
-	printf("Effect stopping\n");
+	spdlog::debug("Base Effect stopping");
 }
 
 bool TEF::Aurora::Effect::Shader(std::vector<Vec3>& rgb, std::vector<LED>& LEDs)
@@ -53,7 +60,6 @@ bool TEF::Aurora::Effect::Shader(std::vector<Vec3>& rgb, std::vector<LED>& LEDs)
 
 bool TEF::Aurora::Effect::MainLoopCallback()
 {
-	printf("default mainloop callback\n");
 	return true;
 }
 
@@ -74,7 +80,7 @@ bool TEF::Aurora::Effect::MainLoop()
 
 		if (m_utilisation > 1 and !m_ignoreOverrun)
 		{
-			printf("Warning! Over utilisation!\n");
+			spdlog::warn("{} over-utilisation!", typeid(*this).name());
 		}
 
 		std::this_thread::sleep_until(nextFrame);
@@ -92,13 +98,14 @@ bool TEF::Aurora::Effect::StartMainLoop()
 void TEF::Aurora::Effect::SetFPS(float fps, bool ignoreOverrun)
 {
 	m_ignoreOverrun = ignoreOverrun;
-	int nanoDelta = 1e+9 / fps;
 
-	if (fps <= 0) {
-		nanoDelta = 0;
+	m_timeDeltaTarget = std::chrono::nanoseconds(0);
+
+	if (fps > 0) {
+		int delta = int(1e+9 / fps);
+		spdlog::debug("Setting framerate to {}", delta);
+		m_timeDeltaTarget = std::chrono::nanoseconds(delta);
 	}
-
-	m_timeDeltaTarget = std::chrono::nanoseconds(nanoDelta);
 }
 
 const float TEF::Aurora::Effect::GetFPS()

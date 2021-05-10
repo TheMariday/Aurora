@@ -11,13 +11,19 @@ struct CMD
 
 bool execCommand(CMD* cmd)
 {
-	printf(cmd->command.c_str());
-	printf("\n");
+	if (cmd->command.empty())
+	{
+		spdlog::error("Cannot call empty command");
+		return false;
+	}
+
+	spdlog::debug("Command Executor: {}", cmd->command.c_str());
 	cmd->status = 0;
 	auto pPipe = ::popen(cmd->command.c_str(), "r");
 	if (pPipe == nullptr)
 	{
-		throw std::runtime_error("Cannot open pipe");
+		spdlog::error("Command Executor cannot open pipe");
+		return false;
 	}
 
 	std::array<char, 256> buffer;
@@ -40,11 +46,11 @@ bool execCommand(CMD* cmd)
 	return true;
 }
 
-void quickCommand(std::string command)
+bool quickCommand(std::string command)
 {
 	CMD cmd;
 	cmd.command = command;
-	execCommand(&cmd);
+	return execCommand(&cmd);
 }
 
 TEF::Aurora::Sound::Sound(std::string device)
@@ -60,6 +66,7 @@ TEF::Aurora::Sound::~Sound()
 
 bool TEF::Aurora::Sound::AddSpeech(std::string speech, bool wait)
 {
+	spdlog::debug("Adding {}blocking speech: {}", wait ? "" : "non", speech);
 	{
 		std::scoped_lock lock(m_speechesMutex);
 		m_speeches.push_back(speech);
@@ -98,7 +105,7 @@ bool TEF::Aurora::Sound::InterruptSpeech(std::string speech)
 }
 
 
-bool TEF::Aurora::Sound::WaitFor(std::string speech)
+void TEF::Aurora::Sound::WaitFor(std::string speech)
 {
 	bool found = true;
 
@@ -107,16 +114,13 @@ bool TEF::Aurora::Sound::WaitFor(std::string speech)
 		found = std::find(m_speeches.begin(), m_speeches.end(), speech) != m_speeches.end();
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
 	}
-	return true;
 }
 
-bool TEF::Aurora::Sound::WaitFor()
+void TEF::Aurora::Sound::WaitFor()
 {
 	while (!m_speeches.empty()) {
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
 	}
-
-	return true;
 }
 
 
@@ -136,7 +140,11 @@ bool TEF::Aurora::Sound::MainLoopCallback()
 		speech = m_speeches.front();
 	}
 
-	quickCommand(SpeechToCommand(speech));
+	if (!quickCommand(SpeechToCommand(speech)))
+	{
+		spdlog::error("Failed to speak");
+		return false;
+	}
 
 	// There might be a bug here surrounding duplicate
 	// speech strings and tiny concurrency issues but I CBA to fix it.
@@ -166,8 +174,7 @@ bool TEF::Aurora::Sound::StopAudio(std::string filename)
 
 bool TEF::Aurora::Sound::Stop()
 {
-	quickCommand("pkill aplay");
-	return true;
+	return quickCommand("pkill aplay");
 }
 
 std::string TEF::Aurora::Sound::SpeechToCommand(std::string speech)
@@ -214,6 +221,5 @@ bool TEF::Aurora::Sound::StopCommand(std::string command)
 {
 	command = "pkill -f -x \"" + command + "\"";
 
-	quickCommand(command);
-	return true;
+	return quickCommand(command);
 }
