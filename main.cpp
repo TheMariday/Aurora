@@ -31,16 +31,22 @@ class Caller
 {
 public:
 	void Register(std::function<bool(void)> cb) { m_cb = cb; };
+	void RegisterArgs(std::function<bool(std::string)> cb) { m_cbWArgs = cb; };
+
 	bool Run() { return m_cb(); }
+	bool Run(std::string s) { return m_cbWArgs(s); }
 private:
 	std::function<bool(void)> m_cb;
-	std::string arg;
+	std::function<bool(std::string)> m_cbWArgs;
 };
+
+
 
 
 int main(int argc, char** argv)
 {
 	Caller caller;
+	SomeClass someClass;
 
 	{
 		caller.Register(func);
@@ -53,15 +59,47 @@ int main(int argc, char** argv)
 	}
 
 	{
-		SomeClass someClass;
 		caller.Register(std::bind(&SomeClass::func, someClass));
 		printf(caller.Run() ? "success\n" : "failed\n");
 	}
 
 	{
-		SomeClass someClass;
 		caller.Register(std::bind(&SomeClass::funcArgs, someClass, "argument"));
 		printf(caller.Run() ? "success\n" : "failed\n");
+	}
+
+	printf("starting lamda test\n");
+
+	{
+		auto lambda = [&someClass]() {return someClass.func(); };
+
+		caller.Register(lambda);
+
+		printf(caller.Run() ? "success\n" : "failed\n");
+	}
+
+	{
+		auto lambda = [&someClass]() {return someClass.funcArgs("test"); };
+
+		caller.Register(lambda);
+
+		printf(caller.Run() ? "success\n" : "failed\n");
+	}
+
+	printf("starting caller w args test\n");
+
+	{
+		caller.RegisterArgs(std::bind(&SomeClass::funcArgs, someClass, std::placeholders::_1));
+
+		printf(caller.Run("passed in at runtime") ? "success\n" : "failed\n");
+	}
+
+	{
+		auto lambda = [&someClass](std::string s) {return someClass.funcArgs(s); };
+
+		caller.RegisterArgs(lambda);
+
+		printf(caller.Run("passed in at runtime") ? "success\n" : "failed\n");
 	}
 
 	sleep(10);
