@@ -12,30 +12,28 @@ namespace TEF::Aurora {
 
 	class Command {
 	public:
-		Command() = default;
-		~Command() = default;
-		
+		Command(std::string type, std::string function = "");
+		~Command();
+
 		// Register a function that expects a string
-		void Register(void* context, std::function<bool(std::string)> function);
-		// Register a function that expects nothing
-		void Register(void* context, std::function<bool(void)> function);
-		// Register a function with a default argument
-		void Register(void* context, std::function<bool(std::string)> function, std::string argument);
+		bool Register(std::function<bool(void)> cb);
+		bool RegisterWArgs(std::function<bool(std::string)> cb);
 
-		//Execute a command with no arguments
-		bool Execute();
+		bool SetExpectedArgs(std::vector<std::string> args);
+
 		//Execute a command with arguments
-		bool Execute(std::string arg);
+		bool Execute(std::string arg = "");
 
-		std::string type;
-		std::string function;
-		std::string argument;
+		bool IsArgValid(std::string arg);
+
+		//unused at the moment
+		std::string m_type;
+		std::string m_function;
 
 	private:
-		std::function<bool(void)> callback;
-		std::function<bool(std::string)> callbackWArgs;
-		std::string defaultArg;
-		void* context = nullptr;
+		std::function<bool(void)> m_cb;
+		std::function<bool(std::string)> m_cbwArgs;
+		std::vector<std::string> m_expectedArgs;
 	};
 
 	class UserControl : public Effect {
@@ -45,9 +43,11 @@ namespace TEF::Aurora {
 
 		bool RegisterCommand(Command command);
 
+
 		bool MainLoopCallback() override;
 
 		bool ProcessCommand(std::string command);
+
 
 	private:
 

@@ -58,6 +58,9 @@
     <ClCompile Include="include\tef\aurora\effects\simpleEffect.h">
       <Filter>effects</Filter>
     </ClCompile>
+    <ClCompile Include="src\userControl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\effect.h">
@@ -157,6 +160,9 @@
       <Filter>lib\rapidjson\internal</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\led.h" />
+    <ClInclude Include="include\tef\aurora\userControl.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\svl\LICENSE">

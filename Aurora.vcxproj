@@ -99,6 +99,7 @@
     <ClCompile Include="src\smartFuse.cpp" />
     <ClCompile Include="src\sound.cpp" />
     <ClCompile Include="src\testSuite.cpp" />
+    <ClCompile Include="src\userControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\effect.h" />
@@ -110,6 +111,7 @@
     <ClInclude Include="include\tef\aurora\smartFuse.h" />
     <ClInclude Include="include\tef\aurora\sound.h" />
     <ClInclude Include="include\tef\aurora\testSuite.h" />
+    <ClInclude Include="include\tef\aurora\userControl.h" />
     <ClInclude Include="lib\fadecandy\opc_client.h" />
     <ClInclude Include="lib\rapidjson\document.h" />
     <ClInclude Include="lib\rapidjson\filestream.h" />

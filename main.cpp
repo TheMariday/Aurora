@@ -8,88 +8,78 @@
 #include "tef/aurora/effects/simpleEffect.h"
 #include "tef/aurora/sound.h"
 #include "tef/aurora/masterController.h"
+#include "tef/aurora/userControl.h"
 
 #define pause(x) std::this_thread::sleep_for(std::chrono::seconds(x));
 
-class SomeClass {
-
-public:
-	static bool staticFunc() { printf("Static func\n"); return true; }
-	bool func() { printf("Func\n"); return true; }
-	bool funcArgs(std::string arg) { printf("Func with args: %s\n", arg.c_str()); }
-};
-
-bool func() { return printf("Non member func\n"); return true; }
-
-class Caller
+class SystemDummy
 {
 public:
-	void Register(std::function<bool(void)> cb) { m_cb = cb; };
-	void RegisterWArgs(std::function<bool(std::string)> cb) { m_cbWArgs = cb; };
+	bool Reboot() {
+		someVar = 0;
+		spdlog::debug("rebooted");
+		return true;
+	}
 
-	bool Run() { return m_cb(); }
-	bool Run(std::string s) { return m_cbWArgs(s); }
+	bool SetVar(int v) {
+		spdlog::debug("setting var to {}", v);
+		someVar = v;
+		return true;
+	}
+
+	bool incrementVar(int v) {
+		spdlog::debug("incrementing var, old: {}", someVar);
+		someVar += v;
+		spdlog::debug("incrementing var, new: {}", someVar);
+		return true;
+	}
+
 private:
-	std::function<bool(void)> m_cb;
-	std::function<bool(std::string)> m_cbWArgs;
+	int someVar;
 };
 
 
 
 int main(int argc, char** argv)
 {
-	Caller caller;
-	SomeClass someClass;
+	spdlog::set_level(spdlog::level::debug);
 
-	{
-		caller.Register(func);
-		caller.Register([]() {return func(); });
-		printf(caller.Run() ? "success\n" : "failed\n");
-	}
+	SystemDummy sys;
 
-	{
-		caller.Register(SomeClass::staticFunc);
-		caller.Register([]() {return SomeClass::staticFunc(); });
-		printf(caller.Run() ? "success\n" : "failed\n");
-	}
+	TEF::Aurora::UserControl uc;
 
-	{
-		caller.Register(std::bind(&SomeClass::func, someClass));
-		caller.Register([&someClass]() {return someClass.func(); });
-		printf(caller.Run() ? "success\n" : "failed\n");
-	}
+	TEF::Aurora::Command rebootCMD("system", "reboot");
+	TEF::Aurora::Command setVarCMD("system", "setvar");
+	TEF::Aurora::Command incrementByOneCMD("system", "increment");
 
-	{
-		caller.Register(std::bind(&SomeClass::funcArgs, someClass, "argument"));
-		caller.Register([&someClass]() {return someClass.funcArgs("argument"); });
-		printf(caller.Run() ? "success\n" : "failed\n");
-	}
+	rebootCMD.Register([&sys]() {return sys.Reboot(); });
+	setVarCMD.RegisterWArgs([&sys](std::string arg) {return sys.SetVar(std::stoi(arg)); });
+	incrementByOneCMD.Register([&sys]() {return sys.incrementVar(1); });
 
-	{
-		caller.RegisterWArgs(std::bind(&SomeClass::funcArgs, someClass, std::placeholders::_1));
-		caller.RegisterWArgs([&someClass](std::string s) {return someClass.funcArgs(s); });
-		printf(caller.Run("passed in at runtime") ? "success\n" : "failed\n");
-	}
+	uc.RegisterCommand(rebootCMD);
+	uc.RegisterCommand(setVarCMD);
+	uc.RegisterCommand(incrementByOneCMD);
+
+
+	bool success;
+	
+	success = uc.ProcessCommand("system reboot");
+	spdlog::debug(success ? "success" : "failed");
+	
+	success = uc.ProcessCommand("system setvar 12");
+	spdlog::debug(success ? "success" : "failed");
+	
+	success = uc.ProcessCommand("system increment");
+	spdlog::debug(success ? "success" : "failed");
 
 	sleep(10);
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 /*
-spdlog::set_level(spdlog::level::debug);
+*
+*
 
 TEF::Aurora::MasterController mc;
 

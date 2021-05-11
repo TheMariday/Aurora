@@ -103,7 +103,7 @@ void TEF::Aurora::Effect::SetFPS(float fps, bool ignoreOverrun)
 
 	if (fps > 0) {
 		int delta = int(1e+9 / fps);
-		spdlog::debug("Setting framerate to {}", delta);
+		spdlog::debug("Setting framerate to {}ns", delta);
 		m_timeDeltaTarget = std::chrono::nanoseconds(delta);
 	}
 }
