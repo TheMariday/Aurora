@@ -14,24 +14,18 @@
 class SomeClass {
 
 public:
-	static bool funcStatic() { printf("Hello from static CB!\n"); return true; }
-	bool func() { printf("%s\n", member.c_str()); return true; }
-	bool funcArgs(std::string arg) { printf("%s:%s\n", member.c_str(), arg.c_str()); }
-
-private:
-	std::string member = "Hello from non static member callback!";
+	static bool staticFunc() { printf("Static func\n"); return true; }
+	bool func() { printf("Func\n"); return true; }
+	bool funcArgs(std::string arg) { printf("Func with args: %s\n", arg.c_str()); }
 };
 
-
-bool func() { return printf("Hello from non member function!\n"); return true; }
-
-bool Run(std::function<bool(void)> f) { return f(); }
+bool func() { return printf("Non member func\n"); return true; }
 
 class Caller
 {
 public:
 	void Register(std::function<bool(void)> cb) { m_cb = cb; };
-	void RegisterArgs(std::function<bool(std::string)> cb) { m_cbWArgs = cb; };
+	void RegisterWArgs(std::function<bool(std::string)> cb) { m_cbWArgs = cb; };
 
 	bool Run() { return m_cb(); }
 	bool Run(std::string s) { return m_cbWArgs(s); }
@@ -42,7 +36,6 @@ private:
 
 
 
-
 int main(int argc, char** argv)
 {
 	Caller caller;
@@ -50,55 +43,31 @@ int main(int argc, char** argv)
 
 	{
 		caller.Register(func);
+		caller.Register([]() {return func(); });
 		printf(caller.Run() ? "success\n" : "failed\n");
 	}
 
 	{
-		caller.Register(SomeClass::funcStatic);
+		caller.Register(SomeClass::staticFunc);
+		caller.Register([]() {return SomeClass::staticFunc(); });
 		printf(caller.Run() ? "success\n" : "failed\n");
 	}
 
 	{
 		caller.Register(std::bind(&SomeClass::func, someClass));
+		caller.Register([&someClass]() {return someClass.func(); });
 		printf(caller.Run() ? "success\n" : "failed\n");
 	}
 
 	{
 		caller.Register(std::bind(&SomeClass::funcArgs, someClass, "argument"));
-		printf(caller.Run() ? "success\n" : "failed\n");
-	}
-
-	printf("starting lamda test\n");
-
-	{
-		auto lambda = [&someClass]() {return someClass.func(); };
-
-		caller.Register(lambda);
-
+		caller.Register([&someClass]() {return someClass.funcArgs("argument"); });
 		printf(caller.Run() ? "success\n" : "failed\n");
 	}
 
 	{
-		auto lambda = [&someClass]() {return someClass.funcArgs("test"); };
-
-		caller.Register(lambda);
-
-		printf(caller.Run() ? "success\n" : "failed\n");
-	}
-
-	printf("starting caller w args test\n");
-
-	{
-		caller.RegisterArgs(std::bind(&SomeClass::funcArgs, someClass, std::placeholders::_1));
-
-		printf(caller.Run("passed in at runtime") ? "success\n" : "failed\n");
-	}
-
-	{
-		auto lambda = [&someClass](std::string s) {return someClass.funcArgs(s); };
-
-		caller.RegisterArgs(lambda);
-
+		caller.RegisterWArgs(std::bind(&SomeClass::funcArgs, someClass, std::placeholders::_1));
+		caller.RegisterWArgs([&someClass](std::string s) {return someClass.funcArgs(s); });
 		printf(caller.Run("passed in at runtime") ? "success\n" : "failed\n");
 	}
 
@@ -119,67 +88,7 @@ int main(int argc, char** argv)
 
 
 
-
-
 /*
-*
-*
-class SomeClass {
-
-public:
-	static std::string funcStatic() { return "Hello from static CB!"; }
-	std::string func() { return member; }
-	std::string funcArgs(std::string arg) { return member + arg; }
-
-private:
-	std::string member = "Hello from non static member callback!";
-};
-
-
-std::string func() { return "Hello from non member function!"; }
-
-std::string Run(std::function<std::string(void)> f) { return f(); }
-
-class Caller
-{
-public:
-	void RegisterAndBind(std::function<std::string(void)> f) { m_cb = std::bind(f); };
-
-	void Register(std::function<std::string(void)> cb) { m_cb = cb; };
-	std::string Run() { return m_cb(); }
-private:
-	std::function<std::string(void)> m_cb;
-	std::string arg;
-};
-
-
-int main(int argc, char** argv)
-{
-	Caller caller;
-
-	{
-		caller.RegisterAndBind(func);
-		printf("%s\n", caller.Run().c_str());
-	}
-
-	{
-		caller.RegisterAndBind(SomeClass::funcStatic);
-		printf("%s\n", caller.Run().c_str());
-	}
-
-	{
-		SomeClass someClass;
-		caller.Register(std::bind(&SomeClass::func, someClass));
-		printf("%s\n", caller.Run().c_str());
-	}
-
-	{
-		SomeClass someClass;
-		caller.Register(std::bind(&SomeClass::funcArgs, someClass, "argument"));
-		printf("%s\n", caller.Run().c_str());
-	}
-
-	sleep(10);
 spdlog::set_level(spdlog::level::debug);
 
 TEF::Aurora::MasterController mc;
