@@ -34,7 +34,7 @@ bool execCommand(CMD* cmd)
 		cmd->response.append(buffer.data(), bytes);
 	}
 
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+	//std::this_thread::sleep_for(std::chrono::seconds(1));//what's this doing here?
 
 	auto rc = ::pclose(pPipe);
 

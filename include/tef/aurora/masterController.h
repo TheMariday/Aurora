@@ -11,12 +11,16 @@ namespace TEF::Aurora {
 		bool MainLoopCallback() override;
 		bool registerEffect(Effect* pEffect);
 
+		bool Notify(std::string message);
+
 		Sound* GetInternalSound();
 		Sound* GetExternalSound();
 	private:
 
 		Sound m_externalSound;
 		Sound m_internalSound;
+
+		bool forwardAudio = true;
 
 		std::vector<Effect*> m_effectVector;
 		std::vector<LED> m_LEDs;

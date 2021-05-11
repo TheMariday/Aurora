@@ -2,7 +2,7 @@
 #include <spdlog/spdlog.h>
 
 TEF::Aurora::MasterController::MasterController() :
-	m_externalSound(""), 
+	m_externalSound(""),
 	m_internalSound("sysdefault:CARD=Audio")
 {
 	SetFPS(60);
@@ -37,8 +37,36 @@ bool TEF::Aurora::MasterController::registerEffect(Effect* pEffect)
 		spdlog::error("Master Controller failed to register itself with this effect\n");
 		return false;
 	}
-	
+
 	return true;
+}
+
+bool TEF::Aurora::MasterController::Notify(std::string message)
+{
+	std::vector<Sound*> devices;
+	bool success = true;
+
+	devices.push_back(GetInternalSound());
+	if (forwardAudio) devices.push_back(GetExternalSound());
+
+	for (Sound* device : devices)
+	{
+		if (!device)
+		{
+			spdlog::error("Master controller cannot get internal sound to notify user");
+			success = false;
+			continue;
+		}
+
+		if (!device->AddSpeech(message))
+		{
+			spdlog::error("Master Controller cannot add speech to internal sound");
+			success = false;
+			continue;
+		}
+	}
+
+	return success;
 }
 
 TEF::Aurora::Sound* TEF::Aurora::MasterController::GetInternalSound()

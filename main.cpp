@@ -11,24 +11,150 @@
 
 #define pause(x) std::this_thread::sleep_for(std::chrono::seconds(x));
 
+class SomeClass {
+
+public:
+	static bool funcStatic() { printf("Hello from static CB!\n"); return true; }
+	bool func() { printf("%s\n", member.c_str()); return true; }
+	bool funcArgs(std::string arg) { printf("%s:%s\n", member.c_str(), arg.c_str()); }
+
+private:
+	std::string member = "Hello from non static member callback!";
+};
+
+
+bool func() { return printf("Hello from non member function!\n"); return true; }
+
+bool Run(std::function<bool(void)> f) { return f(); }
+
+class Caller
+{
+public:
+	void Register(std::function<bool(void)> cb) { m_cb = cb; };
+	bool Run() { return m_cb(); }
+private:
+	std::function<bool(void)> m_cb;
+	std::string arg;
+};
+
+
 int main(int argc, char** argv)
 {
-	spdlog::set_level(spdlog::level::debug);
+	Caller caller;
 
-	TEF::Aurora::MasterController mc;
+	{
+		caller.Register(func);
+		printf(caller.Run() ? "success\n" : "failed\n");
+	}
 
-	mc.GetExternalSound()->AddSpeech("starting", true);
+	{
+		caller.Register(SomeClass::funcStatic);
+		printf(caller.Run() ? "success\n" : "failed\n");
+	}
 
-	TEF::Aurora::Effects::SimpleEffect se;
+	{
+		SomeClass someClass;
+		caller.Register(std::bind(&SomeClass::func, someClass));
+		printf(caller.Run() ? "success\n" : "failed\n");
+	}
 
-	mc.registerEffect(&se);
+	{
+		SomeClass someClass;
+		caller.Register(std::bind(&SomeClass::funcArgs, someClass, "argument"));
+		printf(caller.Run() ? "success\n" : "failed\n");
+	}
 
-	se.StartMainLoop();
-
-	std::this_thread::sleep_for(std::chrono::seconds(10));
-
+	sleep(10);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
+*
+*
+class SomeClass {
+
+public:
+	static std::string funcStatic() { return "Hello from static CB!"; }
+	std::string func() { return member; }
+	std::string funcArgs(std::string arg) { return member + arg; }
+
+private:
+	std::string member = "Hello from non static member callback!";
+};
+
+
+std::string func() { return "Hello from non member function!"; }
+
+std::string Run(std::function<std::string(void)> f) { return f(); }
+
+class Caller
+{
+public:
+	void RegisterAndBind(std::function<std::string(void)> f) { m_cb = std::bind(f); };
+
+	void Register(std::function<std::string(void)> cb) { m_cb = cb; };
+	std::string Run() { return m_cb(); }
+private:
+	std::function<std::string(void)> m_cb;
+	std::string arg;
+};
+
+
+int main(int argc, char** argv)
+{
+	Caller caller;
+
+	{
+		caller.RegisterAndBind(func);
+		printf("%s\n", caller.Run().c_str());
+	}
+
+	{
+		caller.RegisterAndBind(SomeClass::funcStatic);
+		printf("%s\n", caller.Run().c_str());
+	}
+
+	{
+		SomeClass someClass;
+		caller.Register(std::bind(&SomeClass::func, someClass));
+		printf("%s\n", caller.Run().c_str());
+	}
+
+	{
+		SomeClass someClass;
+		caller.Register(std::bind(&SomeClass::funcArgs, someClass, "argument"));
+		printf("%s\n", caller.Run().c_str());
+	}
+
+	sleep(10);
+spdlog::set_level(spdlog::level::debug);
+
+TEF::Aurora::MasterController mc;
+
+mc.GetExternalSound()->AddSpeech("starting", true);
+
+TEF::Aurora::Effects::SimpleEffect se;
+
+mc.registerEffect(&se);
+
+se.StartMainLoop();
+
+std::this_thread::sleep_for(std::chrono::seconds(10));
 TEF::Aurora::Sound plantronics("sysdefault:CARD=Audio");
 TEF::Aurora::Sound tail("");
 
