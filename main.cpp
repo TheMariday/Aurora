@@ -12,31 +12,30 @@
 
 #define pause(x) std::this_thread::sleep_for(std::chrono::seconds(x));
 
-class SystemDummy
+struct SystemDummy
 {
-public:
 	bool Reboot() {
-		someVar = 0;
 		spdlog::debug("rebooted");
 		return true;
 	}
 
-	bool SetVar(int v) {
-		spdlog::debug("setting var to {}", v);
-		someVar = v;
+	bool SetBrightness(int i) {
+		spdlog::debug("setting brightness to {}", i);
 		return true;
 	}
 
-	bool incrementVar(int v) {
-		spdlog::debug("incrementing var, old: {}", someVar);
-		someVar += v;
-		spdlog::debug("incrementing var, new: {}", someVar);
+	bool SetSafety(bool b)
+	{
+		spdlog::debug("setting safety to {}", b);
 		return true;
 	}
 
-private:
-	int someVar;
+	bool SetName(std::string s) {
+		spdlog::debug("setting name to {}", s);
+		return true;
+	}
 };
+
 
 
 
@@ -46,6 +45,38 @@ int main(int argc, char** argv)
 
 	SystemDummy sys;
 
+	TEF::Aurora::UserControl uc;
+	std::vector<std::string> validNames = { "bob", "robert", "robby", "rob", "bobby" };
+
+	uc.RegisterVoid("system reboot", [&sys]() {return sys.Reboot(); });
+	uc.RegisterBool("system safety", [&sys](bool b) {return sys.SetSafety(b); });
+	uc.RegisterLimitedInt("system set brightness to", [&sys](int i) {return sys.SetBrightness(i); });
+	uc.RegisterString("system set name to", validNames, [&sys](std::string s) {return sys.SetName(s); });
+
+	uc.ProcessCommand("system"); // = false
+	uc.ProcessCommand("bananas"); // = false
+	uc.ProcessCommand("system reboot");
+	uc.ProcessCommand("system bananas"); // = false
+	uc.ProcessCommand("system safety on");
+	uc.ProcessCommand("system safety disable");
+	uc.ProcessCommand("system safety bananas"); // = false
+	uc.ProcessCommand("system set brightness to five");
+	uc.ProcessCommand("system set brightness to eleven"); // = false
+	uc.ProcessCommand("system set name to bobby");
+	uc.ProcessCommand("system set name to alex"); // = false
+
+	spdlog::debug("done");
+
+	sleep(10);
+}
+
+
+
+/*
+*
+*
+*
+*
 	TEF::Aurora::UserControl uc;
 
 	TEF::Aurora::Command rebootCMD("system", "reboot");
@@ -60,26 +91,20 @@ int main(int argc, char** argv)
 	uc.RegisterCommand(setVarCMD);
 	uc.RegisterCommand(incrementByOneCMD);
 
+	uc.Register("System setvar %i", [&sys](std::string arg) {return sys.SetVar(std::stoi(arg)); })
+
 
 	bool success;
-	
+
 	success = uc.ProcessCommand("system reboot");
 	spdlog::debug(success ? "success" : "failed");
-	
+
 	success = uc.ProcessCommand("system setvar 12");
 	spdlog::debug(success ? "success" : "failed");
-	
+
 	success = uc.ProcessCommand("system increment");
 	spdlog::debug(success ? "success" : "failed");
 
-	sleep(10);
-}
-
-
-
-/*
-*
-*
 
 TEF::Aurora::MasterController mc;
 
