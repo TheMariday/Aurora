@@ -36,7 +36,7 @@ namespace TEF::Aurora {
 			return arg.empty();
 		}
 
-		bool run(std::string) override
+		bool run(std::string arg) override
 		{
 			return cb();
 		}
@@ -101,59 +101,128 @@ namespace TEF::Aurora {
 	class UserControl {
 	public:
 		UserControl() {};
-		~UserControl() {};
+		~UserControl() {
+			for (auto const& [mapCommand, mapCallback] : m_allCommands)
+			{
+				delete m_allCommands[mapCommand];
+			}
+		};
 
 
 		bool RegisterVoid(std::string command, std::function<bool()> cb)
 		{
-			m_allCommands[command] = &m_commandsVoid.emplace_back(cb);
+			spdlog::debug("User Control registering void command {}", command);
+
+			if (m_allCommands.count(command) != 0)
+			{
+				spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
+				return false;
+			}
+
+			m_allCommands[command] = new CommandVoid(cb);
+
+			return true;
 		};
 
 		bool RegisterBool(std::string command, std::function<bool(bool)> cb, std::map<std::string, bool> validArgs = boolOptions)
 		{
-			m_allCommands[command] = &m_commandsBool.emplace_back(cb, validArgs);
+			spdlog::debug("User Control registering bool command {}", command);
+
+			if (m_allCommands.count(command) != 0)
+			{
+				spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
+				return false;
+			}
+
+			m_allCommands[command] = new CommandBool(cb, validArgs);
+			return true;
 		};
 
 		bool RegisterLimitedInt(std::string command, std::function<bool(int)> cb, std::map<std::string, int> validArgs = intOptions)
 		{
-			m_allCommands[command] = &m_commandsInt.emplace_back(cb, validArgs);
+			spdlog::debug("User Control registering int command {}", command);
+
+
+			if (m_allCommands.count(command) != 0)
+			{
+				spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
+				return false;
+			}
+
+			m_allCommands[command] = new CommandInt(cb, validArgs);
+			return true;
 		};
 
 		bool RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> cb)
 		{
-			m_allCommands[command] = &m_commandsStr.emplace_back(cb, validArgs);
+			spdlog::debug("User Control registering string command {}", command);
+
+			if (m_allCommands.count(command) != 0)
+			{
+				spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
+				return false;
+			}
+
+			m_allCommands[command] = new CommandStr(cb, validArgs);
+			return true;
 		};
+
+		bool Unregister(std::string command)
+		{
+			spdlog::debug("User Control unregistering command {}", command);
+
+			if (m_allCommands.count(command) == 0)
+			{
+				spdlog::error("User Control cannot unregister command {} as it does not exist", command);
+				return false;
+			}
+
+			delete m_allCommands[command];
+			m_allCommands.erase(command);
+
+			return true;
+		}
+
 
 		bool ProcessCommand(std::string inputString)
 		{
-			if (m_allCommands.count(inputString) == 1)
-			{
-				spdlog::debug("User Control recognised Void command: {}", inputString);
-				return m_allCommands[inputString]->run("");
-			}
+			spdlog::debug("User Control processing input '{}'", inputString);
 
 			std::string argument;
 			std::string command = inputString;
-			if (!Split(command, argument)) {
-				spdlog::warn("User Control failed to split command");
+
+			if (m_allCommands.count(inputString) == 1)
+			{
+				spdlog::debug("User Control recognised void command '{}'", inputString);
+				Command* callback = m_allCommands[inputString];
+				return callback->run("");
+			}
+
+			if (!Split(command, argument))
+			{
+				spdlog::error("User Control failed to split input '{}'", inputString);
 				return false;
 			};
-
-			for (auto& item : m_allCommands)
+			
+			for (auto const& [mapCommand, mapCallback] : m_allCommands)
 			{
-				if (command == item.first)
+				if (command == mapCommand)
 				{
-					Command* command = item.second;
-					if (command->isValid(argument))
+					if (mapCallback->isValid(argument))
 					{
-						spdlog::debug("User Control recognised command");
-						command->run(argument);
+						spdlog::debug("User Control recognised command '{}' '{}'", command, argument);
+						return mapCallback->run(argument);
+					}
+					else
+					{
+						spdlog::error("User Control recognised command '{}' but argument '{}' is invalid", command, argument);
+						return false;
 					}
 				}
 			}
 
-			return true;
-
+			spdlog::error("User Control failed to find callback for command '{}'", inputString);
+			return false;
 		};
 
 
@@ -174,12 +243,10 @@ namespace TEF::Aurora {
 
 			size_t pos = command.find(argument);
 			if (pos == -1)
-			{
 				return false;
-			}
-			command.replace(pos - 1, command.length(), "");// the -1 here is to remove the space
-			return true;
 
+			command.replace(pos - 1, command.length(), ""); // the -1 here is to remove the space
+			return true;
 		}
 
 		std::map<std::string, Command*> m_allCommands;

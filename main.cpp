@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <chrono>
-#include <thread>
 #include <vector>
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 
-#include "tef/aurora/effects/simpleEffect.h"
-#include "tef/aurora/sound.h"
-#include "tef/aurora/masterController.h"
+//#include "tef/aurora/effects/simpleEffect.h"
+//#include "tef/aurora/sound.h"
+//#include "tef/aurora/masterController.h"
 #include "tef/aurora/userControl.h"
 
 #define pause(x) std::this_thread::sleep_for(std::chrono::seconds(x));
@@ -48,23 +46,6 @@ int main(int argc, char** argv)
 	TEF::Aurora::UserControl uc;
 	std::vector<std::string> validNames = { "bob", "robert", "robby", "rob", "bobby" };
 
-	uc.RegisterVoid("system reboot", [&sys]() {return sys.Reboot(); });
-	uc.RegisterBool("system safety", [&sys](bool b) {return sys.SetSafety(b); });
-	uc.RegisterLimitedInt("system set brightness to", [&sys](int i) {return sys.SetBrightness(i); });
-	uc.RegisterString("system set name to", validNames, [&sys](std::string s) {return sys.SetName(s); });
-
-	uc.ProcessCommand("system"); // = false
-	uc.ProcessCommand("bananas"); // = false
-	uc.ProcessCommand("system reboot");
-	uc.ProcessCommand("system bananas"); // = false
-	uc.ProcessCommand("system safety on");
-	uc.ProcessCommand("system safety disable");
-	uc.ProcessCommand("system safety bananas"); // = false
-	uc.ProcessCommand("system set brightness to five");
-	uc.ProcessCommand("system set brightness to eleven"); // = false
-	uc.ProcessCommand("system set name to bobby");
-	uc.ProcessCommand("system set name to alex"); // = false
-
 	spdlog::debug("done");
 
 	sleep(10);
@@ -77,6 +58,26 @@ int main(int argc, char** argv)
 *
 *
 *
+* 	uc.RegisterVoid("system reboot", [&sys]() {return sys.Reboot(); });
+	//uc.RegisterVoid("system reboot 2", [&sys]() {return sys.Reboot(); });
+	uc.RegisterBool("system safety", [&sys](bool b) {return sys.SetSafety(b); });
+	uc.RegisterLimitedInt("system set brightness to", [&sys](int i) {return sys.SetBrightness(i); });
+	//uc.RegisterVoid("system set brightness to firve", [&sys]() {return sys.SetBrightness(5); });
+	uc.RegisterString("system set name to", validNames, [&sys](std::string s) {return sys.SetName(s); });
+	uc.RegisterString("system set narm to", validNames, [&sys](std::string s) {return sys.SetName(s); });
+
+	uc.ProcessCommand("system"); // = false
+	uc.ProcessCommand("bananas"); // = false
+	uc.ProcessCommand("system reboot");
+	uc.ProcessCommand("system reboot 2");
+	uc.ProcessCommand("system bananas"); // = false
+	uc.ProcessCommand("system safety on");
+	uc.ProcessCommand("system safety disable");
+	uc.ProcessCommand("system safety bananas"); // = false
+	uc.ProcessCommand("system set brightness to five");
+	uc.ProcessCommand("system set brightness to eleven"); // = false
+	uc.ProcessCommand("system set name to bobby");
+	uc.ProcessCommand("system set name to alex"); // = false
 	TEF::Aurora::UserControl uc;
 
 	TEF::Aurora::Command rebootCMD("system", "reboot");
