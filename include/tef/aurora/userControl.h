@@ -7,6 +7,97 @@
 
 namespace TEF::Aurora {
 
+	const static std::map<std::string, bool> boolOptions = {
+		{"no", false}, {"false", false}, {"off", false}, {"disable", false},
+		{"yes", true}, {"true",true}, {"on",true}, {"enable", true}
+	};
+
+	const static std::map<std::string, int> intOptions = {
+		{"zero",0}, {"one",1}, {"two",2}, {"three",3}, {"four", 4},
+		{"five",5}, {"six", 6}, {"seven", 7}, {"eight", 8}, {"nine", 9}, {"ten", 10}
+	};
+
+
+	struct Command
+	{
+		virtual bool isValid(std::string arg) = 0;
+		virtual bool run(std::string arg) = 0;
+	};
+
+	struct CommandVoid : public Command
+	{
+
+		CommandVoid(std::function<bool()>& c) : cb(c) {};
+
+		std::function<bool()> cb;
+
+		bool isValid(std::string arg) override
+		{
+			return arg.empty();
+		}
+
+		bool run(std::string) override
+		{
+			return cb();
+		}
+	};
+
+	struct CommandBool : public Command
+	{
+		CommandBool(std::function<bool(bool)>& c, std::map<std::string, bool>& va) : cb(c), validArgs(va) {};
+
+		std::function<bool(bool)> cb;
+		std::map<std::string, bool> validArgs;
+
+		bool isValid(std::string arg)
+		{
+			return validArgs.count(arg) == 1;
+		}
+
+		bool run(std::string arg) override
+		{
+			return cb(validArgs[arg]);
+		}
+	};
+
+	struct CommandInt : public Command
+	{
+		CommandInt(std::function<bool(int)>& c, std::map<std::string, int>& va) : cb(c), validArgs(va) {};
+
+		std::function<bool(int)> cb;
+		std::map<std::string, int> validArgs;
+
+		bool isValid(std::string arg)
+		{
+			return validArgs.count(arg) > 0;
+		}
+
+		bool run(std::string arg) override
+		{
+			return cb(validArgs[arg]);
+		}
+
+	};
+
+
+	struct CommandStr : public Command
+	{
+		CommandStr(std::function<bool(std::string)>& c, std::vector<std::string>& va) : cb(c), validArgs(va) {};
+
+		std::function<bool(std::string)> cb;
+		std::vector<std::string> validArgs;
+
+		bool isValid(std::string arg)
+		{
+			return std::find(validArgs.begin(), validArgs.end(), arg) != validArgs.end();
+		}
+
+		bool run(std::string arg) override
+		{
+			return cb(arg);
+		}
+	};
+
 	class UserControl {
 	public:
 		UserControl() {};
@@ -15,31 +106,30 @@ namespace TEF::Aurora {
 
 		bool RegisterVoid(std::string command, std::function<bool()> cb)
 		{
-			m_voidCommands[command] = cb;
+			m_allCommands[command] = &m_commandsVoid.emplace_back(cb);
 		};
 
-		bool RegisterBool(std::string command, std::function<bool(bool)> cb)
+		bool RegisterBool(std::string command, std::function<bool(bool)> cb, std::map<std::string, bool> validArgs = boolOptions)
 		{
-			m_boolCommands[command] = cb;
+			m_allCommands[command] = &m_commandsBool.emplace_back(cb, validArgs);
 		};
 
-		bool RegisterLimitedInt(std::string command, std::function<bool(int)> cb)
+		bool RegisterLimitedInt(std::string command, std::function<bool(int)> cb, std::map<std::string, int> validArgs = intOptions)
 		{
-			m_intCommands[command] = cb;
+			m_allCommands[command] = &m_commandsInt.emplace_back(cb, validArgs);
 		};
 
-		bool RegisterString(std::string command, std::vector<std::string> options, std::function<bool(std::string)> cb)
+		bool RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> cb)
 		{
-			m_stringCommands[command] = cb;
-			m_stringOptions[command] = options;
+			m_allCommands[command] = &m_commandsStr.emplace_back(cb, validArgs);
 		};
 
 		bool ProcessCommand(std::string inputString)
 		{
-			if (m_voidCommands.count(inputString) == 1)
+			if (m_allCommands.count(inputString) == 1)
 			{
 				spdlog::debug("User Control recognised Void command: {}", inputString);
-				return m_voidCommands[inputString]();
+				return m_allCommands[inputString]->run("");
 			}
 
 			std::string argument;
@@ -49,63 +139,25 @@ namespace TEF::Aurora {
 				return false;
 			};
 
-			if (m_boolCommands.count(command) == 1)
+			for (auto& item : m_allCommands)
 			{
-				if (m_boolOptions.count(argument) == 1)
+				if (command == item.first)
 				{
-					spdlog::debug("User Control recognised command: {}", inputString);
-					return m_boolCommands[command](m_boolOptions[argument]);
+					Command* command = item.second;
+					if (command->isValid(argument))
+					{
+						spdlog::debug("User Control recognised command");
+						command->run(argument);
+					}
 				}
-
-				spdlog::warn("User Control recognised bool command but argument is invalid: {}", inputString);
-				return false;
-
 			}
 
-			if (m_intCommands.count(command) == 1)
-			{
-				if (m_intOptions.count(argument) == 1) {
-
-					spdlog::debug("User Control recognised int command: {}", inputString);
-					return m_intCommands[command](m_intOptions[argument]);
-				}
-
-				spdlog::warn("User Control recognised int command but argument is invalid: {}", inputString);
-				return false;
-			}
-
-			if (m_stringCommands.count(command) == 1 && m_stringOptions.count(command) == 1)
-			{
-				std::vector<std::string> options = m_stringOptions[command];
-
-				if (FindIndex(argument, options) != -1)
-				{
-					spdlog::debug("User Control recognised string command: {}", inputString);
-					return m_stringCommands[command](argument);
-				}
-
-				spdlog::warn("User Control recognised string command but argument is invalid: {}", inputString);
-				return false;
-
-			}
-
-			spdlog::warn("User Control does not recognise command: {}", inputString);
-			return false;
+			return true;
 
 		};
 
 
 	private:
-
-		int FindIndex(std::string& str, std::vector<std::string>& vec)
-		{
-			auto it = std::find(vec.begin(), vec.end(), str);
-
-			if (it != vec.end())
-				return it - vec.begin();
-
-			return -1;
-		}
 
 		bool Split(std::string& command, std::string& argument)
 		{
@@ -118,35 +170,23 @@ namespace TEF::Aurora {
 				return true;
 			}
 
-
 			argument = vec.back();
 
-			size_t pos = command.find(argument); // the -1 here is to remove the space
+			size_t pos = command.find(argument);
 			if (pos == -1)
 			{
 				return false;
 			}
-			command.replace(pos - 1, command.length(), "");
+			command.replace(pos - 1, command.length(), "");// the -1 here is to remove the space
 			return true;
 
 		}
 
+		std::map<std::string, Command*> m_allCommands;
 
-
-		std::map<std::string, std::function<bool()>> m_voidCommands;
-		std::map<std::string, std::function<bool(bool)>> m_boolCommands;
-		std::map<std::string, bool> m_boolOptions = {
-			{"no", false}, {"false", false}, {"off", false}, {"disable", false},
-			{"yes", true}, {"true",true}, {"on",true}, {"enable", true}
-		};
-		std::map<std::string, std::function<bool(int)>> m_intCommands;
-		std::map<std::string, int> m_intOptions = {
-			{"zero",0}, {"one",1}, {"two",2}, {"three",3}, {"four", 4},
-			{"five",5}, {"six", 6}, {"seven", 7}, {"eight", 8}, {"nine", 9}, {"ten", 10}
-		};
-
-		std::map<std::string, std::function<bool(std::string)>> m_stringCommands;
-		std::map<std::string, std::vector<std::string>> m_stringOptions;
+		std::vector<CommandVoid> m_commandsVoid;
+		std::vector<CommandBool> m_commandsBool;
+		std::vector<CommandInt> m_commandsInt;
+		std::vector<CommandStr> m_commandsStr;
 	};
-
 }
