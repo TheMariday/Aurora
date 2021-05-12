@@ -51,16 +51,10 @@ namespace TEF::Aurora {
 
 			if (m_boolCommands.count(command) == 1)
 			{
-				if (FindIndex(argument, m_trueStrings) != -1)
+				if (m_boolOptions.count(argument) == 1)
 				{
-					spdlog::debug("User Control recognised true command: {}", inputString);
-					return m_boolCommands[command](true);
-				}
-
-				if (FindIndex(argument, m_falseStrings) != -1)
-				{
-					spdlog::debug("User Control recognised false command: {}", inputString);
-					return m_boolCommands[command](false);
+					spdlog::debug("User Control recognised command: {}", inputString);
+					return m_boolCommands[command](m_boolOptions[argument]);
 				}
 
 				spdlog::warn("User Control recognised bool command but argument is invalid: {}", inputString);
@@ -70,30 +64,28 @@ namespace TEF::Aurora {
 
 			if (m_intCommands.count(command) == 1)
 			{
-				int arg = FindIndex(argument, m_numberStrings);
-				if (arg == -1) {
-					spdlog::warn("User Control recognised int command but argument is invalid: {}", inputString);
-					return false;
+				if (m_intOptions.count(argument) == 1) {
+
+					spdlog::debug("User Control recognised int command: {}", inputString);
+					return m_intCommands[command](m_intOptions[argument]);
 				}
 
-				spdlog::debug("User Control recognised int command: {}", inputString);
-				return m_intCommands[command](arg);
+				spdlog::warn("User Control recognised int command but argument is invalid: {}", inputString);
+				return false;
 			}
 
 			if (m_stringCommands.count(command) == 1 && m_stringOptions.count(command) == 1)
 			{
 				std::vector<std::string> options = m_stringOptions[command];
 
-				bool valid = FindIndex(argument, options) != -1;
-
-				if (valid)
+				if (FindIndex(argument, options) != -1)
 				{
-					spdlog::warn("User Control recognised string command but argument is invalid: {}", inputString);
-					return false;
+					spdlog::debug("User Control recognised string command: {}", inputString);
+					return m_stringCommands[command](argument);
 				}
 
-				spdlog::debug("User Control recognised string command: {}", inputString);
-				return m_stringCommands[command](argument);
+				spdlog::warn("User Control recognised string command but argument is invalid: {}", inputString);
+				return false;
 
 			}
 
@@ -101,7 +93,6 @@ namespace TEF::Aurora {
 			return false;
 
 		};
-
 
 
 	private:
@@ -126,7 +117,7 @@ namespace TEF::Aurora {
 				argument = "";
 				return true;
 			}
-				
+
 
 			argument = vec.back();
 
@@ -140,13 +131,20 @@ namespace TEF::Aurora {
 
 		}
 
-		std::vector<std::string> m_falseStrings = { "no", "false", "off", "disable" };
-		std::vector<std::string> m_trueStrings = { "yes", "true", "on", "enable" };
-		std::vector<std::string> m_numberStrings = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" };
+
 
 		std::map<std::string, std::function<bool()>> m_voidCommands;
 		std::map<std::string, std::function<bool(bool)>> m_boolCommands;
+		std::map<std::string, bool> m_boolOptions = {
+			{"no", false}, {"false", false}, {"off", false}, {"disable", false},
+			{"yes", true}, {"true",true}, {"on",true}, {"enable", true}
+		};
 		std::map<std::string, std::function<bool(int)>> m_intCommands;
+		std::map<std::string, int> m_intOptions = {
+			{"zero",0}, {"one",1}, {"two",2}, {"three",3}, {"four", 4},
+			{"five",5}, {"six", 6}, {"seven", 7}, {"eight", 8}, {"nine", 9}, {"ten", 10}
+		};
+
 		std::map<std::string, std::function<bool(std::string)>> m_stringCommands;
 		std::map<std::string, std::vector<std::string>> m_stringOptions;
 	};
