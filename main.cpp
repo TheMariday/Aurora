@@ -2,6 +2,7 @@
 #include <chrono>
 #include <vector>
 #include <spdlog/spdlog.h>
+#include <atomic>
 
 //#include "tef/aurora/effects/simpleEffect.h"
 //#include "tef/aurora/sound.h"
@@ -44,11 +45,25 @@ int main(int argc, char** argv)
 	SystemDummy sys;
 
 	TEF::Aurora::UserControl uc;
-	std::vector<std::string> validNames = { "bob", "robert", "robby", "rob", "bobby" };
 
+	std::atomic_bool running = true;
+
+	uc.RegisterVoid("system reboot", [&sys]() {return sys.Reboot(); });
+	uc.RegisterBool("set safety", [&sys](bool b) {return sys.SetSafety(b); });
+	uc.RegisterLimitedInt("set brightness to", [&sys](int i) {return sys.SetBrightness(i); });
+	uc.RegisterString("set name to", { "bob", "rob" }, [&sys](std::string s) {return sys.SetName(s); });
+
+	uc.RegisterVoid("system stop", [&running]() {running = false; return true; });
+
+	uc.StartMainLoop();
+
+	spdlog::debug("spinning...");
+
+	while (running) {
+		sleep(1);
+	}
 	spdlog::debug("done");
 
-	sleep(10);
 }
 
 
