@@ -64,7 +64,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog</LibraryDependencies>
+      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -75,7 +75,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog</LibraryDependencies>
+      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -84,7 +84,7 @@
       </Message>
     </RemotePostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;/usr/local/include;$(ProjectDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;/usr/local/include;$(ProjectDir)lib;/usr/local/include/sphinxbase;/usr/local/include/pocketsphinx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -110,6 +110,7 @@
     <ClInclude Include="include\tef\aurora\sensors.h" />
     <ClInclude Include="include\tef\aurora\smartFuse.h" />
     <ClInclude Include="include\tef\aurora\sound.h" />
+    <ClInclude Include="include\tef\aurora\speechRecognition.h" />
     <ClInclude Include="include\tef\aurora\testSuite.h" />
     <ClInclude Include="include\tef\aurora\userControl.h" />
     <ClInclude Include="lib\fadecandy\opc_client.h" />
@@ -144,7 +145,7 @@
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;/usr/local/include;$(ProjectDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;/usr/local/include;$(ProjectDir)lib;/usr/local/include/sphinxbase;/usr/local/include/pocketsphinx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>

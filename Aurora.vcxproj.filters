@@ -163,6 +163,9 @@
     <ClInclude Include="include\tef\aurora\userControl.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\tef\aurora\speechRecognition.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\svl\LICENSE">
