@@ -29,37 +29,11 @@ pocketsphinx_continuous -infile system_damage_report.wav  -jsgf ~/temp/pocketsph
 
 int main(int argc, char* argv[])
 {
-
-	static const arg_t cont_args_def[] = {
-	POCKETSPHINX_OPTIONS,
-	/* Argument file. */
-	{"-argfile",
-	 ARG_STRING,
-	 NULL,
-	 "Argument file giving extra arguments."},
-	{"-adcdev",
-	 ARG_STRING,
-	 NULL,
-	 "Name of audio device to use for input."},
-	{"-infile",
-	 ARG_STRING,
-	 NULL,
-	 "Audio file to transcribe."},
-	{"-inmic",
-	 ARG_BOOLEAN,
-	 "no",
-	 "Transcribe audio from microphone."},
-	{"-time",
-	 ARG_BOOLEAN,
-	 "no",
-	 "Print word times in file transcription."},
-	CMDLN_EMPTY_OPTION
-	};
-
 	static ps_decoder_t* ps;
 	static cmd_ln_t* config;
 
-	config = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", "-jsgf", "/home/pi/temp/pocketsphinx/test.gram", NULL);
+	arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS };
+	config = cmd_ln_init(NULL, cont_args_def, FALSE, "-jsgf", "/home/pi/temp/pocketsphinx/test.gram", NULL);
 
 	ps_default_search_args(config);
 	ps = ps_init(config);
@@ -71,7 +45,7 @@ int main(int argc, char* argv[])
 
 	ad_rec_t* ad;
 	uint8 in_speech;
-	
+
 
 	if ((ad = ad_open_dev(cmd_ln_str_r(config, "-adcdev"), (int)cmd_ln_float32_r(config, "-samprate"))) == NULL)
 	{
