@@ -44,8 +44,6 @@ int main(int argc, char* argv[])
 	}
 
 	ad_rec_t* ad;
-	uint8 in_speech;
-
 
 	if ((ad = ad_open_dev(cmd_ln_str_r(config, "-adcdev"), (int)cmd_ln_float32_r(config, "-samprate"))) == NULL)
 	{
@@ -62,29 +60,29 @@ int main(int argc, char* argv[])
 		E_FATAL("Failed to start utterance\n");
 	}
 
-	uint8 utt_started = FALSE;
+	uint8 listening = FALSE;
 	E_INFO("Ready....\n");
 
 	int16 adbuf[2048];
 	int32 k;
 
 	for (;;) {
-
-		if ((k = ad_read(ad, adbuf, 2048)) < 0)
+		k = ad_read(ad, adbuf, 2048);
+		if (k < 0)
 		{
 			E_FATAL("Failed to read audio\n");
 		}
 
 		ps_process_raw(ps, adbuf, k, FALSE, FALSE);
-		in_speech = ps_get_in_speech(ps);
+		uint8 conainsSpeech = ps_get_in_speech(ps);
 
-		if (in_speech && !utt_started)
+		if (conainsSpeech && !listening)
 		{
-			utt_started = TRUE;
+			listening = TRUE;
 			E_INFO("Listening...\n");
 		}
 
-		if (!in_speech && utt_started)
+		if (!conainsSpeech && listening)
 		{
 			/* speech -> silence transition, time to start new utterance  */
 			ps_end_utt(ps);
@@ -92,20 +90,23 @@ int main(int argc, char* argv[])
 			char const* hyp = ps_get_hyp(ps, &score);
 			if (hyp != NULL) {
 				printf("here: %s\n", hyp);
-				printf("score: %i\n", score); // -1500 = good -2000 = ok -300 = rubbish
+				printf("score: %i\n", score); // -1500 = good -2000 = ok -3000 = rubbish
 				fflush(stdout);
 			}
 
 			if (ps_start_utt(ps) < 0)
+			{
 				E_FATAL("Failed to start utterance\n");
-			utt_started = FALSE;
+			}
+			
+			listening = FALSE;
 			E_INFO("Ready....\n");
 		}
 
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
 	}
-	ad_close(ad);
 
+	ad_close(ad);
 	ps_free(ps);
 	cmd_ln_free_r(config);
 
