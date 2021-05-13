@@ -1,9 +1,5 @@
-#include <chrono>
-#include <sys/select.h>
-#include <sphinxbase/ad.h>
-#include <pocketsphinx/pocketsphinx.h>
-
 #include <spdlog/spdlog.h>
+#include "tef/aurora/speechRecognition.h"
 
 
 int main(int argc, char* argv[])
@@ -11,90 +7,11 @@ int main(int argc, char* argv[])
 
 	spdlog::set_level(spdlog::level::debug);
 
-	static ps_decoder_t* ps;
-	static cmd_ln_t* config;
+	TEF::Aurora::SpeechRecognition sr;
 
-	arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS };
-	config = cmd_ln_init(NULL, cont_args_def, false, "-jsgf", "/home/pi/temp/pocketsphinx/test.gram", NULL);
+	sr.ConnectToDevice();
+	sr.Continuous();
 
-	ps_default_search_args(config);
-	ps = ps_init(config);
-
-	if (ps == NULL) {
-		spdlog::error("something is null");
-		cmd_ln_free_r(config);
-		return 1;
-	}
-
-	ad_rec_t* ad = ad_open_dev(cmd_ln_str_r(config, "-adcdev"), (int)cmd_ln_float32_r(config, "-samprate"));
-
-	if (ad == NULL)
-	{
-		spdlog::error("Failed to open audio device");
-		return false;
-	}
-
-	if (ad_start_rec(ad) < 0)
-	{
-		spdlog::error("Failed to start recording");
-		return false;
-	}
-
-	if (ps_start_utt(ps) < 0)
-	{
-		spdlog::error("Failed to start utterance");
-		return false;
-	}
-
-	bool listening = false;
-	spdlog::info("Ready....");
-
-	short adbuf[2048];
-
-	for (;;) {
-		int k = ad_read(ad, adbuf, 2048);
-		if (k < 0)
-		{
-			spdlog::error("Failed to read audio");
-			return false;
-		}
-
-		ps_process_raw(ps, adbuf, k, false, false);
-		bool conainsSpeech = ps_get_in_speech(ps);
-
-		if (conainsSpeech && !listening)
-		{
-			listening = true;
-			spdlog::info("Listening...");
-		}
-
-		if (!conainsSpeech && listening)
-		{
-			/* speech -> silence transition, time to start new utterance  */
-			ps_end_utt(ps);
-			int score;
-			char const* command = ps_get_hyp(ps, &score);
-			if (command != NULL) {
-				spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
-			}
-
-			if (ps_start_utt(ps) < 0)
-			{
-				spdlog::error("Failed to start utterance");
-			}
-			
-			listening = false;
-			spdlog::info("Ready....\n");
-		}
-
-		std::this_thread::sleep_for(std::chrono::microseconds(100));
-	}
-
-	ad_close(ad);
-	ps_free(ps);
-	cmd_ln_free_r(config);
-
-	return 0;
 }
 /*
 *

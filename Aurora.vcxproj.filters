@@ -61,6 +61,9 @@
     <ClCompile Include="src\userControl.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\speechRecognition.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\effect.h">

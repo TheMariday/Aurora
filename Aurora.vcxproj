@@ -98,6 +98,7 @@
     <ClCompile Include="src\sensors.cpp" />
     <ClCompile Include="src\smartFuse.cpp" />
     <ClCompile Include="src\sound.cpp" />
+    <ClCompile Include="src\speechRecognition.cpp" />
     <ClCompile Include="src\testSuite.cpp" />
     <ClCompile Include="src\userControl.cpp" />
   </ItemGroup>
