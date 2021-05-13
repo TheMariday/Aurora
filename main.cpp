@@ -1,106 +1,90 @@
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <thread>
-
+#include <chrono>
 #include <sys/select.h>
-
-#include <sphinxbase/err.h>
 #include <sphinxbase/ad.h>
+#include <pocketsphinx/pocketsphinx.h>
 
-#include "pocketsphinx.h"
-
-/*
-arecord -f cd -c 1 -r 16000 system_damage_report.wav
-aplay system_damage_report.wav -D "sysdefault:CARD=Audio"
-pocketsphinx_continuous -infile system_damage_report.wav  -jsgf ~/temp/pocketsphinx/test.gram
-*/
-
-
-/*
- * Main utterance processing loop:
- *     for (;;) {
- *        start utterance and wait for speech to process
- *        decoding till end-of-utterance silence will be detected
- *        print utterance result;
- *     }
- */
+#include <spdlog/spdlog.h>
 
 
 int main(int argc, char* argv[])
 {
+
+	spdlog::set_level(spdlog::level::debug);
+
 	static ps_decoder_t* ps;
 	static cmd_ln_t* config;
 
 	arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS };
-	config = cmd_ln_init(NULL, cont_args_def, FALSE, "-jsgf", "/home/pi/temp/pocketsphinx/test.gram", NULL);
+	config = cmd_ln_init(NULL, cont_args_def, false, "-jsgf", "/home/pi/temp/pocketsphinx/test.gram", NULL);
 
 	ps_default_search_args(config);
 	ps = ps_init(config);
 
 	if (ps == NULL) {
+		spdlog::error("something is null");
 		cmd_ln_free_r(config);
 		return 1;
 	}
 
-	ad_rec_t* ad;
+	ad_rec_t* ad = ad_open_dev(cmd_ln_str_r(config, "-adcdev"), (int)cmd_ln_float32_r(config, "-samprate"));
 
-	if ((ad = ad_open_dev(cmd_ln_str_r(config, "-adcdev"), (int)cmd_ln_float32_r(config, "-samprate"))) == NULL)
+	if (ad == NULL)
 	{
-		E_FATAL("Failed to open audio device\n");
+		spdlog::error("Failed to open audio device");
+		return false;
 	}
 
 	if (ad_start_rec(ad) < 0)
 	{
-		E_FATAL("Failed to start recording\n");
+		spdlog::error("Failed to start recording");
+		return false;
 	}
 
 	if (ps_start_utt(ps) < 0)
 	{
-		E_FATAL("Failed to start utterance\n");
+		spdlog::error("Failed to start utterance");
+		return false;
 	}
 
-	uint8 listening = FALSE;
-	E_INFO("Ready....\n");
+	bool listening = false;
+	spdlog::info("Ready....");
 
-	int16 adbuf[2048];
-	int32 k;
+	short adbuf[2048];
 
 	for (;;) {
-		k = ad_read(ad, adbuf, 2048);
+		int k = ad_read(ad, adbuf, 2048);
 		if (k < 0)
 		{
-			E_FATAL("Failed to read audio\n");
+			spdlog::error("Failed to read audio");
+			return false;
 		}
 
-		ps_process_raw(ps, adbuf, k, FALSE, FALSE);
-		uint8 conainsSpeech = ps_get_in_speech(ps);
+		ps_process_raw(ps, adbuf, k, false, false);
+		bool conainsSpeech = ps_get_in_speech(ps);
 
 		if (conainsSpeech && !listening)
 		{
-			listening = TRUE;
-			E_INFO("Listening...\n");
+			listening = true;
+			spdlog::info("Listening...");
 		}
 
 		if (!conainsSpeech && listening)
 		{
 			/* speech -> silence transition, time to start new utterance  */
 			ps_end_utt(ps);
-			int32 score;
-			char const* hyp = ps_get_hyp(ps, &score);
-			if (hyp != NULL) {
-				printf("here: %s\n", hyp);
-				printf("score: %i\n", score); // -1500 = good -2000 = ok -3000 = rubbish
-				fflush(stdout);
+			int score;
+			char const* command = ps_get_hyp(ps, &score);
+			if (command != NULL) {
+				spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
 			}
 
 			if (ps_start_utt(ps) < 0)
 			{
-				E_FATAL("Failed to start utterance\n");
+				spdlog::error("Failed to start utterance");
 			}
 			
-			listening = FALSE;
-			E_INFO("Ready....\n");
+			listening = false;
+			spdlog::info("Ready....\n");
 		}
 
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
