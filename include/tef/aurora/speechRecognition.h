@@ -1,6 +1,8 @@
 #pragma once
 #include <chrono>
 #include <sys/select.h>
+#include <atomic>
+#include <thread>
 #include <sphinxbase/ad.h>
 #include <pocketsphinx/pocketsphinx.h>
 
@@ -11,13 +13,21 @@ namespace TEF::Aurora {
 		SpeechRecognition();
 		~SpeechRecognition();
 
-		bool ConnectToDevice();
 
-		bool Continuous();
+		bool Start();
+		bool Stop();
 
 	private:
+
+		bool ListeningLoop();
+
+		bool VoreBuffer();
+
 		cmd_ln_t* m_pConfig;
 		ps_decoder_t* m_pSpeechDecoder;
 		ad_rec_t* m_pDevice;
+
+		std::atomic_bool m_running;
+		std::thread m_listeningThread;
 	};
 }

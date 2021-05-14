@@ -1,6 +1,8 @@
 #include <spdlog/spdlog.h>
 #include "tef/aurora/speechRecognition.h"
+#include <thread>
 
+#define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
 
 int main(int argc, char* argv[])
 {
@@ -9,8 +11,25 @@ int main(int argc, char* argv[])
 
 	TEF::Aurora::SpeechRecognition sr;
 
-	sr.ConnectToDevice();
-	sr.Continuous();
+	spdlog::debug("Device connected, sleeping");
+
+	for (int i = 10; i > 0; i--)
+	{
+		spdlog::debug("Audio capture starting in {}", i);
+		Sleep(1);
+	}
+	
+	sr.Start();
+
+	for (int i = 10; i > 0; i--)
+	{
+		spdlog::debug("Audio capture stopping in {}", i);
+		Sleep(1);
+	}
+
+	sr.Stop();
+	
+	spdlog::debug("done");
 
 }
 /*
