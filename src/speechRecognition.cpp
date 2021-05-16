@@ -26,15 +26,8 @@ TEF::Aurora::SpeechRecognition::SpeechRecognition()
 		spdlog::error("Failed to open audio device");
 	}
 
-	spdlog::debug("Starting recording");
-
-	if (ad_start_rec(m_pDevice) < 0)
-	{
-		spdlog::error("Failed to start recording");
-	}
-
-	m_running = true;
-	//m_listeningThread = std::thread([this]() {ListeningLoop(); });
+	
+	m_listening = false;
 
 }
 
@@ -42,14 +35,11 @@ TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 {
 	spdlog::debug("Stopping recording");
 
-	m_running = false;
+	m_listening = false;
 
 	m_listeningThread.join();
 
-	if (ad_stop_rec(m_pDevice) < 0)
-	{
-		spdlog::error("Failed to stop recording");
-	}
+
 	spdlog::debug("Closing device");
 	if (ad_close(m_pDevice) < 0)
 	{
@@ -65,9 +55,18 @@ bool TEF::Aurora::SpeechRecognition::Start()
 {
 	spdlog::debug("starting");
 	m_listening = true;
+
 	std::scoped_lock lock(m_bufferMutex);
 
+	if (ad_start_rec(m_pDevice) < 0)
+	{
+		spdlog::error("Failed to start recording");
+	}
+
 	m_audioBufferLen = 0;
+
+	m_listeningThread = std::thread([this]() {ListeningLoop(); });
+
 	return true;
 }
 
@@ -75,6 +74,13 @@ bool TEF::Aurora::SpeechRecognition::Stop()
 {
 	spdlog::debug("stopping");
 	m_listening = false;
+
+	m_listeningThread.join();
+
+	if (ad_stop_rec(m_pDevice) < 0)
+	{
+		spdlog::error("Failed to stop recording");
+	}
 
 	spdlog::debug("Starting utterance");
 
@@ -92,7 +98,7 @@ bool TEF::Aurora::SpeechRecognition::Stop()
 		// Write the file
 
 		FILE* file = fopen("/home/pi/projects/Aurora/bin/ARM/Debug/file.dat", "wb");
-		fwrite(m_audioBuffer, sizeof(short), m_audioBufferLen+16000, file);
+		fwrite(m_audioBuffer, sizeof(short), m_audioBufferLen + 16000, file);
 		fclose(file);
 
 		if (ps_process_raw(m_pSpeechDecoder, m_audioBuffer, m_audioBufferLen, false, true) < 0)
@@ -124,28 +130,20 @@ bool TEF::Aurora::SpeechRecognition::ListeningLoop()
 {
 	spdlog::info("Listening loop started");
 
-	short tempBuffer[512];
-	while (m_running)
+	while (m_listening)
 	{
-		if (m_listening)
+		spdlog::debug("listening...");
 		{
-			spdlog::debug("listening...");
+			std::scoped_lock lock(m_bufferMutex);
+			int k = ad_read(m_pDevice, &m_audioBuffer[m_audioBufferLen], 2048);
+			if (k < 0)
 			{
-				std::scoped_lock lock(m_bufferMutex);
-				int k = ad_read(m_pDevice, &m_audioBuffer[m_audioBufferLen], 2048);
-				if (k < 0)
-				{
-					spdlog::error("Failed to read audio");
-					return false;
-				}
-				m_audioBufferLen += k;
+				spdlog::error("Failed to read audio");
+				return false;
 			}
-			spdlog::debug("Buffered audio {}", m_audioBufferLen);
+			m_audioBufferLen += k;
 		}
-		else
-		{
-			ad_read(m_pDevice, tempBuffer, 512);
-		}
+		spdlog::debug("Buffered audio {}", m_audioBufferLen);
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
 	}
 

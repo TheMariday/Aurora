@@ -27,7 +27,6 @@ namespace TEF::Aurora {
 		ps_decoder_t* m_pSpeechDecoder;
 		ad_rec_t* m_pDevice;
 
-		std::atomic_bool m_running;
 		std::atomic_bool m_listening;
 		std::thread m_listeningThread;
 
