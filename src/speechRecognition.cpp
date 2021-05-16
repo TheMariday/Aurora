@@ -1,5 +1,7 @@
 #include "tef/aurora/speechRecognition.h"
 #include <spdlog/spdlog.h>
+#include <fstream>
+#include <iostream>
 
 TEF::Aurora::SpeechRecognition::SpeechRecognition()
 {
@@ -37,12 +39,7 @@ bool TEF::Aurora::SpeechRecognition::Start()
 		return false;
 	}
 
-	if (ps_start_utt(m_pSpeechDecoder) < 0)
-	{
-		spdlog::error("Failed to start utterance");
-		return false;
-	}
-
+	m_running = true;
 	m_listeningThread = std::thread([this]() {ListeningLoop(); });
 	return true;
 }
@@ -50,13 +47,33 @@ bool TEF::Aurora::SpeechRecognition::Start()
 bool TEF::Aurora::SpeechRecognition::Stop()
 {
 	m_running = false;
-
 	m_listeningThread.join();
+
+	spdlog::debug("starting decoding");
+
+	if (ps_start_utt(m_pSpeechDecoder) < 0)
+	{
+		spdlog::error("Failed to start utterance");
+		return false;
+	}
+
+	if (ps_process_raw(m_pSpeechDecoder, m_audioBuffer, m_audioBufferLen, false, true) < 0)
+	{
+		spdlog::error("cannot process audio");
+		return false;
+	}
 
 	if (ps_end_utt(m_pSpeechDecoder) < 0)
 	{
 		spdlog::error("Failed to stop utterance");
 		return false;
+	}
+	spdlog::debug("ended decoding");
+
+	int score;
+	char const* command = ps_get_hyp(m_pSpeechDecoder, &score);
+	if (command != NULL) {
+		spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
 	}
 
 	if (ad_stop_rec(m_pDevice) < 0)
@@ -76,54 +93,20 @@ bool TEF::Aurora::SpeechRecognition::Stop()
 bool TEF::Aurora::SpeechRecognition::ListeningLoop()
 {
 
-	bool listening = false;
 	spdlog::info("Ready....");
 
-	short audioBuffer[2048];
-
-	//ad_read(m_pDevice, audioBuffer, 2048); //consume .128 seconds of audio
-
+	m_audioBufferLen = 0;
 	while(m_running)
 	{
-		int k = ad_read(m_pDevice, audioBuffer, 2048);
+		int k = ad_read(m_pDevice, &m_audioBuffer[m_audioBufferLen], 2048);
 		if (k < 0)
 		{
 			spdlog::error("Failed to read audio");
 			return false;
 		}
-
-		ps_process_raw(m_pSpeechDecoder, audioBuffer, k, false, false);
-		bool conainsSpeech = ps_get_in_speech(m_pSpeechDecoder);
-
-		if (conainsSpeech && !listening)
-		{
-			listening = true;
-			spdlog::info("Listening...");
-		}
-
-		if (!conainsSpeech && listening)
-		{
-			/* speech -> silence transition, time to start new utterance  */
-			ps_end_utt(m_pSpeechDecoder);
-			int score;
-			char const* command = ps_get_hyp(m_pSpeechDecoder, &score);
-			if (command != NULL) {
-				spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
-			}
-
-			// Starts afresh here...
-
-			if (ps_start_utt(m_pSpeechDecoder) < 0)
-			{
-				spdlog::error("Failed to start utterance");
-				return false;
-			}
-
-			listening = false;
-			spdlog::info("Ready....\n");
-		}
-
+		m_audioBufferLen += k;
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
+		spdlog::debug("looping {} {}", k, m_audioBufferLen);
 	}
 
 	return true;
@@ -142,4 +125,5 @@ bool TEF::Aurora::SpeechRecognition::VoreBuffer()
 		d = ad_read(m_pDevice, ditchBuffer, ditchSize);
 		spdlog::debug("Vored {} samples from the buffer", d);
 	}
+	return true;
 }

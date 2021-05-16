@@ -29,5 +29,10 @@ namespace TEF::Aurora {
 
 		std::atomic_bool m_running;
 		std::thread m_listeningThread;
+
+		short m_audioBuffer[49152*2]; // 24*2048
+		int m_audioBufferLen;
+
+
 	};
 }

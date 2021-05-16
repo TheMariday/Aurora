@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	
 	sr.Start();
 
-	for (int i = 10; i > 0; i--)
+	for (int i = 3; i > 0; i--)
 	{
 		spdlog::debug("Audio capture stopping in {}", i);
 		Sleep(1);
