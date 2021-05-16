@@ -11,46 +11,72 @@ TEF::Aurora::SpeechRecognition::SpeechRecognition()
 
 	m_pSpeechDecoder = ps_init(m_pConfig);
 
+	spdlog::debug("Setting up decoder");
+
 	if (m_pSpeechDecoder == NULL) {
 		spdlog::error("something is null");
 		cmd_ln_free_r(m_pConfig);
 	}
+
+	spdlog::debug("Opening device");
+
+	m_pDevice = ad_open_dev(cmd_ln_str_r(m_pConfig, "-adcdev"), (int)cmd_ln_float32_r(m_pConfig, "-samprate"));
+	if (m_pDevice == NULL)
+	{
+		spdlog::error("Failed to open audio device");
+	}
+
+	spdlog::debug("Starting recording");
+
+	if (ad_start_rec(m_pDevice) < 0)
+	{
+		spdlog::error("Failed to start recording");
+	}
+
+	m_running = true;
+	//m_listeningThread = std::thread([this]() {ListeningLoop(); });
+
 }
 
 TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 {
+	spdlog::debug("Stopping recording");
+
+	m_running = false;
+
+	m_listeningThread.join();
+
+	if (ad_stop_rec(m_pDevice) < 0)
+	{
+		spdlog::error("Failed to stop recording");
+	}
+	spdlog::debug("Closing device");
+	if (ad_close(m_pDevice) < 0)
+	{
+		spdlog::error("Failed to close device");
+	}
+
+	spdlog::debug("Destroying decoder");
 	ps_free(m_pSpeechDecoder);
 	cmd_ln_free_r(m_pConfig);
 }
 
 bool TEF::Aurora::SpeechRecognition::Start()
 {
+	spdlog::debug("starting");
+	m_listening = true;
+	std::scoped_lock lock(m_bufferMutex);
 
-	m_pDevice = ad_open_dev(cmd_ln_str_r(m_pConfig, "-adcdev"), (int)cmd_ln_float32_r(m_pConfig, "-samprate"));
-	if (m_pDevice == NULL)
-	{
-		spdlog::error("Failed to open audio device");
-		return false;
-	}
-
-	if (ad_start_rec(m_pDevice) < 0)
-	{
-		spdlog::error("Failed to start recording");
-		return false;
-	}
-
-	m_running = true;
 	m_audioBufferLen = 0;
-	m_listeningThread = std::thread([this]() {ListeningLoop(); });
 	return true;
 }
 
 bool TEF::Aurora::SpeechRecognition::Stop()
 {
-	m_running = false;
-	m_listeningThread.join();
+	spdlog::debug("stopping");
+	m_listening = false;
 
-	spdlog::debug("starting decoding");
+	spdlog::debug("Starting utterance");
 
 	if (ps_start_utt(m_pSpeechDecoder) < 0)
 	{
@@ -58,56 +84,69 @@ bool TEF::Aurora::SpeechRecognition::Stop()
 		return false;
 	}
 
-	if (ps_process_raw(m_pSpeechDecoder, m_audioBuffer, m_audioBufferLen, false, true) < 0)
+	spdlog::debug("Processing speech");
+
 	{
-		spdlog::error("cannot process audio");
-		return false;
+		std::scoped_lock lock(m_bufferMutex);
+
+		// Write the file
+
+		FILE* file = fopen("/home/pi/projects/Aurora/bin/ARM/Debug/file.dat", "wb");
+		fwrite(m_audioBuffer, sizeof(short), m_audioBufferLen+16000, file);
+		fclose(file);
+
+		if (ps_process_raw(m_pSpeechDecoder, m_audioBuffer, m_audioBufferLen, false, true) < 0)
+		{
+			spdlog::error("cannot process audio");
+			return false;
+		}
+
+		spdlog::debug("Ending utterance");
+
+		if (ps_end_utt(m_pSpeechDecoder) < 0)
+		{
+			spdlog::error("Failed to stop utterance");
+			return false;
+		}
+		spdlog::debug("Recognition complete");
+
+		int score;
+		char const* command = ps_get_hyp(m_pSpeechDecoder, &score);
+		if (command != NULL) {
+			spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
+		}
 	}
 
-	if (ps_end_utt(m_pSpeechDecoder) < 0)
-	{
-		spdlog::error("Failed to stop utterance");
-		return false;
-	}
-	spdlog::debug("ended decoding");
-
-	int score;
-	char const* command = ps_get_hyp(m_pSpeechDecoder, &score);
-	if (command != NULL) {
-		spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
-	}
-
-	if (ad_stop_rec(m_pDevice) < 0)
-	{
-		spdlog::error("Failed to stop recording");
-		return false;
-	}
-
-	if (ad_close(m_pDevice) < 0)
-	{
-		spdlog::error("Failed to close device");
-		return false;
-	}
 	return true;
 }
 
 bool TEF::Aurora::SpeechRecognition::ListeningLoop()
 {
+	spdlog::info("Listening loop started");
 
-	spdlog::info("Ready....");
-
-	m_audioBufferLen = 0;
-	while(m_running)
+	short tempBuffer[512];
+	while (m_running)
 	{
-		int k = ad_read(m_pDevice, &m_audioBuffer[m_audioBufferLen], 2048);
-		if (k < 0)
+		if (m_listening)
 		{
-			spdlog::error("Failed to read audio");
-			return false;
+			spdlog::debug("listening...");
+			{
+				std::scoped_lock lock(m_bufferMutex);
+				int k = ad_read(m_pDevice, &m_audioBuffer[m_audioBufferLen], 2048);
+				if (k < 0)
+				{
+					spdlog::error("Failed to read audio");
+					return false;
+				}
+				m_audioBufferLen += k;
+			}
+			spdlog::debug("Buffered audio {}", m_audioBufferLen);
 		}
-		m_audioBufferLen += k;
+		else
+		{
+			ad_read(m_pDevice, tempBuffer, 512);
+		}
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
-		spdlog::debug("looping {} {}", k, m_audioBufferLen);
 	}
 
 	return true;

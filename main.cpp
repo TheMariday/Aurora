@@ -14,10 +14,18 @@ int main(int argc, char* argv[])
 	TEF::Aurora::Button button(2);
 
 
-	button.RegisterCallbackDown([&speechRecognition]() {return speechRecognition.Start(); });
-	button.RegisterCallbackUp([&speechRecognition]() {return speechRecognition.Stop(); });
+	button.RegisterCallbackDown([&speechRecognition]() {
+		spdlog::debug("Button down callback hit");
+		return speechRecognition.Start(); 
+		});
+	button.RegisterCallbackUp([&speechRecognition]() {
+		spdlog::debug("Button up callback hit");
+		return speechRecognition.Stop(); 
+		});
 
 	button.StartMainLoop();
+
+	speechRecognition.ListeningLoop();
 
 	Sleep(1000);
 
