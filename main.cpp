@@ -1,13 +1,41 @@
 #include <spdlog/spdlog.h>
-#include "tef/aurora/speechRecognition.h"
+#include "tef/aurora/button.h"
 #include <thread>
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
+
+
+bool downCB()
+{
+	spdlog::debug("down!!!");
+	return true;
+}
+
+bool upCB()
+{
+	spdlog::debug("up!!!");
+	return true;
+}
 
 int main(int argc, char* argv[])
 {
 
 	spdlog::set_level(spdlog::level::debug);
+
+	TEF::Aurora::Button b(2);
+
+	b.RegisterCallbackDown(downCB);
+	b.RegisterCallbackUp(upCB);
+
+	b.StartMainLoop();
+
+	Sleep(1000);
+	
+	spdlog::debug("done");
+
+}
+/*
+*
 
 	TEF::Aurora::SpeechRecognition sr;
 
@@ -18,7 +46,7 @@ int main(int argc, char* argv[])
 		spdlog::debug("Audio capture starting in {}", i);
 		Sleep(1);
 	}
-	
+
 	sr.Start();
 
 	for (int i = 3; i > 0; i--)
@@ -28,13 +56,7 @@ int main(int argc, char* argv[])
 	}
 
 	sr.Stop();
-	
-	spdlog::debug("done");
 
-}
-/*
-*
-*
 struct SystemDummy
 {
 	bool Reboot() {

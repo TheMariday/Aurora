@@ -64,7 +64,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad</LibraryDependencies>
+      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;wiringPi</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -75,7 +75,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad</LibraryDependencies>
+      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;wiringpi</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -103,6 +103,7 @@
     <ClCompile Include="src\userControl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\tef\aurora\button.h" />
     <ClInclude Include="include\tef\aurora\effect.h" />
     <ClInclude Include="include\tef\aurora\effectRunner.h" />
     <ClInclude Include="include\tef\aurora\led.h" />
