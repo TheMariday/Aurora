@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClCompile Include="include\tef\aurora\effects\simpleEffect.h" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\button.cpp" />
     <ClCompile Include="src\effect.cpp" />
     <ClCompile Include="src\effectRunner.cpp" />
     <ClCompile Include="src\masterController.cpp" />
