@@ -40,6 +40,7 @@ bool TEF::Aurora::SpeechRecognition::Start()
 	}
 
 	m_running = true;
+	m_audioBufferLen = 0;
 	m_listeningThread = std::thread([this]() {ListeningLoop(); });
 	return true;
 }
@@ -109,21 +110,5 @@ bool TEF::Aurora::SpeechRecognition::ListeningLoop()
 		spdlog::debug("looping {} {}", k, m_audioBufferLen);
 	}
 
-	return true;
-}
-
-bool TEF::Aurora::SpeechRecognition::VoreBuffer()
-{
-	const int ditchSize = 16384;
-	//eat the buffer
-	// snd_pcm_readi(pcm_capture_handle, inputBuffer, blksize / BYTESPERFRAME
-	short ditchBuffer[ditchSize];
-	int d = ad_read(m_pDevice, ditchBuffer, ditchSize);
-	spdlog::debug("Vored {} samples from the buffer", d);
-	while (d >= 2048)
-	{
-		d = ad_read(m_pDevice, ditchBuffer, ditchSize);
-		spdlog::debug("Vored {} samples from the buffer", d);
-	}
 	return true;
 }

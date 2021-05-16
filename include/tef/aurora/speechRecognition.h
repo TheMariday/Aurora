@@ -21,8 +21,6 @@ namespace TEF::Aurora {
 
 		bool ListeningLoop();
 
-		bool VoreBuffer();
-
 		cmd_ln_t* m_pConfig;
 		ps_decoder_t* m_pSpeechDecoder;
 		ad_rec_t* m_pDevice;
