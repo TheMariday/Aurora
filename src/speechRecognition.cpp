@@ -36,8 +36,8 @@ TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 
 	m_listening = false;
 
-	m_listeningThread.join();
-
+	if(m_listeningThread.joinable())
+		m_listeningThread.join();
 
 	spdlog::debug("Closing device");
 	if (ad_close(m_pDevice) < 0)
@@ -159,13 +159,13 @@ void TEF::Aurora::SpeechRecognition::tempCont()
 		spdlog::error("Failed to start recording\n");
 	}
 
-	FILE* file = fopen("/home/pi/projects/Aurora/bin/ARM/Debug/file.dat", "a+");
+	FILE* file = fopen("/home/pi/projects/Aurora/bin/ARM/Debug/file.raw", "a+");
 
 	utt_started = FALSE;
 	spdlog::info("Ready....\n");
 
 	int totalSamples = 0;
-	while (totalSamples < 16000 * 2) {
+	while (totalSamples < 16000 * 3) {
 
 		k = ad_read(m_pDevice, adbuf, 2048);
 		if (k < 0)
@@ -175,9 +175,9 @@ void TEF::Aurora::SpeechRecognition::tempCont()
 		//spdlog::debug("shorts read: {}", k); always 0 it seems?
 		if (k != 0)
 		{
-			spdlog::debug("writing {}", k);
-			fwrite(adbuf, sizeof(short), k, file);
 			totalSamples += k;
+			spdlog::debug("writing {} / {}", totalSamples, 16000 * 3);
+			fwrite(adbuf, sizeof(short), k, file);
 		}
 
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -189,5 +189,4 @@ void TEF::Aurora::SpeechRecognition::tempCont()
 	}
 
 	fclose(file);
-	ad_close(m_pDevice);
 }

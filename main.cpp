@@ -12,13 +12,22 @@ int main(int argc, char* argv[])
 	spdlog::set_level(spdlog::level::debug);
 	TEF::Aurora::SpeechRecognition speechRecognition;
 
-	speechRecognition.tempCont();
 
+	for (int i = 0; i < 3; i++)
+	{
+		for (int i = 4; i > 0; i--)
+		{
+			spdlog::debug("starting recording in {}", i);
+			Sleep(1);
+		}
+		speechRecognition.tempCont();
+	}
+	return 0;
 }
 /*
 *
-* 
-* 	
+*
+*
 
 	TEF::Aurora::SpeechRecognition speechRecognition;
 	TEF::Aurora::Button button(2);
@@ -26,11 +35,11 @@ int main(int argc, char* argv[])
 
 	button.RegisterCallbackDown([&speechRecognition]() {
 		spdlog::debug("Button down callback hit");
-		return speechRecognition.Start(); 
+		return speechRecognition.Start();
 		});
 	button.RegisterCallbackUp([&speechRecognition]() {
 		spdlog::debug("Button up callback hit");
-		return speechRecognition.Stop(); 
+		return speechRecognition.Stop();
 		});
 
 	button.StartMainLoop();
