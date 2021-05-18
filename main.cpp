@@ -8,7 +8,17 @@
 
 int main(int argc, char* argv[])
 {
+
 	spdlog::set_level(spdlog::level::debug);
+	TEF::Aurora::SpeechRecognition speechRecognition;
+
+	speechRecognition.tempCont();
+
+}
+/*
+*
+* 
+* 	
 
 	TEF::Aurora::SpeechRecognition speechRecognition;
 	TEF::Aurora::Button button(2);
@@ -30,10 +40,6 @@ int main(int argc, char* argv[])
 	Sleep(1000);
 
 	spdlog::debug("done");
-
-}
-/*
-*
 
 	TEF::Aurora::SpeechRecognition sr;
 

@@ -20,6 +20,8 @@ namespace TEF::Aurora {
 
 		bool ListeningLoop(); //temp move
 
+		void tempCont();
+
 	private:
 
 
