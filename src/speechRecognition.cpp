@@ -6,7 +6,7 @@
 TEF::Aurora::SpeechRecognition::SpeechRecognition()
 {
 	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
-	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", "-jsgf", "/home/pi/temp/pocketsphinx/test.gram", NULL);
+	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", NULL);
 	ps_default_search_args(m_pConfig);
 
 	m_pSpeechDecoder = ps_init(m_pConfig);
@@ -74,8 +74,6 @@ bool TEF::Aurora::SpeechRecognition::Stop(bool saveBuffer)
 		m_listeningThread.join();
 
 
-
-
 	spdlog::debug("Starting utterance");
 
 	if (ps_start_utt(m_pSpeechDecoder) < 0)
@@ -115,8 +113,25 @@ bool TEF::Aurora::SpeechRecognition::Stop(bool saveBuffer)
 	char const* command = ps_get_hyp(m_pSpeechDecoder, &score);
 	if (command != NULL) {
 		spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
+		m_commandCallback(std::string(command));
 	}
 
+	return true;
+}
+
+bool TEF::Aurora::SpeechRecognition::SetJSGF(std::string jsgfFile)
+{
+	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
+	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", "-jsgf", jsgfFile.c_str(), NULL);
+	ps_default_search_args(m_pConfig);
+
+	ps_reinit(m_pSpeechDecoder, m_pConfig); 
+	return true;
+}
+
+bool TEF::Aurora::SpeechRecognition::RegisterCommandCallback(std::function<bool(std::string)> cb)
+{
+	m_commandCallback = cb;
 	return true;
 }
 
@@ -129,23 +144,18 @@ bool TEF::Aurora::SpeechRecognition::ListeningLoop()
 		m_audioBufferFront = 0;
 	}
 
+	// This is hacky and disgusting and I really want to implement my own ALSA recording system as this is very sloppy
+	// Main issue is when ad_stop_rec is called, it drops all pending frames instead of draining them
+	// This is to clear any spurious remaining frames when the listening loop is called
+
 	if (ad_start_rec(m_pDevice) < 0)
 	{
 		spdlog::error("Failed to start recording");
 	}
+	ad_stop_rec(m_pDevice);
+	ad_start_rec(m_pDevice);
 
 	int samples = 1;
-
-
-	//easy flush
-	int c = 0;
-	while (samples != 0)
-	{
-		samples = ad_read(m_pDevice, &m_audioBuffer[0], 16000);
-		spdlog::debug("flushed {} frames", samples);
-		c++;
-	}
-
 
 	spdlog::debug("listening...");
 
@@ -162,7 +172,8 @@ bool TEF::Aurora::SpeechRecognition::ListeningLoop()
 				spdlog::error("Failed to read audio\n");
 				return false;
 			}
-
+			if (newSamples != 0)
+				spdlog::debug("new samples: {}", newSamples);
 			m_audioBufferFront += newSamples;
 
 		}

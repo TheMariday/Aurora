@@ -6,6 +6,7 @@
 #include <sphinxbase/ad.h>
 #include <pocketsphinx/pocketsphinx.h>
 #include <mutex>
+#include <functional>
 
 namespace TEF::Aurora {
 	class SpeechRecognition
@@ -18,9 +19,13 @@ namespace TEF::Aurora {
 		bool Start();
 		bool Stop(bool saveBuffer=false);
 
-		bool ListeningLoop(); //temp move
+		bool SetJSGF(std::string jsgfFile);
+
+		bool RegisterCommandCallback(std::function<bool(std::string)> cb);
 
 	private:
+
+		bool ListeningLoop(); //temp move
 
 		void SaveBuffer();
 
@@ -35,6 +40,8 @@ namespace TEF::Aurora {
 		std::mutex m_bufferMutex;
 		short m_audioBuffer[16000*10]; // 24*2048
 		int m_audioBufferFront;
+
+		std::function<bool(std::string)> m_commandCallback;
 
 
 	};

@@ -38,6 +38,8 @@ namespace TEF::Aurora {
 
 		bool MainLoopCallback() override;
 
+		bool GenerateJSGF(std::string& filepath);
+
 
 	private:
 

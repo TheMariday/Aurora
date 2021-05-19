@@ -1,8 +1,9 @@
 #include "tef/aurora/userControl.h"
 #include <spdlog/spdlog.h>
 #include <type_traits>
-
-
+#include <string>
+#include <fstream>
+#include <iostream>
 
 
 
@@ -31,6 +32,7 @@ bool Split(std::string& command, std::string& argument)
 struct TEF::Aurora::Command
 {
 	virtual bool isValid(std::string arg) = 0;
+	virtual bool allValid(std::vector<std::string>& valid) = 0;
 	virtual bool run(std::string arg) = 0;
 };
 
@@ -43,6 +45,10 @@ struct CommandVoid : public TEF::Aurora::Command
 	std::function<bool()> cb;
 
 	bool isValid(std::string arg) override { return arg.empty(); }
+	bool allValid(std::vector<std::string>& valid) override
+	{
+		return true;
+	}
 
 	bool run(std::string arg) override { return cb(); }
 };
@@ -56,6 +62,12 @@ struct CommandBool : public TEF::Aurora::Command
 	std::map<std::string, bool> validArgs;
 
 	bool isValid(std::string arg) { return validArgs.count(arg) == 1; }
+	bool allValid(std::vector<std::string>& valid) override
+	{
+		for (auto const& [key, val] : validArgs)
+			valid.push_back(key);
+		return true;
+	}
 
 	bool run(std::string arg) override { return cb(validArgs[arg]); }
 };
@@ -68,6 +80,12 @@ struct CommandInt : public TEF::Aurora::Command
 	std::map<std::string, int> validArgs;
 
 	bool isValid(std::string arg) { return validArgs.count(arg) > 0; }
+	bool allValid(std::vector<std::string>& valid) override
+	{
+		for (auto const& [key, val] : validArgs)
+			valid.push_back(key);
+		return true;
+	}
 
 	bool run(std::string arg) override { return cb(validArgs[arg]); }
 };
@@ -84,8 +102,13 @@ struct CommandStr : public TEF::Aurora::Command
 	{
 		return std::find(validArgs.begin(), validArgs.end(), arg) != validArgs.end();
 	}
+	bool allValid(std::vector<std::string>& valid) override
+	{
+		valid = validArgs;
+		return true;
+	}
 
-	bool run(std::string arg) override {return cb(arg);}
+	bool run(std::string arg) override { return cb(arg); }
 };
 
 
@@ -228,4 +251,58 @@ bool TEF::Aurora::UserControl::MainLoopCallback()
 
 	getline(std::cin, input);
 	ProcessCommand(input);
+}
+
+bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
+{
+
+	std::ofstream ss;
+
+	ss.open(filepath.c_str(), std::ofstream::out | std::ofstream::trunc);
+
+	ss << "#JSGF V1.0;\n";
+	ss << "grammar highbeam;\n\n";
+
+	std::vector<std::string> commands;
+	for (auto const& [Command, Callback] : m_allCommands)
+	{
+		commands.push_back(Command);
+		std::vector<std::string> validArgs;
+		Callback->allValid(validArgs);
+		ss << "<" << Command << "> = " << Command;
+		if (validArgs.empty())
+		{
+			ss << ";\n";
+		}
+		else
+		{
+			ss << " ( ";
+			for (int i = 0; i < validArgs.size() - 1; i++)
+			{
+				ss << validArgs[i] << " | ";
+			}
+			ss << validArgs.back() << " );\n";
+		}
+
+	}
+
+	ss << "\n\n";
+	ss << "public <main> = ";
+	if (commands.size() == 1)
+	{
+		ss << "<" << commands[0] << ">;";
+	}
+	else {
+		ss << "( ";
+		for (int i = 0; i < commands.size() - 1; i++)
+		{
+			ss << "<" << commands[i] << "> | ";
+		}
+		ss << "<" << commands.back() << "> );";
+	}
+
+
+	ss.close();
+
+	return true;
 }

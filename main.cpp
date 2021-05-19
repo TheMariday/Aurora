@@ -1,6 +1,6 @@
 #include <spdlog/spdlog.h>
 #include "tef/aurora/button.h"
-//#include "tef/aurora/userControl.h"
+#include "tef/aurora/userControl.h"
 #include "tef/aurora/speechRecognition.h"
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
@@ -10,14 +10,28 @@ int main(int argc, char* argv[])
 {
 
 	spdlog::set_level(spdlog::level::debug);
-	TEF::Aurora::SpeechRecognition speechRecognition;
-	TEF::Aurora::Button button(2);
 
+	TEF::Aurora::Button button(2);
+	TEF::Aurora::UserControl userControl;
+	TEF::Aurora::SpeechRecognition speechRecognition;
+
+	userControl.RegisterVoid("system reboot", []() {spdlog::debug("system rebooted"); return true; });
+	userControl.RegisterBool("set safety", [](bool safety) {spdlog::debug("safety set to {}", safety); return true; });
+	userControl.RegisterLimitedInt("set brightness to", [](int brightness) {spdlog::debug("brightess set to {}", brightness); return true; });
+	//userControl.RegisterString("set name to", { "bob", "rob" }, [](std::string name) {spdlog::debug("name set to {}", name); return true; });
+	
+	std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
+	userControl.GenerateJSGF(jsgfFilepath);
+	speechRecognition.SetJSGF(jsgfFilepath);
+
+	speechRecognition.RegisterCommandCallback([&userControl](std::string command) {userControl.ProcessCommand(command); return true; });
 
 	button.RegisterCallbackDown([&speechRecognition]() { return speechRecognition.Start(); });
 	button.RegisterCallbackUp([&speechRecognition]() { return speechRecognition.Stop(true); });
 
 	button.StartMainLoop();
+
+	//userControl.StartMainLoop(); this just enables cin
 
 	Sleep(1000);
 
