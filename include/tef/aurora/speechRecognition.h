@@ -15,9 +15,8 @@ namespace TEF::Aurora {
 		SpeechRecognition();
 		~SpeechRecognition();
 
-
 		bool Start();
-		bool Stop(bool saveBuffer=false);
+		bool Stop(std::string audioFilepathDebug = "");
 
 		bool SetJSGF(std::string jsgfFile);
 
@@ -25,24 +24,24 @@ namespace TEF::Aurora {
 
 	private:
 
-		bool ListeningLoop(); //temp move
+		bool RecordLoop();
 
-		void SaveBuffer();
+		void SaveBuffer(std::string filepath);
 
+		const static int m_sampleRate = 16000;
+		const static int m_maxRecordTime = 10; //seconds
 
 		cmd_ln_t* m_pConfig;
 		ps_decoder_t* m_pSpeechDecoder;
 		ad_rec_t* m_pDevice;
 
-		std::atomic_bool m_listening;
-		std::thread m_listeningThread;
+		std::atomic_bool m_recording = false;
+		std::thread m_recordingThread;
 
 		std::mutex m_bufferMutex;
-		short m_audioBuffer[16000*10]; // 24*2048
+		short m_audioBuffer[m_sampleRate * m_maxRecordTime];
 		int m_audioBufferFront;
 
 		std::function<bool(std::string)> m_commandCallback;
-
-
 	};
 }

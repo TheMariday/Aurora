@@ -15,8 +15,9 @@ int main(int argc, char* argv[])
 	TEF::Aurora::UserControl userControl;
 	TEF::Aurora::SpeechRecognition speechRecognition;
 
-	userControl.RegisterVoid("system reboot", []() {spdlog::debug("system rebooted"); return true; });
-	userControl.RegisterBool("set safety", [](bool safety) {spdlog::debug("safety set to {}", safety); return true; });
+
+	//userControl.RegisterVoid("system reboot", []() {spdlog::debug("system rebooted"); return true; });
+	//userControl.RegisterBool("set safety", [](bool safety) {spdlog::debug("safety set to {}", safety); return true; });
 	userControl.RegisterLimitedInt("set brightness to", [](int brightness) {spdlog::debug("brightess set to {}", brightness); return true; });
 	//userControl.RegisterString("set name to", { "bob", "rob" }, [](std::string name) {spdlog::debug("name set to {}", name); return true; });
 	
@@ -27,7 +28,7 @@ int main(int argc, char* argv[])
 	speechRecognition.RegisterCommandCallback([&userControl](std::string command) {userControl.ProcessCommand(command); return true; });
 
 	button.RegisterCallbackDown([&speechRecognition]() { return speechRecognition.Start(); });
-	button.RegisterCallbackUp([&speechRecognition]() { return speechRecognition.Stop(true); });
+	button.RegisterCallbackUp([&speechRecognition]() { return speechRecognition.Stop(); });
 
 	button.StartMainLoop();
 

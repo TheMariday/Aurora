@@ -5,116 +5,114 @@
 
 TEF::Aurora::SpeechRecognition::SpeechRecognition()
 {
+
 	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
 	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", NULL);
 	ps_default_search_args(m_pConfig);
 
-	m_pSpeechDecoder = ps_init(m_pConfig);
-
-	spdlog::debug("Setting up decoder");
-
-	if (m_pSpeechDecoder == NULL) {
-		spdlog::error("something is null");
-		cmd_ln_free_r(m_pConfig);
+	if (m_pConfig == NULL)
+	{
+		spdlog::error("Speech Recognition failed to setup config ");
+		return;
 	}
 
-	spdlog::debug("Opening device");
+	m_pSpeechDecoder = ps_init(m_pConfig);
+
+	if (m_pSpeechDecoder == NULL) {
+		spdlog::error("Speech Recognition failed to initialise the speech decoder");
+		return;
+	}
 
 	m_pDevice = ad_open_dev(cmd_ln_str_r(m_pConfig, "-adcdev"), (int)cmd_ln_float32_r(m_pConfig, "-samprate"));
 
 	if (m_pDevice == NULL)
 	{
-		spdlog::error("Failed to open audio device");
+		spdlog::error("Speech Recognition Failed to open the default audio device");
+		return;
 	}
-
-	m_listening = false;
-
 }
 
 TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 {
-	spdlog::debug("Stopping recording");
+	m_recording = false;
 
-	m_listening = false;
+	if (m_recordingThread.joinable())
+		m_recordingThread.join();
 
-	if (m_listeningThread.joinable())
-		m_listeningThread.join();
-
-	spdlog::debug("Closing device");
 	if (ad_close(m_pDevice) < 0)
 	{
-		spdlog::error("Failed to close device");
+		spdlog::error("Speech Recognition failed to close the default audio device");
 	}
 
+	if (ps_free(m_pSpeechDecoder) != 0)
+	{
+		spdlog::error("Speech Recognition failed to free the speech decoder");
+	}
 
-	spdlog::debug("Destroying decoder");
-	ps_free(m_pSpeechDecoder);
-	cmd_ln_free_r(m_pConfig);
-	spdlog::debug("Speech recognition destroyed correctly");
+	if (cmd_ln_free_r(m_pConfig) != 0)
+	{
+		spdlog::error("Speech Recognition failed to free the command line arguments");
+	}
 }
 
 bool TEF::Aurora::SpeechRecognition::Start()
 {
-	spdlog::debug("starting");
-
-
-
-	m_listening = true;
-	m_listeningThread = std::thread([this]() {ListeningLoop(); });
+	m_recording = true;
+	m_recordingThread = std::thread([this]() {RecordLoop(); });
 
 	return true;
 }
 
-bool TEF::Aurora::SpeechRecognition::Stop(bool saveBuffer)
+bool TEF::Aurora::SpeechRecognition::Stop(std::string audioFilepathDebug)
 {
-	spdlog::debug("stopping");
-	m_listening = false;
+	m_recording = false;
 
-	if (m_listeningThread.joinable())
-		m_listeningThread.join();
-
-
-	spdlog::debug("Starting utterance");
+	if (m_recordingThread.joinable())
+		m_recordingThread.join();
 
 	if (ps_start_utt(m_pSpeechDecoder) < 0)
 	{
-		spdlog::error("Failed to start utterance");
+		spdlog::error("Speech Recognition failed to start utterance");
 		return false;
 	}
-
-	spdlog::debug("Processing speech");
 
 	{
 		std::scoped_lock lock(m_bufferMutex);
 
 		if (ps_process_raw(m_pSpeechDecoder, m_audioBuffer, m_audioBufferFront, false, true) < 0)
 		{
-			spdlog::error("cannot process audio");
+			spdlog::error("Speech Recognition failed to process the raw audio");
 			return false;
 		}
 
-		if (saveBuffer)
+		if (!audioFilepathDebug.empty())
 		{
-			spdlog::debug("Saving buffer");
-			SaveBuffer();
+			SaveBuffer(audioFilepathDebug);
 		}
 	}
 
-	spdlog::debug("Ending utterance");
-
 	if (ps_end_utt(m_pSpeechDecoder) < 0)
 	{
-		spdlog::error("Failed to stop utterance");
+		spdlog::error("Speech Recognition failed to stop utterance");
 		return false;
 	}
-	spdlog::debug("Recognition complete");
 
 	int score;
 	char const* command = ps_get_hyp(m_pSpeechDecoder, &score);
-	if (command != NULL) {
-		spdlog::info("Command: {}, score: {}", command, score);// -1500 = good -2000 = ok -3000 = rubbish
-		m_commandCallback(std::string(command));
+	if (command == NULL) {
+		spdlog::warn("Speech Recognition failed to recognise any audio");
+		return false;
 	}
+
+	spdlog::debug("Speech Recognition command: {}, score: {}", command, score); // -1500 = good -2000 = ok -3000 = rubbish
+
+	if (!m_commandCallback)
+	{
+		spdlog::warn("Speech Recognition has no command handler");
+		return true;
+	}
+
+	m_commandCallback(std::string(command));
 
 	return true;
 }
@@ -125,73 +123,114 @@ bool TEF::Aurora::SpeechRecognition::SetJSGF(std::string jsgfFile)
 	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", "-jsgf", jsgfFile.c_str(), NULL);
 	ps_default_search_args(m_pConfig);
 
-	ps_reinit(m_pSpeechDecoder, m_pConfig); 
-	return true;
-}
-
-bool TEF::Aurora::SpeechRecognition::RegisterCommandCallback(std::function<bool(std::string)> cb)
-{
-	m_commandCallback = cb;
-	return true;
-}
-
-bool TEF::Aurora::SpeechRecognition::ListeningLoop()
-{
-	spdlog::info("Listening loop started");
-
+	if (m_pConfig == NULL)
 	{
-		std::scoped_lock lock(m_bufferMutex);
-		m_audioBufferFront = 0;
+		spdlog::error("Speech Recognition failed to set config during JSGF refresh");
+		return false;
 	}
 
-	// This is hacky and disgusting and I really want to implement my own ALSA recording system as this is very sloppy
-	// Main issue is when ad_stop_rec is called, it drops all pending frames instead of draining them
-	// This is to clear any spurious remaining frames when the listening loop is called
-
-	if (ad_start_rec(m_pDevice) < 0)
+	if (ps_reinit(m_pSpeechDecoder, m_pConfig) != 0)
 	{
-		spdlog::error("Failed to start recording");
-	}
-	ad_stop_rec(m_pDevice);
-	ad_start_rec(m_pDevice);
-
-	int samples = 1;
-
-	spdlog::debug("listening...");
-
-	while (m_listening)
-	{
-		{
-			std::scoped_lock lock(m_bufferMutex);
-			int newSamples = 0;
-			while (newSamples == 0)
-				newSamples = ad_read(m_pDevice, &m_audioBuffer[m_audioBufferFront], 16000);
-
-			if (newSamples < 0)
-			{
-				spdlog::error("Failed to read audio\n");
-				return false;
-			}
-			if (newSamples != 0)
-				spdlog::debug("new samples: {}", newSamples);
-			m_audioBufferFront += newSamples;
-
-		}
-		std::this_thread::sleep_for(std::chrono::microseconds(100));
-	}
-
-	if (ad_stop_rec(m_pDevice) < 0)
-	{
-		spdlog::error("Failed to stop recording\n");
+		spdlog::error("Speech Recognition failed to re initialise the speech decoder after JSGF refresh");
 		return false;
 	}
 
 	return true;
 }
 
-void TEF::Aurora::SpeechRecognition::SaveBuffer()
+bool TEF::Aurora::SpeechRecognition::RegisterCommandCallback(std::function<bool(std::string)> cb)
 {
-	FILE* file = fopen("/home/pi/projects/Aurora/bin/ARM/Debug/file.raw", "a+");
-	fwrite(m_audioBuffer, sizeof(short), m_audioBufferFront, file);
-	fclose(file);
+	if (!cb)
+	{
+		spdlog::error("Speech Recognition failed to register command as callback is null");
+		return false;
+	}
+
+	m_commandCallback = cb;
+	return true;
+}
+
+bool TEF::Aurora::SpeechRecognition::RecordLoop()
+{
+	// This is hacky and disgusting and I really want to implement my own ALSA recording system as this is very sloppy
+	// Main issue is when ad_stop_rec is called, it drops all pending frames instead of draining them
+	// This is to clear any spurious remaining frames when the listening loop is called
+
+	if (ad_start_rec(m_pDevice) < 0)
+	{
+		spdlog::error("Speech Recognition failed to start recording");
+		return false;
+	}
+	//we assume that if we've started, we can stop and restart so these aren't checked.
+	ad_stop_rec(m_pDevice);
+	ad_start_rec(m_pDevice);
+
+	{
+		std::scoped_lock lock(m_bufferMutex);
+		m_audioBufferFront = 0;
+	}
+
+	spdlog::debug("Speech Recognition recording started");
+
+	while (m_recording)
+	{
+		{
+			std::scoped_lock lock(m_bufferMutex);
+			int newSamples = 0;
+
+			while (newSamples == 0)
+			{
+				newSamples = ad_read(m_pDevice, &m_audioBuffer[m_audioBufferFront], 16000);
+			}
+
+			if (newSamples < 0)
+			{
+				spdlog::error("Speech Recognition failed to read audio");
+				return false;
+			}
+
+			m_audioBufferFront += newSamples;
+
+		}
+
+		if (m_audioBufferFront + 16000 > m_sampleRate * m_maxRecordTime)
+		{
+			spdlog::warn("Speech Recognition has completely filled the audio buffer. Forcing recording stop");
+			m_recording = false;
+		}
+
+		std::this_thread::sleep_for(std::chrono::microseconds(100));
+	}
+
+	spdlog::debug("Speech Recognition recording ended");
+
+	if (ad_stop_rec(m_pDevice) < 0)
+	{
+		spdlog::error("Speech Recognition failed to stop recording");
+		return false;
+	}
+
+	return true;
+}
+
+void TEF::Aurora::SpeechRecognition::SaveBuffer(std::string fp)
+{
+	FILE* file = fopen(fp.c_str(), "a+");
+
+	if (file == NULL)
+	{
+		spdlog::error("Speech Recognition cannot open buffer location {}", fp);
+		return;
+	}
+
+	int bytesWritten = fwrite(m_audioBuffer, sizeof(short), m_audioBufferFront, file);
+	if (bytesWritten != m_audioBufferFront)
+	{
+		spdlog::warn("Speech Recognition failed to write all bytes to disk {}/{} to {}", bytesWritten, m_audioBufferFront, fp);
+	}
+
+	if (fclose(file) != 0)
+	{
+		spdlog::warn("Speech Recognition failed to close the file {}", fp);
+	}
 }
