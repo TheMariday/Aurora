@@ -165,7 +165,6 @@
     <ClInclude Include="lib\rapidjson\internal\strfunc.h">
       <Filter>lib\rapidjson\internal</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\led.h" />
     <ClInclude Include="include\tef\aurora\userControl.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -173,6 +172,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\button.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\led.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

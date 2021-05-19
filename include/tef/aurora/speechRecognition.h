@@ -16,13 +16,13 @@ namespace TEF::Aurora {
 
 
 		bool Start();
-		bool Stop();
+		bool Stop(bool saveBuffer=false);
 
 		bool ListeningLoop(); //temp move
 
-		void tempCont();
-
 	private:
+
+		void SaveBuffer();
 
 
 		cmd_ln_t* m_pConfig;
@@ -33,8 +33,8 @@ namespace TEF::Aurora {
 		std::thread m_listeningThread;
 
 		std::mutex m_bufferMutex;
-		short m_audioBuffer[49152*2]; // 24*2048
-		int m_audioBufferLen;
+		short m_audioBuffer[16000*10]; // 24*2048
+		int m_audioBufferFront;
 
 
 	};
