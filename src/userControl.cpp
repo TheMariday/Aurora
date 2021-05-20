@@ -56,7 +56,7 @@ struct CommandVoid : public TEF::Aurora::Command
 
 struct CommandBool : public TEF::Aurora::Command
 {
-	CommandBool(std::function<bool(bool)>& c, std::map<std::string, bool>& va) : cb(c), validArgs(va) {};
+	CommandBool(std::function<bool(bool)>& c, std::map<std::string, bool> va) : cb(c), validArgs(va) {};
 
 	std::function<bool(bool)> cb;
 	std::map<std::string, bool> validArgs;
@@ -74,7 +74,7 @@ struct CommandBool : public TEF::Aurora::Command
 
 struct CommandInt : public TEF::Aurora::Command
 {
-	CommandInt(std::function<bool(int)>& c, std::map<std::string, int>& va) : cb(c), validArgs(va) {};
+	CommandInt(std::function<bool(int)>& c, std::map<std::string, int> va) : cb(c), validArgs(va) {};
 
 	std::function<bool(int)> cb;
 	std::map<std::string, int> validArgs;
@@ -93,7 +93,7 @@ struct CommandInt : public TEF::Aurora::Command
 
 struct CommandStr : public TEF::Aurora::Command
 {
-	CommandStr(std::function<bool(std::string)>& c, std::vector<std::string>& va) : cb(c), validArgs(va) {};
+	CommandStr(std::function<bool(std::string)>& c, std::vector<std::string> va) : cb(c), validArgs(va) {};
 
 	std::function<bool(std::string)> cb;
 	std::vector<std::string> validArgs;
@@ -128,19 +128,28 @@ bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<b
 {
 	spdlog::debug("User Control registering void command {}", command);
 
-	if (m_allCommands.count(command) != 0)
+	if (!m_acceptNewCommands && (m_allCommands.count(command) == 0))
 	{
-		spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
+		spdlog::error("User Control has been locked and therefore cannot register new commands");
 		return false;
 	}
 
-	m_allCommands[command] = new CommandVoid(cb);
+	if (m_allCommands.count(command) != 0)
+	{
+		spdlog::warn("User Control overwriting command {}", command);
+		delete m_allCommands[command];
+		m_allCommands[command] = new CommandVoid(cb);
+	}
+	else if (m_acceptNewCommands) {
+		m_allCommands[command] = new CommandVoid(cb);
+	}
+
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<bool(bool)> cb, std::map<std::string, bool> validArgs)
+bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<bool(bool)> cb)
 {
 	spdlog::debug("User Control registering bool command {}", command);
 
@@ -150,12 +159,12 @@ bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<b
 		return false;
 	}
 
-	m_allCommands[command] = new CommandBool(cb, validArgs);
+	m_allCommands[command] = new CommandBool(cb, m_boolOptions);
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::function<bool(int)> cb, std::map<std::string, int> validArgs)
+bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::function<bool(int)> cb)
 {
 	spdlog::debug("User Control registering int command {}", command);
 
@@ -166,7 +175,7 @@ bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::func
 		return false;
 	}
 
-	m_allCommands[command] = new CommandInt(cb, validArgs);
+	m_allCommands[command] = new CommandInt(cb, m_intOptions);
 	return true;
 }
 
@@ -253,8 +262,10 @@ bool TEF::Aurora::UserControl::MainLoopCallback()
 	ProcessCommand(input);
 }
 
-bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
+bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath, bool lock)
 {
+
+	m_acceptNewCommands = lock;
 
 	std::ofstream ss;
 

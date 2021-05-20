@@ -24,13 +24,13 @@ namespace TEF::Aurora {
 		UserControl();
 		~UserControl();
 
-		bool RegisterVoid(std::string command, std::function<bool()> cb);
+		bool RegisterVoid(std::string command, std::function<bool()> cb = {});
 
-		bool RegisterBool(std::string command, std::function<bool(bool)> cb, std::map<std::string, bool> validArgs = m_boolOptions);
+		bool RegisterBool(std::string command, std::function<bool(bool)> cb = {});
 
-		bool RegisterLimitedInt(std::string command, std::function<bool(int)> cb, std::map<std::string, int> validArgs = m_intOptions);
+		bool RegisterLimitedInt(std::string command, std::function<bool(int)> cb = {});
 
-		bool RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> cb);
+		bool RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> cb = {});
 
 		bool Unregister(std::string command);
 
@@ -38,12 +38,14 @@ namespace TEF::Aurora {
 
 		bool MainLoopCallback() override;
 
-		bool GenerateJSGF(std::string& filepath);
+		bool GenerateJSGF(std::string& filepath, bool lock = true);
 
 
 	private:
 
-
+		bool m_acceptNewCommands = true;
 		std::map<std::string, Command*> m_allCommands;
+
+		
 	};
 }

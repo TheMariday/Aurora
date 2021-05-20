@@ -2,8 +2,10 @@
 #include "tef/aurora/button.h"
 #include "tef/aurora/userControl.h"
 #include "tef/aurora/speechRecognition.h"
+#include "tef/aurora/sound.h"
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
+
 
 
 int main(int argc, char* argv[])
@@ -14,13 +16,109 @@ int main(int argc, char* argv[])
 	TEF::Aurora::Button button(2);
 	TEF::Aurora::UserControl userControl;
 	TEF::Aurora::SpeechRecognition speechRecognition;
+	TEF::Aurora::Sound headset("sysdefault:CARD=Device");
+
+	userControl.RegisterVoid("system reboot", [&headset]() {
+		headset.AddSpeech("system rebooted");
+		return true;
+		});
+
+	userControl.RegisterBool("set safety", [&headset](bool safety) {
+		headset.AddSpeech(safety ? "safeties enabled, you are safe ish" : "safties off, you are not safe");
+		return true;
+		});
+	userControl.RegisterLimitedInt("set brightness to", [&headset](int brightness) {
+		std::stringstream ss;
+		ss << "brightness set to " << brightness;
+		headset.AddSpeech(ss.str());
+		return true;
+		});
+
+	userControl.RegisterString("set name to", { "bob", "rob" }, [&headset](std::string name) {
+		std::stringstream ss;
+		ss << "Name set to " << name;
+		headset.AddSpeech(ss.str());
+		return true; 
+		});
+
+
+	std::string recordFile = "/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat";
+
+	button.RegisterCallbackDown([&speechRecognition]() { return speechRecognition.Start(); });
+	button.RegisterCallbackUp([&speechRecognition, &recordFile]() { return speechRecognition.Stop(recordFile); });
+
+	std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
+	userControl.GenerateJSGF(jsgfFilepath);
+	speechRecognition.SetJSGF(jsgfFilepath);
+
+	speechRecognition.RegisterCommandCallback([&userControl](std::string command) {userControl.ProcessCommand(command); return true; });
+
+	headset.StartMainLoop();
+	button.StartMainLoop();
+
+	headset.AddSpeech("System starting up!", true);
+
+
+	Sleep(1000);
+	return 0;
+}
+/*
+*
+*
+*
+*
+#include <iostream>
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <wiringPi.h>
+#include <wiringSerial.h>
+#include <vector>
+
+	char* port = "/dev/ttyUSB0"; //Serial Device Address
+
+	int levelSensor = serialOpen(port, 57600);
+	wiringPiSetup();
+	//serialPuts(levelSensor, "DP"); //Send command to the serial device
+
+	while (1)
+	{
+		char buffer[100];
+		ssize_t length = read(levelSensor, &buffer, sizeof(buffer));
+		if (length == -1)
+		{
+			spdlog::error("Error reading from serial port");
+			break;
+		}
+		else if (length == 0)
+		{
+			spdlog::error("No more data");
+			break;
+		}
+		else
+		{
+			buffer[length] = '\0';
+			std::cout << buffer; //Read serial data
+		}
+	}
+
+
+	Sleep(1000);
+
+	return 0;
+
+* 	TEF::Aurora::Button button(2);
+	TEF::Aurora::UserControl userControl;
+	TEF::Aurora::SpeechRecognition speechRecognition;
 
 
 	//userControl.RegisterVoid("system reboot", []() {spdlog::debug("system rebooted"); return true; });
 	//userControl.RegisterBool("set safety", [](bool safety) {spdlog::debug("safety set to {}", safety); return true; });
 	userControl.RegisterLimitedInt("set brightness to", [](int brightness) {spdlog::debug("brightess set to {}", brightness); return true; });
 	//userControl.RegisterString("set name to", { "bob", "rob" }, [](std::string name) {spdlog::debug("name set to {}", name); return true; });
-	
+
 	std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
 	userControl.GenerateJSGF(jsgfFilepath);
 	speechRecognition.SetJSGF(jsgfFilepath);
@@ -34,14 +132,6 @@ int main(int argc, char* argv[])
 
 	//userControl.StartMainLoop(); this just enables cin
 
-	Sleep(1000);
-
-	return 0;
-}
-/*
-*
-*
-*
 
 	TEF::Aurora::SpeechRecognition speechRecognition;
 	TEF::Aurora::Button button(2);

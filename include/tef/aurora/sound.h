@@ -9,7 +9,7 @@ namespace TEF::Aurora {
 
 	class Sound : public Effect {
 	public:
-		explicit Sound(std::string device);
+		explicit Sound(std::string device="");
 		~Sound();
 
 		bool AddSpeech(std::string speech, bool wait = false);

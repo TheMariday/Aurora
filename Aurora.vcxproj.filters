@@ -46,9 +46,6 @@
     <ClCompile Include="src\sensors.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\smartFuse.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\sound.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -82,9 +79,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\sensors.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tef\aurora\smartFuse.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\sound.h">
