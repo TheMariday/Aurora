@@ -11,7 +11,7 @@ namespace TEF::Aurora {
 	class Button : public Effect
 	{
 	public:
-		Button(int pin, int debounceTime = 100, int refreshRate = 100);
+		Button(int pin = -1, int debounceTime = 100, int refreshRate = 100);
 
 		~Button() {};
 

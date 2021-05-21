@@ -16,7 +16,9 @@ namespace TEF::Aurora {
 		~SpeechRecognition();
 
 		bool Start();
-		bool Stop(std::string audioFilepathDebug = "");
+		bool Stop();
+
+		bool SetRecordFile(std::string filepath);
 
 		bool SetJSGF(std::string jsgfFile);
 
@@ -43,5 +45,7 @@ namespace TEF::Aurora {
 		int m_audioBufferFront;
 
 		std::function<bool(std::string)> m_commandCallback;
+
+		std::string m_audioFilepathDebug;
 	};
 }

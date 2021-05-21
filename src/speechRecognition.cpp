@@ -63,7 +63,7 @@ bool TEF::Aurora::SpeechRecognition::Start()
 	return true;
 }
 
-bool TEF::Aurora::SpeechRecognition::Stop(std::string audioFilepathDebug)
+bool TEF::Aurora::SpeechRecognition::Stop()
 {
 	m_recording = false;
 
@@ -85,9 +85,9 @@ bool TEF::Aurora::SpeechRecognition::Stop(std::string audioFilepathDebug)
 			return false;
 		}
 
-		if (!audioFilepathDebug.empty())
+		if (!m_audioFilepathDebug.empty())
 		{
-			SaveBuffer(audioFilepathDebug);
+			SaveBuffer(m_audioFilepathDebug);
 		}
 	}
 
@@ -114,6 +114,12 @@ bool TEF::Aurora::SpeechRecognition::Stop(std::string audioFilepathDebug)
 
 	m_commandCallback(std::string(command));
 
+	return true;
+}
+
+bool TEF::Aurora::SpeechRecognition::SetRecordFile(std::string filepath)
+{
+	m_audioFilepathDebug = filepath;
 	return true;
 }
 

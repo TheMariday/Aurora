@@ -64,7 +64,7 @@ TEF::Aurora::Sound::~Sound()
 
 }
 
-bool TEF::Aurora::Sound::AddSpeech(std::string speech, bool wait)
+bool TEF::Aurora::Sound::AddSpeech(const std::string speech, bool wait)
 {
 	spdlog::debug("Adding {}blocking speech: {}", wait ? "" : "non", speech);
 	{
@@ -75,6 +75,11 @@ bool TEF::Aurora::Sound::AddSpeech(std::string speech, bool wait)
 	if (wait) WaitFor(speech);
 
 	return true;
+}
+
+bool TEF::Aurora::Sound::AddSpeech(std::stringstream& speech, bool wait)
+{
+	return AddSpeech(speech.str(), wait);
 }
 
 bool TEF::Aurora::Sound::RemoveSpeech(std::string speech)

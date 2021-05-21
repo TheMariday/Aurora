@@ -6,6 +6,54 @@
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
 
+class ControlSystem
+{
+public:
+	ControlSystem() :
+		m_recordButton(2),
+		m_confirmButton(3),
+		m_headset("sysdefault:CARD=Device") {
+	};
+	~ControlSystem() = default;
+
+	bool RegisterVoid(std::string command, std::string confirm, std::function<bool()> cb)
+	{
+		m_userControl.RegisterVoid(command, [this, &confirm, &cb]() {
+			Notify(confirm);
+			m_confirmButton.RegisterCallbackDown(cb);
+			return true;
+			});
+		return true;
+	}
+
+	bool Notify(std::string message)
+	{
+		m_headset.AddSpeech(message);
+		return true;
+	}
+
+	bool Start() {
+		m_speechRecognition.SetRecordFile("/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat");
+
+		std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
+		m_userControl.GenerateJSGF(jsgfFilepath);
+		m_speechRecognition.SetJSGF(jsgfFilepath);
+		m_recordButton.RegisterCallbackDown([this]() { return m_speechRecognition.Start(); });
+		m_recordButton.RegisterCallbackUp([this]() { return m_speechRecognition.Stop(); });
+		m_speechRecognition.RegisterCommandCallback([this](std::string command) {m_userControl.ProcessCommand(command); return true; });
+		m_headset.StartMainLoop();
+		m_recordButton.StartMainLoop();
+		m_confirmButton.StartMainLoop();
+		return true;
+	}
+
+	TEF::Aurora::Button m_recordButton;
+	TEF::Aurora::Button m_confirmButton;
+	TEF::Aurora::UserControl m_userControl;
+	TEF::Aurora::SpeechRecognition m_speechRecognition;
+	TEF::Aurora::Sound m_headset;
+};
+
 
 
 int main(int argc, char* argv[])
@@ -13,50 +61,13 @@ int main(int argc, char* argv[])
 
 	spdlog::set_level(spdlog::level::debug);
 
-	TEF::Aurora::Button button(2);
-	TEF::Aurora::UserControl userControl;
-	TEF::Aurora::SpeechRecognition speechRecognition;
-	TEF::Aurora::Sound headset("sysdefault:CARD=Device");
+	ControlSystem cs;
 
-	userControl.RegisterVoid("system reboot", [&headset]() {
-		headset.AddSpeech("system rebooted");
-		return true;
-		});
+	cs.RegisterVoid("system reboot", "reboot system?", [&cs]() {cs.Notify("system rebooted"); return true; });
 
-	userControl.RegisterBool("set safety", [&headset](bool safety) {
-		headset.AddSpeech(safety ? "safeties enabled, you are safe ish" : "safties off, you are not safe");
-		return true;
-		});
-	userControl.RegisterLimitedInt("set brightness to", [&headset](int brightness) {
-		std::stringstream ss;
-		ss << "brightness set to " << brightness;
-		headset.AddSpeech(ss.str());
-		return true;
-		});
+	cs.Notify("System starting up!");
 
-	userControl.RegisterString("set name to", { "bob", "rob" }, [&headset](std::string name) {
-		std::stringstream ss;
-		ss << "Name set to " << name;
-		headset.AddSpeech(ss.str());
-		return true; 
-		});
-
-
-	std::string recordFile = "/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat";
-
-	button.RegisterCallbackDown([&speechRecognition]() { return speechRecognition.Start(); });
-	button.RegisterCallbackUp([&speechRecognition, &recordFile]() { return speechRecognition.Stop(recordFile); });
-
-	std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
-	userControl.GenerateJSGF(jsgfFilepath);
-	speechRecognition.SetJSGF(jsgfFilepath);
-
-	speechRecognition.RegisterCommandCallback([&userControl](std::string command) {userControl.ProcessCommand(command); return true; });
-
-	headset.StartMainLoop();
-	button.StartMainLoop();
-
-	headset.AddSpeech("System starting up!", true);
+	cs.Start();
 
 
 	Sleep(1000);
@@ -66,6 +77,24 @@ int main(int argc, char* argv[])
 *
 *
 *
+*
+	userControl.RegisterBool("set safety", [&headset](bool safety) {
+		headset.AddSpeech(safety ? "safeties enabled, you are safe ish" : "safties off, you are not safe");
+		return true;
+		});
+	userControl.RegisterLimitedInt("set brightness to", [&headset](int brightness) {
+		std::stringstream ss;
+		ss << "brightness set to " << brightness;
+		headset.AddSpeech(ss);
+		return true;
+		});
+
+	userControl.RegisterString("set name to", { "bob", "rob" }, [&headset](std::string name) {
+		std::stringstream ss;
+		ss << "Name set to " << name;
+		headset.AddSpeech(ss);
+		return true;
+		});
 *
 #include <iostream>
 #include <stdio.h>

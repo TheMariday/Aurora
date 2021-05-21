@@ -2,17 +2,18 @@
 #include <string>
 #include <list>
 #include <mutex>
-
+#include <sstream>
 #include "tef/aurora/effect.h"
 
 namespace TEF::Aurora {
 
 	class Sound : public Effect {
 	public:
-		explicit Sound(std::string device="");
+		explicit Sound(std::string device = "");
 		~Sound();
 
 		bool AddSpeech(std::string speech, bool wait = false);
+		bool AddSpeech(std::stringstream& speech, bool wait = false);
 		bool RemoveSpeech(std::string speech);
 		bool RemoveSpeech();
 		bool InterruptSpeech(std::string speech);
