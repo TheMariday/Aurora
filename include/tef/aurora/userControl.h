@@ -15,6 +15,8 @@ namespace TEF::Aurora {
 		std::string GetType() { return m_type; };
 		std::string GetCommand() { return m_command; }
 		bool SetArg(std::string arg) { m_arg = arg; };
+		std::string GetArg() { return m_arg; };
+
 	protected:
 		std::string m_command;
 		std::string m_arg;
@@ -50,9 +52,8 @@ namespace TEF::Aurora {
 
 		bool FetchCommand(std::string inputString, Command*& pCommand);
 
-		bool FindCommand(std::string command, Command*& pCommand);
-
 	private:
+		bool FindCommand(std::string command, Command*& pCommand);
 
 		bool Unregister(std::string command);
 

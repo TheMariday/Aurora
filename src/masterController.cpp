@@ -1,80 +1,83 @@
 #include "tef/aurora/masterController.h"
 #include <spdlog/spdlog.h>
 
-TEF::Aurora::MasterController::MasterController() :
-	m_externalSound(""),
-	m_internalSound("sysdefault:CARD=Audio")
+
+
+TEF::Aurora::MasterController::MasterController() : m_recordButton(2), m_confirmButton(3), m_headset("sysdefault:CARD=Device")
 {
-	SetFPS(60);
-	m_externalSound.StartMainLoop();
-	m_internalSound.StartMainLoop();
 }
 
 TEF::Aurora::MasterController::~MasterController()
 {
 }
 
-bool TEF::Aurora::MasterController::MainLoopCallback()
+bool TEF::Aurora::MasterController::Start()
 {
-	std::vector<Vec3> rgb(m_LEDs.size());
-	for (Effect* effect : m_effectVector)
-	{
-		effect->Shader(rgb, m_LEDs);
-	}
+	m_speechRecognition.SetRecordFile("/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat");
+
+	m_userControl.RegisterVoid("cancel that", [this]() {
+		m_loadedCommand = {};
+		m_headset.AddSpeech("canceled command");
+		return true;
+		});
+
+	std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
+	m_userControl.GenerateJSGF(jsgfFilepath);
+	m_speechRecognition.SetJSGF(jsgfFilepath);
+
+	m_recordButton.RegisterCallbackDown([this]() { return m_speechRecognition.Start(); });
+	m_recordButton.RegisterCallbackUp([this]() { return m_speechRecognition.Stop(); });
+
+	m_speechRecognition.RegisterCommandCallback([this](std::string command) {return LoadCommand(command); });
+	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(); });
+
+	m_headset.StartMainLoop();
+	m_recordButton.StartMainLoop();
+	m_confirmButton.StartMainLoop();
+	return true;
 }
 
-bool TEF::Aurora::MasterController::registerEffect(Effect* pEffect)
+bool TEF::Aurora::MasterController::RunCallback()
 {
-	if (!pEffect) {
-		spdlog::error("Master Controller Cannot register null effect");
-		return false;
-	}
-
-	m_effectVector.push_back(pEffect);
-
-	if (!pEffect->RegisterMC(this))
+	if (!m_loadedCommand)
 	{
-		spdlog::error("Master Controller failed to register itself with this effect\n");
+		spdlog::error("no callback registered");
+		m_headset.AddSpeech("No callback registered");
 		return false;
 	}
+
+	if (m_loadedCommand->Run())
+	{
+		m_headset.AddSpeech("command success");
+	}
+	else
+	{
+		m_headset.AddSpeech("command failed");
+	}
+
+	m_loadedCommand = {};
 
 	return true;
 }
 
-bool TEF::Aurora::MasterController::Notify(std::string message)
+bool TEF::Aurora::MasterController::LoadCommand(std::string command)
 {
-	std::vector<Sound*> devices;
-	bool success = true;
-
-	devices.push_back(GetInternalSound());
-	if (forwardAudio) devices.push_back(GetExternalSound());
-
-	for (Sound* device : devices)
+	if (!m_userControl.FetchCommand(command, m_loadedCommand))
 	{
-		if (!device)
-		{
-			spdlog::error("Master controller cannot get internal sound to notify user");
-			success = false;
-			continue;
-		}
-
-		if (!device->AddSpeech(message))
-		{
-			spdlog::error("Master Controller cannot add speech to internal sound");
-			success = false;
-			continue;
-		}
+		spdlog::error("Failed to fetch command");
+		return false;
 	}
-
-	return success;
-}
-
-TEF::Aurora::Sound* TEF::Aurora::MasterController::GetInternalSound()
-{
-	return &m_internalSound;
-}
-
-TEF::Aurora::Sound* TEF::Aurora::MasterController::GetExternalSound()
-{
-	return &m_externalSound;
+	
+	if (command == "cancel that")
+	{
+		return RunCallback();	
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << m_loadedCommand->GetCommand() << " " << m_loadedCommand->GetArg() << ", confirm?";
+		m_headset.AddSpeech(ss);
+	}
+	
+	return true;
 }

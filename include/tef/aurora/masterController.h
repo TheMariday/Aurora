@@ -1,29 +1,33 @@
 #pragma once
-#include "tef/aurora/effect.h"
+#include "tef/aurora/button.h"
+#include "tef/aurora/userControl.h"
+#include "tef/aurora/speechRecognition.h"
 #include "tef/aurora/sound.h"
 
 namespace TEF::Aurora {
 
-	class MasterController : public Effect {
+	class MasterController
+	{
 	public:
 		MasterController();
 		~MasterController();
-		bool MainLoopCallback() override;
-		bool registerEffect(Effect* pEffect);
 
-		bool Notify(std::string message);
+		bool Start();
 
-		Sound* GetInternalSound();
-		Sound* GetExternalSound();
+		Sound* GetSound() { return &m_headset; };
+
+		UserControl* GetUserControl() { return &m_userControl; };
+
 	private:
+		bool RunCallback();
+		bool LoadCommand(std::string command);
 
-		Sound m_externalSound;
-		Sound m_internalSound;
-
-		bool forwardAudio = true;
-
-		std::vector<Effect*> m_effectVector;
-		std::vector<LED> m_LEDs;
-
+		Command* m_loadedCommand;
+		Button m_recordButton;
+		Button m_confirmButton;
+		UserControl m_userControl;
+		SpeechRecognition m_speechRecognition;
+		Sound m_headset;
 	};
-};
+}
+

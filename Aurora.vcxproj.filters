@@ -52,9 +52,6 @@
     <ClCompile Include="src\testSuite.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="include\tef\aurora\effects\simpleEffect.h">
-      <Filter>effects</Filter>
-    </ClCompile>
     <ClCompile Include="src\userControl.cpp">
       <Filter>src</Filter>
     </ClCompile>

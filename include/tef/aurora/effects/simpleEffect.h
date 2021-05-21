@@ -21,7 +21,7 @@ namespace TEF::Aurora::Effects
 		{
 			spdlog::debug("Simple Effect main loop looping 2\n");
 			if(m_pMC)
-				m_pMC->GetExternalSound()->AddSpeech("boop");
+				m_pMC->GetSound()->AddSpeech("boop");
 			std::this_thread::sleep_for(std::chrono::seconds(2));
 			return true;
 		}
