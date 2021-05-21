@@ -15,8 +15,8 @@ namespace TEF::Aurora {
 
 		~Button() {};
 
-		bool RegisterCallbackDown(std::function<bool()> callback) { m_downCallback = callback; };
-		bool RegisterCallbackUp(std::function<bool()> callback) { m_upCallback = callback; };
+		bool RegisterCallbackDown(std::function<bool()> callback = {}) { m_downCallback = callback; };
+		bool RegisterCallbackUp(std::function<bool()> callback = {}) { m_upCallback = callback; };
 
 	private:
 

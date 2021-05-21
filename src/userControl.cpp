@@ -6,7 +6,6 @@
 #include <iostream>
 
 
-
 bool Split(std::string& command, std::string& argument)
 {
 	std::istringstream iss(command);
@@ -29,169 +28,251 @@ bool Split(std::string& command, std::string& argument)
 };
 
 
-struct TEF::Aurora::Command
-{
-	virtual bool isValid(std::string arg) = 0;
-	virtual bool allValid(std::vector<std::string>& valid) = 0;
-	virtual bool run(std::string arg) = 0;
-};
-
-
 struct CommandVoid : public TEF::Aurora::Command
 {
+	CommandVoid(std::string command, std::function<bool()>& callback) : m_callback(callback) {
+		m_type = "void";
+		m_command = command;
+	};
 
-	CommandVoid(std::function<bool()>& c) : cb(c) {};
+	std::function<bool()> m_callback;
 
-	std::function<bool()> cb;
-
-	bool isValid(std::string arg) override { return arg.empty(); }
-	bool allValid(std::vector<std::string>& valid) override
+	bool GetValidArgs(std::vector<std::string>& valid) override
 	{
 		return true;
 	}
 
-	bool run(std::string arg) override { return cb(); }
-};
+	bool Run() override {
 
+		if (!m_callback)
+		{
+			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
+			return false;
+		}
+
+		return m_callback();
+	}
+};
 
 struct CommandBool : public TEF::Aurora::Command
 {
-	CommandBool(std::function<bool(bool)>& c, std::map<std::string, bool> va) : cb(c), validArgs(va) {};
+	CommandBool(std::string command, std::function<bool(bool)>& callback, std::map<std::string, bool> argMap) : m_callback(callback), m_argMap(argMap) {
+		m_type = "bool";
+		m_command = command;
+	};
 
-	std::function<bool(bool)> cb;
-	std::map<std::string, bool> validArgs;
+	std::function<bool(bool)> m_callback;
+	std::map<std::string, bool> m_argMap;
 
-	bool isValid(std::string arg) { return validArgs.count(arg) == 1; }
-	bool allValid(std::vector<std::string>& valid) override
+	bool GetValidArgs(std::vector<std::string>& valid) override
 	{
-		for (auto const& [key, val] : validArgs)
+		for (auto const& [key, val] : m_argMap)
 			valid.push_back(key);
 		return true;
 	}
 
-	bool run(std::string arg) override { return cb(validArgs[arg]); }
+	bool Run() override {
+
+		if (!m_callback)
+		{
+			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
+			return false;
+		}
+
+		return m_callback(m_argMap[m_arg]);
+	}
 };
 
 struct CommandInt : public TEF::Aurora::Command
 {
-	CommandInt(std::function<bool(int)>& c, std::map<std::string, int> va) : cb(c), validArgs(va) {};
+	CommandInt(std::string command, std::function<bool(int)>& callback, std::map<std::string, int> argMap) : m_callback(callback), m_argMap(argMap) {
+		m_type = "int";
+		m_command = command;
+	};
 
-	std::function<bool(int)> cb;
-	std::map<std::string, int> validArgs;
+	std::function<bool(int)> m_callback;
+	std::map<std::string, int> m_argMap;
 
-	bool isValid(std::string arg) { return validArgs.count(arg) > 0; }
-	bool allValid(std::vector<std::string>& valid) override
+	bool GetValidArgs(std::vector<std::string>& valid) override
 	{
-		for (auto const& [key, val] : validArgs)
+		for (auto const& [key, val] : m_argMap)
 			valid.push_back(key);
 		return true;
 	}
 
-	bool run(std::string arg) override { return cb(validArgs[arg]); }
-};
+	bool Run() override {
+		
+		if (!m_callback)
+		{
+			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
+			return false;
+		}
 
+		return m_callback(m_argMap[m_arg]);
+	}
+};
 
 struct CommandStr : public TEF::Aurora::Command
 {
-	CommandStr(std::function<bool(std::string)>& c, std::vector<std::string> va) : cb(c), validArgs(va) {};
+	CommandStr(std::string command, std::function<bool(std::string)>& callback, std::vector<std::string> argMap) : m_callback(callback), m_argMap(argMap) {
+		m_type = "string";
+		m_command = command;
+	};
 
-	std::function<bool(std::string)> cb;
-	std::vector<std::string> validArgs;
+	std::function<bool(std::string)> m_callback;
+	std::vector<std::string> m_argMap;
 
-	bool isValid(std::string arg) override
+	bool GetValidArgs(std::vector<std::string>& valid) override
 	{
-		return std::find(validArgs.begin(), validArgs.end(), arg) != validArgs.end();
-	}
-	bool allValid(std::vector<std::string>& valid) override
-	{
-		valid = validArgs;
+		valid = m_argMap;
 		return true;
 	}
 
-	bool run(std::string arg) override { return cb(arg); }
-};
+	bool Run() override 
+	{
+		
+		if (!m_callback)
+		{
+			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
+			return false;
+		}
 
+		return m_callback(m_arg);
+	}
+};
 
 TEF::Aurora::UserControl::UserControl()
 {
-	SetFPS(0);
 }
 
 TEF::Aurora::UserControl::~UserControl()
 {
-	for (auto const& [mapCommand, mapCallback] : m_allCommands)
-		delete m_allCommands[mapCommand];
+	for (Command* command : m_allCommands)
+		delete command;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<bool()> cb)
+bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<bool()> callback)
 {
 	spdlog::debug("User Control registering void command {}", command);
 
-	if (!m_acceptNewCommands && (m_allCommands.count(command) == 0))
+	Command* pCommand;
+	if (FindCommand(command, pCommand))
 	{
-		spdlog::error("User Control has been locked and therefore cannot register new commands");
-		return false;
-	}
+		std::string existingType = pCommand->GetType(); // get type failed
+		if (existingType != "void")
+		{
+			spdlog::error("You cannot overwrite command type ({}) with a different type. (void)", existingType);
+			return false;
+		}
 
-	if (m_allCommands.count(command) != 0)
-	{
 		spdlog::warn("User Control overwriting command {}", command);
-		delete m_allCommands[command];
-		m_allCommands[command] = new CommandVoid(cb);
+		CommandVoid* pCommandVoid = (CommandVoid*)pCommand;
+		pCommandVoid->m_callback = callback;
 	}
-	else if (m_acceptNewCommands) {
-		m_allCommands[command] = new CommandVoid(cb);
+	else
+	{
+		m_allCommands.push_back(new CommandVoid(command, callback));
 	}
-
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<bool(bool)> cb)
+bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<bool(bool)> callback)
 {
 	spdlog::debug("User Control registering bool command {}", command);
 
-	if (m_allCommands.count(command) != 0)
+	Command* pCommand;
+	if (FindCommand(command, pCommand))
 	{
-		spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
-		return false;
+		std::string existingType = pCommand->GetType();
+		if (existingType != "bool")
+		{
+			spdlog::error("You cannot overwrite command type ({}) with a different type. (bool)", existingType);
+			return false;
+		}
+
+		spdlog::warn("User Control overwriting command {}", command);
+		CommandBool* pCommandBool = (CommandBool*)pCommand;
+		pCommandBool->m_callback = callback;
+	}
+	else
+	{
+		m_allCommands.push_back(new CommandBool(command, callback, m_boolOptions));
 	}
 
-	m_allCommands[command] = new CommandBool(cb, m_boolOptions);
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::function<bool(int)> cb)
+bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::function<bool(int)> callback)
 {
 	spdlog::debug("User Control registering int command {}", command);
 
-
-	if (m_allCommands.count(command) != 0)
+	Command* pCommand;
+	if (FindCommand(command, pCommand))
 	{
-		spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
-		return false;
+		std::string existingType = pCommand->GetType();
+		if (existingType != "int")
+		{
+			spdlog::error("You cannot overwrite command type ({}) with a different type. (int)", existingType);
+			return false;
+		}
+
+		spdlog::warn("User Control overwriting command {}", command);
+		CommandInt* pCommandInt = (CommandInt*)pCommand;
+		pCommandInt->m_callback = callback;
+	}
+	else
+	{
+		m_allCommands.push_back(new CommandInt(command, callback, m_intOptions));
 	}
 
-	m_allCommands[command] = new CommandInt(cb, m_intOptions);
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> cb)
+bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> callback)
 {
 	spdlog::debug("User Control registering string command {}", command);
 
-	if (m_allCommands.count(command) != 0)
+	Command* pCommand;
+	if (FindCommand(command, pCommand))
 	{
-		spdlog::error("User Control cannot register command {} as it overrides an existing command", command);
-		return false;
+		std::string existingType = pCommand->GetType();
+		if (existingType != "string")
+		{
+			spdlog::error("You cannot overwrite command type ({}) with a different type. (string)", existingType);
+			return false;
+		}
+
+		if (!validArgs.empty())
+		{
+			std::vector<std::string> existingArgs;
+			pCommand->GetValidArgs(existingArgs);
+			if (existingArgs != validArgs)
+			{
+				spdlog::error("You cannot overwrite command with new string arguments");
+				return false;
+			}
+		}
+
+		spdlog::warn("User Control overwriting command {}", command);
+		CommandStr* pCommandString = (CommandStr*)pCommand;
+		pCommandString->m_callback = callback;
+	}
+	else
+	{
+		m_allCommands.push_back(new CommandStr(command, callback, validArgs));
 	}
 
-	m_allCommands[command] = new CommandStr(cb, validArgs);
 	return true;
+}
+
+bool TEF::Aurora::UserControl::RegisterString(std::string command, std::function<bool(std::string)> cb)
+{
+	return RegisterString(command, {}, cb);
 }
 
 
@@ -199,74 +280,66 @@ bool TEF::Aurora::UserControl::Unregister(std::string command)
 {
 	spdlog::debug("User Control unregistering command {}", command);
 
-	if (m_allCommands.count(command) == 0)
+	Command* pCommand;
+	if (FindCommand(command, pCommand))
 	{
 		spdlog::error("User Control cannot unregister command {} as it does not exist", command);
 		return false;
 	}
 
-	delete m_allCommands[command];
-	m_allCommands.erase(command);
+	std::remove(m_allCommands.begin(), m_allCommands.end(), pCommand);
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::ProcessCommand(std::string inputString)
+bool TEF::Aurora::UserControl::FetchCommand(std::string inputString, Command*& pCommand)
 {
 	spdlog::debug("User Control processing input '{}'", inputString);
 
 	std::string argument;
 	std::string command = inputString;
 
-	if (m_allCommands.count(inputString) == 1)
-	{
+	// See if the command exists as it is
+	if (FindCommand(command, pCommand)) {
 		spdlog::debug("User Control recognised void command '{}'", inputString);
-		Command* callback = m_allCommands[inputString];
-		return callback->run("");
+		return true;
 	}
 
+	// Nope so lets split it
 	if (!Split(command, argument))
 	{
 		spdlog::error("User Control failed to split input '{}'", inputString);
 		return false;
-	};
+	}
 
-	for (auto const& [mapCommand, mapCallback] : m_allCommands)
-	{
-		if (command == mapCommand)
-		{
-			if (mapCallback->isValid(argument))
-			{
-				spdlog::debug("User Control recognised command '{}' '{}'", command, argument);
-				return mapCallback->run(argument);
-			}
-			else
-			{
-				spdlog::error("User Control recognised command '{}' but argument '{}' is invalid", command, argument);
-				return false;
-			}
-		}
+	// And try again!
+	if (FindCommand(command, pCommand)) {
+		spdlog::debug("User Control recognised command '{}' '{}'", command, argument);
+		pCommand->SetArg(argument);
+		return true;
 	}
 
 	spdlog::error("User Control failed to find callback for command '{}'", inputString);
 	return false;
 }
 
-bool TEF::Aurora::UserControl::MainLoopCallback()
-{
-	std::string input;
-	std::cout << "Command: ";
 
-	getline(std::cin, input);
-	ProcessCommand(input);
+bool TEF::Aurora::UserControl::FindCommand(std::string command, Command*& pCommand)
+{
+	std::vector<Command*>::iterator it = std::find_if(m_allCommands.begin(), m_allCommands.end(), [command](Command* s) { return s->GetCommand() == command; });
+	if (it == m_allCommands.end())
+	{
+		return false;
+	}
+
+	pCommand = *it;
+
+	return true;
 }
 
-bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath, bool lock)
+bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
 {
-
-	m_acceptNewCommands = lock;
-
 	std::ofstream ss;
 
 	ss.open(filepath.c_str(), std::ofstream::out | std::ofstream::trunc);
@@ -275,12 +348,13 @@ bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath, bool lock)
 	ss << "grammar highbeam;\n\n";
 
 	std::vector<std::string> commands;
-	for (auto const& [Command, Callback] : m_allCommands)
+	for (Command* command : m_allCommands)
 	{
-		commands.push_back(Command);
+		std::string commandString = command->GetCommand();
+		commands.push_back(commandString);
 		std::vector<std::string> validArgs;
-		Callback->allValid(validArgs);
-		ss << "<" << Command << "> = " << Command;
+		command->GetValidArgs(validArgs);
+		ss << "<" << commandString << "> = " << commandString;
 		if (validArgs.empty())
 		{
 			ss << ";\n";
@@ -303,7 +377,8 @@ bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath, bool lock)
 	{
 		ss << "<" << commands[0] << ">;";
 	}
-	else {
+	else
+	{
 		ss << "( ";
 		for (int i = 0; i < commands.size() - 1; i++)
 		{
@@ -311,7 +386,6 @@ bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath, bool lock)
 		}
 		ss << "<" << commands.back() << "> );";
 	}
-
 
 	ss.close();
 

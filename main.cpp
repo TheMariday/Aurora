@@ -5,7 +5,7 @@
 #include "tef/aurora/sound.h"
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
-
+/*
 class ControlSystem
 {
 public:
@@ -16,36 +16,81 @@ public:
 	};
 	~ControlSystem() = default;
 
-	bool RegisterVoid(std::string command, std::string confirm, std::function<bool()> cb)
+	bool RegisterVoid(std::string command, std::function<bool()> cb)
 	{
-		m_userControl.RegisterVoid(command, [this, &confirm, &cb]() {
-			Notify(confirm);
-			m_confirmButton.RegisterCallbackDown(cb);
-			return true;
+		m_userControl.RegisterVoid(command, [this, &command, &cb]() {
+			PreloadCommand
+				return true;
 			});
 		return true;
 	}
 
-	bool Notify(std::string message)
+	bool PreloadCommand()
 	{
-		m_headset.AddSpeech(message);
-		return true;
+		m_loadedCommand = cmd
 	}
+
+	/*
+	std::stringstream ss;
+	ss << command << "?";
+	m_headset.AddSpeech(ss);
+	m_confirmButton.RegisterCallbackDown(cb);
+	return true;
+	
+
+	bool RunCallback()
+	{
+		TEF::Aurora::Command* pCommand;
+		bool commandRecognised = m_userControl.FetchCommand("command", pCommand);
+		if (commandRecognised) {
+			bool success = m_loadedCommand->run();
+			if (success)
+			{
+				m_headset.AddSpeech("command success");
+			}
+			else
+			{
+				m_headset.AddSpeech("command failed");
+			}
+
+		}
+		else
+		{
+			m_headset.AddSpeech("Cannot recognise command");
+		}
+		// run the last registered callback
+		// 
+	}
+
 
 	bool Start() {
 		m_speechRecognition.SetRecordFile("/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat");
 
+		RegisterVoid("cancel that", [this]() {
+			m_confirmButton.RegisterCallbackDown();
+			m_headset.AddSpeech("cancled command");
+			return true;
+			});
+
 		std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
 		m_userControl.GenerateJSGF(jsgfFilepath);
 		m_speechRecognition.SetJSGF(jsgfFilepath);
+
 		m_recordButton.RegisterCallbackDown([this]() { return m_speechRecognition.Start(); });
 		m_recordButton.RegisterCallbackUp([this]() { return m_speechRecognition.Stop(); });
+
 		m_speechRecognition.RegisterCommandCallback([this](std::string command) {m_userControl.ProcessCommand(command); return true; });
+
+
+
 		m_headset.StartMainLoop();
 		m_recordButton.StartMainLoop();
 		m_confirmButton.StartMainLoop();
 		return true;
 	}
+
+	TEF::Aurora::Command* m_loadedCommand;
+
 
 	TEF::Aurora::Button m_recordButton;
 	TEF::Aurora::Button m_confirmButton;
@@ -54,30 +99,48 @@ public:
 	TEF::Aurora::Sound m_headset;
 };
 
+*/
+
+void Test() {
+
+	TEF::Aurora::UserControl userControl;
+
+	userControl.RegisterVoid("system reboot");
+	userControl.RegisterVoid("system reboot", []() {return false; });
+	userControl.RegisterVoid("system reboot", []() {spdlog::debug("system rebooted"); return true; });
+
+	userControl.RegisterBool("system reboot"); //should fail
+
+	userControl.RegisterString("set name to", { "bob", "rob" });
+	userControl.RegisterString("set name to", [](std::string s) {spdlog::debug("setting name to {}", s); return true; });
 
 
-int main(int argc, char* argv[])
-{
+	userControl.RegisterString("set name to", { "sam" }, [](std::string s) {spdlog::debug("setting name to {}", s); return true; }); //should fail
+	userControl.RegisterString("set name to", { "sam" }); //should also fail
 
-	spdlog::set_level(spdlog::level::debug);
+	TEF::Aurora::Command* command;
+	userControl.FetchCommand("system reboot", command);
+	command->Run();
 
-	ControlSystem cs;
-
-	cs.RegisterVoid("system reboot", "reboot system?", [&cs]() {cs.Notify("system rebooted"); return true; });
-
-	cs.Notify("System starting up!");
-
-	cs.Start();
-
-
-	Sleep(1000);
-	return 0;
+	userControl.FetchCommand("set name to bob", command);
+	command->Run();
 }
+
 /*
 *
 *
 *
 *
+*
+
+	ControlSystem cs;
+
+	cs.RegisterVoid("system reboot", [&cs]() {cs.Notify("system rebooted"); return true; });
+
+	cs.Notify("System starting up!");
+
+	cs.Start();
+
 	userControl.RegisterBool("set safety", [&headset](bool safety) {
 		headset.AddSpeech(safety ? "safeties enabled, you are safe ish" : "safties off, you are not safe");
 		return true;
@@ -401,3 +464,14 @@ tail.AddSpeech("Audio test complete", true);
 //printf("herro!\n");
 //std::this_thread::sleep_for(std::chrono::seconds(10));
 
+
+int main(int argc, char* argv[])
+{
+
+	spdlog::set_level(spdlog::level::debug);
+
+	Test();
+
+	Sleep(1000);
+	return 0;
+}

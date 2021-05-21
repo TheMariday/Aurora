@@ -7,7 +7,19 @@
 
 namespace TEF::Aurora {
 
-	struct Command; // forward definition
+	class Command
+	{
+	public:
+		virtual bool GetValidArgs(std::vector<std::string>& valid) = 0;
+		virtual bool Run() = 0;
+		std::string GetType() { return m_type; };
+		std::string GetCommand() { return m_command; }
+		bool SetArg(std::string arg) { m_arg = arg; };
+	protected:
+		std::string m_command;
+		std::string m_arg;
+		std::string m_type;
+	};
 
 	const static std::map<std::string, bool> m_boolOptions = {
 		{"no", false}, {"false", false}, {"off", false}, {"disable", false},
@@ -19,7 +31,7 @@ namespace TEF::Aurora {
 		{"five",5}, {"six", 6}, {"seven", 7}, {"eight", 8}, {"nine", 9}, {"ten", 10}
 	};
 
-	class UserControl : public Effect {
+	class UserControl {
 	public:
 		UserControl();
 		~UserControl();
@@ -32,20 +44,19 @@ namespace TEF::Aurora {
 
 		bool RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> cb = {});
 
-		bool Unregister(std::string command);
+		bool RegisterString(std::string command, std::function<bool(std::string)> cb = {});
 
-		bool ProcessCommand(std::string inputString);
+		bool GenerateJSGF(std::string& filepath);
 
-		bool MainLoopCallback() override;
+		bool FetchCommand(std::string inputString, Command*& pCommand);
 
-		bool GenerateJSGF(std::string& filepath, bool lock = true);
-
+		bool FindCommand(std::string command, Command*& pCommand);
 
 	private:
 
-		bool m_acceptNewCommands = true;
-		std::map<std::string, Command*> m_allCommands;
+		bool Unregister(std::string command);
 
-		
+		std::vector<Command*> m_allCommands;
+
 	};
 }
