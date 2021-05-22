@@ -34,22 +34,10 @@
     <ClCompile Include="src\effect.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\effectRunner.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\masterController.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\safety.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sensors.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\sound.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\testSuite.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\userControl.cpp">
@@ -61,27 +49,18 @@
     <ClCompile Include="src\button.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\smartFuse.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\effect.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\effectRunner.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\tef\aurora\masterController.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\safety.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tef\aurora\sensors.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\tef\aurora\sound.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tef\aurora\testSuite.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="lib\svl\Basics.h">
@@ -165,7 +144,7 @@
     <ClInclude Include="include\tef\aurora\button.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\led.h">
+    <ClInclude Include="include\tef\aurora\smartFuse.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

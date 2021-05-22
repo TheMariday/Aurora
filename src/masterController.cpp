@@ -59,7 +59,7 @@ bool TEF::Aurora::MasterController::RunCallback(Command* command)
 {
 	if (!command)
 	{
-		spdlog::error("no callback to run");
+		spdlog::warn("no callback to run");
 		m_headset.AddSpeech("No callback registered");
 		return false;
 	}

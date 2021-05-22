@@ -7,18 +7,8 @@
 
 int main(int argc, char* argv[])
 {
-
 	spdlog::set_level(spdlog::level::debug);
 
-	TEF::Aurora::MasterController master;
-
-	master.GetUserControl()->RegisterVoid("system reboot", [&master]() {master.GetSound()->AddSpeech("system rebooting"); return true; });
-
-	master.GetUserControl()->RegisterVoid("system explode", [&master]() {return false; });
-
-	master.GetSound()->AddSpeech("System starting up!");
-
-	master.Start();
 
 	Sleep(1000);
 	return 0;
@@ -30,6 +20,18 @@ int main(int argc, char* argv[])
 *
 *
 *
+
+	TEF::Aurora::MasterController master;
+
+	master.GetUserControl()->RegisterVoid("system reboot", [&master]() {master.GetSound()->AddSpeech("system rebooting"); return true; });
+
+	master.GetUserControl()->RegisterVoid("system explode", [&master]() {return false; });
+
+	master.GetSound()->AddSpeech("System starting up!");
+
+	master.Start();
+
+
 
 TEF::Aurora::UserControl userControl;
 

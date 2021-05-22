@@ -92,26 +92,19 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\button.cpp" />
     <ClCompile Include="src\effect.cpp" />
-    <ClCompile Include="src\effectRunner.cpp" />
     <ClCompile Include="src\masterController.cpp" />
-    <ClCompile Include="src\safety.cpp" />
-    <ClCompile Include="src\sensors.cpp" />
+    <ClCompile Include="src\smartFuse.cpp" />
     <ClCompile Include="src\sound.cpp" />
     <ClCompile Include="src\speechRecognition.cpp" />
-    <ClCompile Include="src\testSuite.cpp" />
     <ClCompile Include="src\userControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\button.h" />
     <ClInclude Include="include\tef\aurora\effect.h" />
-    <ClInclude Include="include\tef\aurora\effectRunner.h" />
-    <ClInclude Include="include\tef\aurora\led.h" />
     <ClInclude Include="include\tef\aurora\masterController.h" />
-    <ClInclude Include="include\tef\aurora\safety.h" />
-    <ClInclude Include="include\tef\aurora\sensors.h" />
+    <ClInclude Include="include\tef\aurora\smartFuse.h" />
     <ClInclude Include="include\tef\aurora\sound.h" />
     <ClInclude Include="include\tef\aurora\speechRecognition.h" />
-    <ClInclude Include="include\tef\aurora\testSuite.h" />
     <ClInclude Include="include\tef\aurora\userControl.h" />
     <ClInclude Include="lib\fadecandy\opc_client.h" />
     <ClInclude Include="lib\rapidjson\document.h" />
