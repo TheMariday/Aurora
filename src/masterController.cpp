@@ -16,10 +16,28 @@ bool TEF::Aurora::MasterController::Start()
 	m_speechRecognition.SetRecordFile("/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat");
 
 	m_userControl.RegisterVoid("cancel that", [this]() {
+		std::stringstream ss;
+		ss << "canceled command " << m_loadedCommand->GetCommandAndArgs();
+		m_headset.AddSpeech(ss);
 		m_loadedCommand = {};
-		m_headset.AddSpeech("canceled command");
 		return true;
-		});
+		}, false);
+
+	m_userControl.RegisterVoid("whats loaded", [this]() {
+
+		std::stringstream ss;
+		if (m_loadedCommand)
+		{
+			ss << "Loaded command " << m_loadedCommand->GetCommandAndArgs();
+		}
+		else
+		{
+			ss << "No command loaded";
+		}
+
+		m_headset.AddSpeech(ss);
+		return true;
+		}, false);
 
 	std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
 	m_userControl.GenerateJSGF(jsgfFilepath);
@@ -29,7 +47,7 @@ bool TEF::Aurora::MasterController::Start()
 	m_recordButton.RegisterCallbackUp([this]() { return m_speechRecognition.Stop(); });
 
 	m_speechRecognition.RegisterCommandCallback([this](std::string command) {return LoadCommand(command); });
-	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(); });
+	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(m_loadedCommand); });
 
 	m_headset.StartMainLoop();
 	m_recordButton.StartMainLoop();
@@ -37,22 +55,24 @@ bool TEF::Aurora::MasterController::Start()
 	return true;
 }
 
-bool TEF::Aurora::MasterController::RunCallback()
+bool TEF::Aurora::MasterController::RunCallback(Command* command)
 {
-	if (!m_loadedCommand)
+	if (!command)
 	{
-		spdlog::error("no callback registered");
+		spdlog::error("no callback to run");
 		m_headset.AddSpeech("No callback registered");
 		return false;
 	}
 
-	if (m_loadedCommand->Run())
+	bool commandSuccess = command->Run();
+
+	if (!commandSuccess)
 	{
-		m_headset.AddSpeech("command success");
-	}
-	else
-	{
-		m_headset.AddSpeech("command failed");
+		std::stringstream ss;
+		ss << command->GetCommandAndArgs() << " failed";
+		m_headset.AddSpeech(ss);
+		spdlog::error(ss.str());
+		return false;
 	}
 
 	m_loadedCommand = {};
@@ -60,24 +80,26 @@ bool TEF::Aurora::MasterController::RunCallback()
 	return true;
 }
 
-bool TEF::Aurora::MasterController::LoadCommand(std::string command)
+bool TEF::Aurora::MasterController::LoadCommand(std::string commandStr)
 {
-	if (!m_userControl.FetchCommand(command, m_loadedCommand))
+	Command* command;
+	if (!m_userControl.FetchCommand(commandStr, command))
 	{
 		spdlog::error("Failed to fetch command");
 		return false;
 	}
-	
-	if (command == "cancel that")
+
+	if (command->IsConfirmationRequired())
 	{
-		return RunCallback();	
-	}
-	else
-	{
+		m_loadedCommand = command;
 		std::stringstream ss;
 		ss << m_loadedCommand->GetCommand() << " " << m_loadedCommand->GetArg() << ", confirm?";
 		m_headset.AddSpeech(ss);
 	}
-	
+	else
+	{
+		RunCallback(command);
+	}
+
 	return true;
 }

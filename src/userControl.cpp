@@ -30,9 +30,10 @@ bool Split(std::string& command, std::string& argument)
 
 struct CommandVoid : public TEF::Aurora::Command
 {
-	CommandVoid(std::string command, std::function<bool()>& callback) : m_callback(callback) {
+	CommandVoid(std::string command, std::function<bool()>& callback, bool requiresConfirmation) : m_callback(callback) {
 		m_type = "void";
 		m_command = command;
+		m_requiresConfirmation = requiresConfirmation;
 	};
 
 	std::function<bool()> m_callback;
@@ -56,9 +57,10 @@ struct CommandVoid : public TEF::Aurora::Command
 
 struct CommandBool : public TEF::Aurora::Command
 {
-	CommandBool(std::string command, std::function<bool(bool)>& callback, std::map<std::string, bool> argMap) : m_callback(callback), m_argMap(argMap) {
+	CommandBool(std::string command, std::function<bool(bool)>& callback, std::map<std::string, bool> argMap, bool requiresConfirmation) : m_callback(callback), m_argMap(argMap) {
 		m_type = "bool";
 		m_command = command;
+		m_requiresConfirmation = requiresConfirmation;
 	};
 
 	std::function<bool(bool)> m_callback;
@@ -85,9 +87,12 @@ struct CommandBool : public TEF::Aurora::Command
 
 struct CommandInt : public TEF::Aurora::Command
 {
-	CommandInt(std::string command, std::function<bool(int)>& callback, std::map<std::string, int> argMap) : m_callback(callback), m_argMap(argMap) {
+	CommandInt(std::string command, std::function<bool(int)>& callback, std::map<std::string, int> argMap, bool requiresConfirmation) : 
+		m_callback(callback), 
+		m_argMap(argMap) {
 		m_type = "int";
 		m_command = command;
+		m_requiresConfirmation = requiresConfirmation;
 	};
 
 	std::function<bool(int)> m_callback;
@@ -101,7 +106,7 @@ struct CommandInt : public TEF::Aurora::Command
 	}
 
 	bool Run() override {
-		
+
 		if (!m_callback)
 		{
 			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
@@ -114,9 +119,12 @@ struct CommandInt : public TEF::Aurora::Command
 
 struct CommandStr : public TEF::Aurora::Command
 {
-	CommandStr(std::string command, std::function<bool(std::string)>& callback, std::vector<std::string> argMap) : m_callback(callback), m_argMap(argMap) {
+	CommandStr(std::string command, std::function<bool(std::string)>& callback, std::vector<std::string> argMap, bool requiresConfirmation) : 
+		m_callback(callback), 
+		m_argMap(argMap) {
 		m_type = "string";
 		m_command = command;
+		m_requiresConfirmation = requiresConfirmation;
 	};
 
 	std::function<bool(std::string)> m_callback;
@@ -128,9 +136,9 @@ struct CommandStr : public TEF::Aurora::Command
 		return true;
 	}
 
-	bool Run() override 
+	bool Run() override
 	{
-		
+
 		if (!m_callback)
 		{
 			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
@@ -152,7 +160,7 @@ TEF::Aurora::UserControl::~UserControl()
 }
 
 
-bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<bool()> callback)
+bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<bool()> callback, bool requiresConfirmation)
 {
 	spdlog::debug("User Control registering void command {}", command);
 
@@ -169,17 +177,18 @@ bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<b
 		spdlog::warn("User Control overwriting command {}", command);
 		CommandVoid* pCommandVoid = (CommandVoid*)pCommand;
 		pCommandVoid->m_callback = callback;
+		pCommandVoid->SetConfirmationRequired(requiresConfirmation);
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandVoid(command, callback));
+		m_allCommands.push_back(new CommandVoid(command, callback, requiresConfirmation));
 	}
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<bool(bool)> callback)
+bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<bool(bool)> callback, bool requiresConfirmation)
 {
 	spdlog::debug("User Control registering bool command {}", command);
 
@@ -196,17 +205,18 @@ bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<b
 		spdlog::warn("User Control overwriting command {}", command);
 		CommandBool* pCommandBool = (CommandBool*)pCommand;
 		pCommandBool->m_callback = callback;
+		pCommandBool->SetConfirmationRequired(requiresConfirmation);
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandBool(command, callback, m_boolOptions));
+		m_allCommands.push_back(new CommandBool(command, callback, m_boolOptions, requiresConfirmation));
 	}
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::function<bool(int)> callback)
+bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::function<bool(int)> callback, bool requiresConfirmation)
 {
 	spdlog::debug("User Control registering int command {}", command);
 
@@ -223,17 +233,19 @@ bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::func
 		spdlog::warn("User Control overwriting command {}", command);
 		CommandInt* pCommandInt = (CommandInt*)pCommand;
 		pCommandInt->m_callback = callback;
+		pCommandInt->SetConfirmationRequired(requiresConfirmation);
+
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandInt(command, callback, m_intOptions));
+		m_allCommands.push_back(new CommandInt(command, callback, m_intOptions, requiresConfirmation));
 	}
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> callback)
+bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> callback, bool requiresConfirmation)
 {
 	spdlog::debug("User Control registering string command {}", command);
 
@@ -261,16 +273,18 @@ bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<s
 		spdlog::warn("User Control overwriting command {}", command);
 		CommandStr* pCommandString = (CommandStr*)pCommand;
 		pCommandString->m_callback = callback;
+		pCommandString->SetConfirmationRequired(requiresConfirmation);
+
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandStr(command, callback, validArgs));
+		m_allCommands.push_back(new CommandStr(command, callback, validArgs, requiresConfirmation));
 	}
 
 	return true;
 }
 
-bool TEF::Aurora::UserControl::RegisterString(std::string command, std::function<bool(std::string)> cb)
+bool TEF::Aurora::UserControl::RegisterString(std::string command, std::function<bool(std::string)> cb, bool requiresConfirmation)
 {
 	return RegisterString(command, {}, cb);
 }

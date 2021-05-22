@@ -12,9 +12,9 @@ int main(int argc, char* argv[])
 
 	TEF::Aurora::MasterController master;
 
-	master.GetUserControl()->RegisterVoid("system reboot", [&master]() {master.GetSound()->AddSpeech("system rebooted"); return true; });
+	master.GetUserControl()->RegisterVoid("system reboot", [&master]() {master.GetSound()->AddSpeech("system rebooting"); return true; });
 
-	master.GetUserControl()->RegisterVoid("system explode", [&master]() {master.GetSound()->AddSpeech("failing to explode"); return false; });
+	master.GetUserControl()->RegisterVoid("system explode", [&master]() {return false; });
 
 	master.GetSound()->AddSpeech("System starting up!");
 
