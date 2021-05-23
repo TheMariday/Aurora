@@ -1,16 +1,8 @@
 #include "tef/aurora/smartFuse.h"
-
 #include <spdlog/spdlog.h>
-#include <string.h>
 
-#include <iostream>
-#include <stdio.h>
-#include <termios.h>
-#include <unistd.h>
-#include <errno.h>
 #include <wiringPi.h>
 #include <wiringSerial.h>
-#include <vector>
 
 TEF::Aurora::SmartFuse::SmartFuse()
 {
@@ -22,25 +14,45 @@ TEF::Aurora::SmartFuse::~SmartFuse()
 
 bool TEF::Aurora::SmartFuse::Connect()
 {
+	m_serialPort = serialOpen("/dev/ttyUSB0", 57600);
+	if (m_serialPort < 0)	/* open serial port */
+	{
+		spdlog::error("Unable to open serial device");
+		return false;
+	}
 
-	return false;
+	wiringPiSetup();
+
+	m_charBufferFront = -1;
+
+	m_running = true;
+
+	m_sensorReadThread = std::thread(&TEF::Aurora::SmartFuse::ReadSensorData, this);
+
+	return true;
 }
 
 bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled)
 {
-	std::string s = std::to_string(channel * 2 + int(enabled));
-	
-	return Write(s);
+	char c = channel * 2 + int(enabled);
+	serialPutchar(m_serialPort, c);
+
+	std::scoped_lock lock(m_stateMutex);
+	m_fetStates[channel] = enabled;
+
+	return true;
 }
 
 bool TEF::Aurora::SmartFuse::GetFet(int channel, bool& enabled)
 {
+	std::scoped_lock lock(m_stateMutex);
 	enabled = m_fetStates[channel];
 	return true;
 }
 
 bool TEF::Aurora::SmartFuse::GetCurrent(int channel, float& current)
 {
+	std::scoped_lock lock(m_stateMutex);
 	current = m_currentReadings[channel];
 	return true;
 }
@@ -53,49 +65,73 @@ bool TEF::Aurora::SmartFuse::StopAll()
 		{
 			spdlog::error("Smart Fuse cannot stop channel {}", channel);
 		}
-		
+
 	}
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::MainLoopCallback()
+
+bool TEF::Aurora::SmartFuse::DecodeBuffer()
 {
-	/*
-	char buffer[100];
-	ssize_t length = read(levelSensor, &buffer, sizeof(buffer));
-	if (length == -1)
+	char lsb, msb;
+	int current;
+	bool fet;
+	for (int i = 0; i < 8; i++)
 	{
-		cerr << "Error reading from serial port" << endl;
-		break;
-	}
-	else if (length == 0)
-	{
-		cerr << "No more data" << endl;
-		break;
-	}
-	else
-	{
-		buffer[length] = '\0';
-		cout << buffer; //Read serial data
+		lsb = m_charBuffer[3 * i + 0];
+		msb = m_charBuffer[3 * i + 1];
+		fet = m_charBuffer[3 * i + 2];
+		current = (msb << 8 | lsb);
+		m_currentReadings[i] = current;
+		m_fetStates[i] = fet;
 	}
 
-
-	msg = self.ard.read_until(self.delimeter);
-
-	if len(msg) != self.packet_size:
-	print("Recieved message not long enough!")
-		return False
-
-
-		for board in range(8) :
-			lsb, msb, fet = msg[board * 3:board * 3 + 3]
-
-			current = (msb << 8 | lsb)
-
-			#current += self.calibrationOffset
-			#current *= self.calibrationMultiplier
-
-			self.boardCurrent[board] = current
-			self.boardFET[board] = fet
-*/
+	return true;
 }
+
+bool TEF::Aurora::SmartFuse::Print()
+{
+	std::scoped_lock lock(m_stateMutex);
+
+	for (int i = 0; i < 8; i++)
+	{
+		spdlog::debug("Sensor {}: Fet: {}, Current: {}", i, m_fetStates[i], m_currentReadings[i]);
+	}
+	return true;
+}
+
+bool TEF::Aurora::SmartFuse::ReadSensorData()
+{
+	int front = -1;
+	bool fetState = false;
+
+	while (m_running) {
+
+		if (serialDataAvail(m_serialPort))
+		{
+			front++;
+
+			char d = serialGetchar(m_serialPort);		/* receive character serially*/
+			m_charBuffer[front] = d;
+
+			if (front < 1)
+				continue;
+
+			if (m_charBuffer[front] == 255 and m_charBuffer[front - 1] == 255)
+			{
+				if (front == 25)
+				{
+					DecodeBuffer();
+				}
+				front = -1;
+			}
+
+		}
+		else
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(2));
+		}
+	}
+	return true;
+}
+

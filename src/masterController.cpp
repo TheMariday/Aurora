@@ -49,9 +49,9 @@ bool TEF::Aurora::MasterController::Start()
 	m_speechRecognition.RegisterCommandCallback([this](std::string command) {return LoadCommand(command); });
 	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(m_loadedCommand); });
 
-	m_headset.StartMainLoop();
-	m_recordButton.StartMainLoop();
-	m_confirmButton.StartMainLoop();
+	m_headset.Start();
+	m_recordButton.Start();
+	m_confirmButton.Start();
 	return true;
 }
 

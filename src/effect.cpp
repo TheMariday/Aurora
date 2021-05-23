@@ -33,30 +33,6 @@ TEF::Aurora::Effect::~Effect()
 	spdlog::debug("Base Effect destroyed");
 }
 
-bool TEF::Aurora::Effect::Load()
-{
-	spdlog::debug("Base Effect loaded");
-}
-
-bool TEF::Aurora::Effect::Start()
-{
-	spdlog::debug("Base Effect starting");
-}
-
-bool TEF::Aurora::Effect::Pause()
-{
-	spdlog::debug("Base Effect paused");
-}
-
-bool TEF::Aurora::Effect::Stop()
-{
-	spdlog::debug("Base Effect stopping");
-}
-
-bool TEF::Aurora::Effect::Shader(std::vector<Vec3>& rgb, std::vector<LED>& LEDs)
-{
-	return true;
-}
 
 bool TEF::Aurora::Effect::MainLoopCallback()
 {
@@ -88,7 +64,7 @@ bool TEF::Aurora::Effect::MainLoop()
 	}
 }
 
-bool TEF::Aurora::Effect::StartMainLoop()
+bool TEF::Aurora::Effect::Start()
 {
 	m_running = true;
 	m_mainLoopThread = std::thread(&TEF::Aurora::Effect::MainLoop, this);

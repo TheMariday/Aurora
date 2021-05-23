@@ -2,9 +2,6 @@
 #include <thread>
 #include <atomic>
 #include <vector>
-#include "svl/SVL.h"
-
-#include "tef/aurora/led.h"
 
 namespace TEF::Aurora
 {
@@ -14,14 +11,8 @@ namespace TEF::Aurora
 	{
 	public:
 		Effect();
-		virtual bool Load();
 		virtual bool Start();
-		virtual bool Pause();
-		virtual bool Stop();
-		virtual bool Shader(std::vector<Vec3>& rgb, std::vector<LED>& LEDs);
 		virtual bool MainLoopCallback();
-
-		bool StartMainLoop();
 
 		void SetFPS(const float fps, bool ignoreOverrun = false);
 		const float GetFPS();
