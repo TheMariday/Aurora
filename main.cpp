@@ -1,13 +1,82 @@
 #include <spdlog/spdlog.h>
-#include "tef/aurora/masterController.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <wiringPi.h>
+#include <wiringSerial.h>
+#include <sstream>
+#include <chrono>
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
 
+char SetBoardFet(int board, bool state)
+{
+	return board * 2 + int(state);
+}
 
+void Decode(char buffer[])
+{
+	char lsb, msb;
+	int current;
+	bool fet;
+	for (int i = 0; i < 8; i++)
+	{
+		lsb = buffer[3 * i + 0];
+		msb = buffer[3 * i + 1];
+		fet = buffer[3 * i + 2];
+		current = (msb << 8 | lsb);
+
+		spdlog::debug("Sensor {}, fet {}, current {}", i, fet, current);
+	}
+}
 
 int main(int argc, char* argv[])
 {
 	spdlog::set_level(spdlog::level::debug);
+
+	int serial_port;
+	if ((serial_port = serialOpen("/dev/ttyUSB0", 57600)) < 0)	/* open serial port */
+	{
+		spdlog::error("Unable to open serial device");
+		return 1;
+	}
+
+	wiringPiSetup();
+
+	int maxBufferSize = 50;
+	char charBuffer[maxBufferSize];
+	int front = -1;
+	bool fetState = false;
+	
+	while (1) {
+
+		if (serialDataAvail(serial_port))
+		{
+			front++;
+
+			char d = serialGetchar(serial_port);		/* receive character serially*/
+			charBuffer[front] = d;
+
+			if (front < 1)
+				continue;
+
+			if (charBuffer[front] == 255 and charBuffer[front - 1] == 255)
+			{
+				if (front == 25)
+				{
+					Decode(charBuffer);
+					//buffer is all ready!
+					char c = SetBoardFet(0, fetState);
+					spdlog::debug("sending character {}", c);
+					serialPutchar(serial_port, c);		/* transmit character serially on port */
+					fetState = !fetState;
+				}
+				front = -1;
+			}
+
+		}
+	}
 
 
 	Sleep(1000);
