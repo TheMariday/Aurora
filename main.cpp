@@ -12,7 +12,9 @@ int main(int argc, char* argv[])
 	smartFuse.Connect();
 	Sleep(1);
 	smartFuse.Print();
-
+	smartFuse.SetFet(0, true);
+	Sleep(1);
+	smartFuse.Print();
 	/*
 	smartFuse.SetFet(0, true);
 	for(int i=0; i < 10; i++)

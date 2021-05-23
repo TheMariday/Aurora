@@ -23,8 +23,6 @@ bool TEF::Aurora::SmartFuse::Connect()
 
 	wiringPiSetup();
 
-	m_charBufferFront = -1;
-
 	m_running = true;
 
 	m_sensorReadThread = std::thread(&TEF::Aurora::SmartFuse::ReadSensorData, this);
@@ -73,6 +71,7 @@ bool TEF::Aurora::SmartFuse::StopAll()
 
 bool TEF::Aurora::SmartFuse::DecodeBuffer()
 {
+	std::scoped_lock lock(m_stateMutex);
 	char lsb, msb;
 	int current;
 	bool fet;

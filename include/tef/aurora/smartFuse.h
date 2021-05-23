@@ -36,7 +36,6 @@ namespace TEF::Aurora {
 		int m_serialPort;
 
 		char m_charBuffer[50];
-		int m_charBufferFront = -1;
 
 		std::atomic_bool m_running;
 		std::thread m_sensorReadThread;
