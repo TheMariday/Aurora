@@ -1,29 +1,16 @@
-#include "tef/aurora/effect.h"
-#include <stdio.h>
+#include "tef/aurora/runnable.h"
+#include <spdlog/spdlog.h>
 #include <chrono>
 #include <thread>
-#include "spdlog/spdlog.h"
 
-TEF::Aurora::Effect::Effect()
+
+TEF::Aurora::Runnable::Runnable()
 {
-	spdlog::debug("Base Effect created!");
 	m_running = false;
-	SetFPS(1);
+	SetFPS(0);
 }
 
-bool TEF::Aurora::Effect::RegisterMC(MasterController* mc)
-{
-	if (!mc) 
-	{
-		spdlog::error("Base Effect cannot register null master controller");
-		return false;
-	}
-
-	m_pMC = mc;
-	return true;
-}
-
-TEF::Aurora::Effect::~Effect()
+TEF::Aurora::Runnable::~Runnable()
 {
 	m_running = false;
 	if (m_mainLoopThread.joinable()) {
@@ -33,13 +20,7 @@ TEF::Aurora::Effect::~Effect()
 	spdlog::debug("Base Effect destroyed");
 }
 
-
-bool TEF::Aurora::Effect::MainLoopCallback()
-{
-	return true;
-}
-
-bool TEF::Aurora::Effect::MainLoop()
+bool TEF::Aurora::Runnable::MainLoop()
 {
 	while (m_running)
 	{
@@ -64,14 +45,14 @@ bool TEF::Aurora::Effect::MainLoop()
 	}
 }
 
-bool TEF::Aurora::Effect::Start()
+bool TEF::Aurora::Runnable::Run()
 {
 	m_running = true;
-	m_mainLoopThread = std::thread(&TEF::Aurora::Effect::MainLoop, this);
+	m_mainLoopThread = std::thread(&TEF::Aurora::Runnable::MainLoop, this);
 	return true;
 }
 
-void TEF::Aurora::Effect::SetFPS(float fps, bool ignoreOverrun)
+void TEF::Aurora::Runnable::SetFPS(float fps, bool ignoreOverrun)
 {
 	m_ignoreOverrun = ignoreOverrun;
 
@@ -83,7 +64,7 @@ void TEF::Aurora::Effect::SetFPS(float fps, bool ignoreOverrun)
 	spdlog::debug("Framerate set to {}ns", m_timeDeltaTarget.count());
 }
 
-const float TEF::Aurora::Effect::GetFPS()
+const float TEF::Aurora::Runnable::GetFPS()
 {
 	return double(1e+9) / m_timeDeltaTarget.count();
 }

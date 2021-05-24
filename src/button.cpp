@@ -1,11 +1,15 @@
 #include "tef/aurora/button.h"
+#include <spdlog/spdlog.h>
+#include <sstream>
 
 TEF::Aurora::Button::Button(int pin, int debounceTime, int refreshRate) :m_pin(pin) {
-	std::stringstream s;
-	s << "gpio export " << 2 << " in";
-	spdlog::debug("calling system {}", s.str());
-	system(s.str().c_str());
+	std::stringstream ss;
+	ss << "gpio export " << 2 << " in";
+	spdlog::debug("calling system {}", ss.str());
+	system(ss.str().c_str());
+
 	wiringPiSetup(); // This doesn't have a return code and just calls quit() if it fails and I hate it.
+
 	pinMode(m_pin, INPUT);
 	m_debounce = std::chrono::microseconds(debounceTime);
 
@@ -13,8 +17,8 @@ TEF::Aurora::Button::Button(int pin, int debounceTime, int refreshRate) :m_pin(p
 
 	SetFPS(refreshRate);
 
-	m_downCallback = DefaultCBDown;
-	m_upCallback = DefaultCBUp;
+	m_downCallback = []() {spdlog::debug("unhandled down callback"); return true; };
+	m_upCallback = []() {spdlog::debug("unhandled up callback"); return true; };
 }
 
 bool TEF::Aurora::Button::MainLoopCallback()
@@ -31,17 +35,5 @@ bool TEF::Aurora::Button::MainLoopCallback()
 
 	m_lastCallback = t;
 
-	return true;
-}
-
-bool TEF::Aurora::Button::DefaultCBDown()
-{
-	spdlog::debug("unhandled down callback");
-	return true;
-}
-
-bool TEF::Aurora::Button::DefaultCBUp()
-{
-	spdlog::debug("unhandled up callback");
 	return true;
 }

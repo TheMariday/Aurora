@@ -31,9 +31,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\effect.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\masterController.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -52,11 +49,14 @@
     <ClCompile Include="src\smartFuse.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\effectRunner.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runnable.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\tef\aurora\effect.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\tef\aurora\masterController.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -145,6 +145,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\smartFuse.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\effectRunner.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\runnable.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

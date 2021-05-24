@@ -1,29 +1,21 @@
 #pragma once
 #include <thread>
 #include <atomic>
-#include <vector>
 
 namespace TEF::Aurora
 {
-	class MasterController;
-
-	class Effect
+	class Runnable
 	{
 	public:
-		Effect();
-		virtual bool Start();
-		virtual bool MainLoopCallback();
-
+		bool Run();
 		void SetFPS(const float fps, bool ignoreOverrun = false);
 		const float GetFPS();
-
 		const float GetUtilisation() { return m_utilisation; }
 
-		bool RegisterMC(MasterController* mc);
-
 	protected:
-		~Effect();
-		MasterController* m_pMC;
+		virtual bool MainLoopCallback() = 0;
+		Runnable();
+		~Runnable();
 
 	private:
 

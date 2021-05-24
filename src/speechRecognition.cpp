@@ -5,7 +5,6 @@
 
 TEF::Aurora::SpeechRecognition::SpeechRecognition()
 {
-
 	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
 	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", NULL);
 	ps_default_search_args(m_pConfig);

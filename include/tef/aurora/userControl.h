@@ -1,9 +1,8 @@
 #pragma once
-#include "tef/aurora/effect.h"
 #include <functional>
 #include <map>
 #include <sstream>
-#include <spdlog/spdlog.h>
+#include <string>
 
 namespace TEF::Aurora {
 

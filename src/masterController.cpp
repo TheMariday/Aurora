@@ -1,8 +1,6 @@
 #include "tef/aurora/masterController.h"
 #include <spdlog/spdlog.h>
 
-
-
 TEF::Aurora::MasterController::MasterController() : m_recordButton(2), m_confirmButton(3), m_headset("sysdefault:CARD=Device")
 {
 }
@@ -49,9 +47,9 @@ bool TEF::Aurora::MasterController::Start()
 	m_speechRecognition.RegisterCommandCallback([this](std::string command) {return LoadCommand(command); });
 	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(m_loadedCommand); });
 
-	m_headset.Start();
-	m_recordButton.Start();
-	m_confirmButton.Start();
+	m_headset.Run();
+	m_recordButton.Run();
+	m_confirmButton.Run();
 	return true;
 }
 

@@ -1,14 +1,13 @@
 #pragma once
-#include <spdlog/spdlog.h>
 #include <wiringPi.h>
-#include <sstream>
 #include <chrono>
-#include <tef/aurora/effect.h>
 #include <functional>
+
+#include "tef/aurora/runnable.h"
 
 namespace TEF::Aurora {
 
-	class Button : public Effect
+	class Button : public Runnable
 	{
 	public:
 		Button(int pin = -1, int debounceTime = 100, int refreshRate = 100);
@@ -21,9 +20,6 @@ namespace TEF::Aurora {
 	private:
 
 		bool MainLoopCallback() override;
-
-		static bool DefaultCBDown();
-		static bool DefaultCBUp();
 
 		int m_pin;
 		bool m_state = 0;

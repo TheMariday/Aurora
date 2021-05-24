@@ -1,10 +1,11 @@
 #pragma once
-#include "tef/aurora/effect.h"
+#include "tef/aurora/runnable.h"
 #include <mutex>
+#include <atomic>
 
 namespace TEF::Aurora {
 
-	class SmartFuse
+	class SmartFuse : public Runnable
 	{
 	public:
 		SmartFuse();
@@ -22,7 +23,7 @@ namespace TEF::Aurora {
 
 	private:
 
-		bool ReadSensorData();
+		bool MainLoopCallback() override;
 
 		bool DecodeBuffer();
 
@@ -36,9 +37,7 @@ namespace TEF::Aurora {
 		int m_serialPort;
 
 		char m_charBuffer[50];
-
-		std::atomic_bool m_running;
-		std::thread m_sensorReadThread;
+		int m_front;
 
 	};
 };

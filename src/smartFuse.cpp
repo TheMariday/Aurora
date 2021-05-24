@@ -23,9 +23,7 @@ bool TEF::Aurora::SmartFuse::Connect()
 
 	wiringPiSetup();
 
-	m_running = true;
-
-	m_sensorReadThread = std::thread(&TEF::Aurora::SmartFuse::ReadSensorData, this);
+	m_front = -1;
 
 	return true;
 }
@@ -99,38 +97,33 @@ bool TEF::Aurora::SmartFuse::Print()
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::ReadSensorData()
+bool TEF::Aurora::SmartFuse::MainLoopCallback()
 {
-	int front = -1;
-	bool fetState = false;
+	if (serialDataAvail(m_serialPort))
+	{
+		m_front++;
 
-	while (m_running) {
+		char d = serialGetchar(m_serialPort);		/* receive character serially*/
+		m_charBuffer[m_front] = d;
 
-		if (serialDataAvail(m_serialPort))
+		if (m_front < 1)
+			return true;
+
+		if (m_charBuffer[m_front] == 255 and m_charBuffer[m_front - 1] == 255)
 		{
-			front++;
-
-			char d = serialGetchar(m_serialPort);		/* receive character serially*/
-			m_charBuffer[front] = d;
-
-			if (front < 1)
-				continue;
-
-			if (m_charBuffer[front] == 255 and m_charBuffer[front - 1] == 255)
+			if (m_front == 25)
 			{
-				if (front == 25)
-				{
-					DecodeBuffer();
-				}
-				front = -1;
+				DecodeBuffer();
 			}
+			m_front = -1;
+		}
 
-		}
-		else
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(2));
-		}
 	}
+	else
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(2));
+	}
+
 	return true;
 }
 

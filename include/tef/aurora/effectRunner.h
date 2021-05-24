@@ -1,11 +1,9 @@
 #pragma once
-#include "tef/aurora/effect.h"
-#include <vector>
-#include <thread>
+#include "tef/aurora/runnable.h"
 
 namespace TEF::Aurora {
 	
-	class EffectRunner {
+	class EffectRunner : Runnable{
 	public:
 		EffectRunner();
 		~EffectRunner();

@@ -1,9 +1,6 @@
 #include "tef/aurora/userControl.h"
 #include <spdlog/spdlog.h>
-#include <type_traits>
-#include <string>
 #include <fstream>
-#include <iostream>
 
 
 bool Split(std::string& command, std::string& argument)
@@ -337,7 +334,6 @@ bool TEF::Aurora::UserControl::FetchCommand(std::string inputString, Command*& p
 	spdlog::error("User Control failed to find callback for command '{}'", inputString);
 	return false;
 }
-
 
 bool TEF::Aurora::UserControl::FindCommand(std::string command, Command*& pCommand)
 {

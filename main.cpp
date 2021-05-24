@@ -1,37 +1,190 @@
 #include <spdlog/spdlog.h>
-#include <tef/aurora/smartFuse.h>
+#include <atomic>
+#include <functional>
+#include <string>
 
-#define Sleep(x) std::this_thread::sleep_for(std::chrono::seconds(x))
+#include <tef/aurora/smartFuse.h>
+#include <tef/aurora/masterController.h>
+#include <tef/aurora/button.h>
+
+#define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
+
+
+void Test(std::string testName, std::function<bool()> func)
+{
+	TEF::Aurora::Sound headset("sysdefault:CARD=Device");
+	headset.Run();
+
+	{
+		std::stringstream ss;
+		ss << "starting " << testName << " test";
+		headset.AddSpeech(ss.str(), true);
+	}
+
+	std::stringstream ss;
+	if (func())
+	{
+		ss << testName << " test passed";
+	}
+	else
+	{
+		ss << "warning, " << testName << " test failed";
+	}
+	headset.AddSpeech(ss.str(), true);
+}
+
+bool WaitFor(std::atomic_bool& b, int seconds = 10)
+{
+	for (int i = 0; i < 10 * seconds; i++)
+	{
+		Sleep(100);
+		if (b) return true;
+	}
+	spdlog::error("Timeout reached");
+	return false;
+}
+
+bool WaitForButton()
+{
+	TEF::Aurora::Button confirmButton(3);
+	std::atomic_bool pressed = false;
+	confirmButton.RegisterCallbackDown([&pressed]() {pressed = true; return true; });
+	confirmButton.Run();
+	if (!WaitFor(pressed)) return false;
+	return true;
+}
+
+
+bool ButtonTest()
+{
+	for (int buttonId = 2; buttonId <= 3; buttonId++)
+	{
+		spdlog::debug("testing button {}", buttonId);
+
+		TEF::Aurora::Button button(buttonId);
+
+		std::atomic_bool pressed = false;
+		std::atomic_bool released = false;
+
+		button.RegisterCallbackDown([&pressed]() {pressed = true; return true; });
+		button.RegisterCallbackUp([&released]() {released = true; return true; });
+
+		button.Run();
+
+		spdlog::debug("please press and release button {}", buttonId);
+
+		if (!WaitFor(pressed)) return false;
+
+		spdlog::debug("button {} pressed", buttonId);
+
+		if (!WaitFor(released)) return false;
+
+		spdlog::debug("button {} released", buttonId);
+	}
+
+	return true;
+}
+
+bool SoundTest()
+{
+	TEF::Aurora::Sound headset("sysdefault:CARD=Device");
+	headset.Run();
+
+	headset.AddSpeech("Press the confirm button if you can hear me");
+
+	if (!WaitForButton()) return false;
+
+	headset.AddSpeech("Playing audio file for 2 seconds, press the confirm if you can hear it", true);
+	std::string testAudio = "/home/pi/media/test.wav";
+	headset.PlayAudio(testAudio);
+	Sleep(2000);
+	headset.StopAudio(testAudio);
+
+	if (!WaitForButton()) return false;
+
+	return true;
+}
+
+bool UserControlTest()
+{
+	TEF::Aurora::UserControl userControl;
+
+	TEF::Aurora::Command* command;
+	std::atomic hit = false;
+	{
+		hit = false;
+		userControl.RegisterVoid("void test", [&hit]() {hit = true; return true; });
+
+		userControl.FetchCommand("void test", command);
+		if (!command->Run()) return false;
+		if (!hit) return false;
+	}
+
+	{
+		hit = false;
+		userControl.RegisterString("argument test", { "success","other" }, [&hit](std::string s) {hit = s == "success"; return true; });
+
+		userControl.FetchCommand("argument test success", command);
+		command->Run();
+		if (!hit) return false;
+	}
+
+	return true;
+}
+
+bool MasterControllerTest()
+{
+	TEF::Aurora::MasterController master;
+
+	std::atomic_bool hit = false;
+
+	master.GetUserControl()->RegisterVoid("passed test", [&hit]() {hit = true;  return true; });
+
+	master.GetUserControl()->RegisterVoid("failed test", [&hit]() {hit = false;  return true; });
+
+	master.GetSound()->AddSpeech("Please say passed test to continue");
+
+	master.Start();
+
+	if (!WaitFor(hit)) return false;
+
+	return true;
+}
+
+bool SmartFuseTest()
+{
+	TEF::Aurora::SmartFuse smartFuse;
+	smartFuse.Connect();
+	Sleep(1000);
+	smartFuse.Print();
+	smartFuse.SetFet(0, true);
+	Sleep(1000);
+
+	bool fetState;
+	smartFuse.GetFet(0, fetState);
+	if (!fetState) return false;
+
+	return true;
+}
+
+
+
 
 int main(int argc, char* argv[])
 {
 	spdlog::set_level(spdlog::level::debug);
 
+	TEF::Aurora::Sound notify("sysdefault:CARD=Device");
 
-	TEF::Aurora::SmartFuse smartFuse;
-	smartFuse.Connect();
-	Sleep(1);
-	smartFuse.Print();
-	smartFuse.SetFet(0, true);
-	Sleep(1);
-	smartFuse.Print();
-	/*
-	smartFuse.SetFet(0, true);
-	for(int i=0; i < 10; i++)
-	{
-		smartFuse.Print();
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
-	*/
+	Test("Button", ButtonTest);
 
+	Test("Sound", SoundTest);
 
+	Test("User Control", UserControlTest);
 
+	Test("Master Controller", MasterControllerTest);
 
-
-
-
-	Sleep(1000);
-	return 0;
+	Test("Smart Fuse", SmartFuseTest);
 }
 
 /*
@@ -41,58 +194,11 @@ int main(int argc, char* argv[])
 *
 *
 
-	TEF::Aurora::MasterController master;
-
-	master.GetUserControl()->RegisterVoid("system reboot", [&master]() {master.GetSound()->AddSpeech("system rebooting"); return true; });
-
-	master.GetUserControl()->RegisterVoid("system explode", [&master]() {return false; });
-
-	master.GetSound()->AddSpeech("System starting up!");
-
-	master.Start();
 
 
 
-TEF::Aurora::UserControl userControl;
-
-	userControl.RegisterVoid("system reboot");
-	userControl.RegisterVoid("system reboot", []() {return false; });
-	userControl.RegisterVoid("system reboot", []() {spdlog::debug("system rebooted"); return true; });
-
-	userControl.RegisterBool("system reboot"); //should fail
-
-	userControl.RegisterString("set name to", { "bob", "rob" });
-	userControl.RegisterString("set name to", [](std::string s) {spdlog::debug("setting name to {}", s); return true; });
 
 
-	userControl.RegisterString("set name to", { "sam" }, [](std::string s) {spdlog::debug("setting name to {}", s); return true; }); //should fail
-	userControl.RegisterString("set name to", { "sam" }); //should also fail
-
-	TEF::Aurora::Command* command;
-	userControl.FetchCommand("system reboot", command);
-	command->Run();
-
-	userControl.FetchCommand("set name to bob", command);
-	command->Run();
-
-
-	userControl.RegisterBool("set safety", [&headset](bool safety) {
-		headset.AddSpeech(safety ? "safeties enabled, you are safe ish" : "safties off, you are not safe");
-		return true;
-		});
-	userControl.RegisterLimitedInt("set brightness to", [&headset](int brightness) {
-		std::stringstream ss;
-		ss << "brightness set to " << brightness;
-		headset.AddSpeech(ss);
-		return true;
-		});
-
-	userControl.RegisterString("set name to", { "bob", "rob" }, [&headset](std::string name) {
-		std::stringstream ss;
-		ss << "Name set to " << name;
-		headset.AddSpeech(ss);
-		return true;
-		});
 *
 #include <iostream>
 #include <stdio.h>
@@ -136,7 +242,6 @@ TEF::Aurora::UserControl userControl;
 
 	return 0;
 
-* 	TEF::Aurora::Button button(2);
 	TEF::Aurora::UserControl userControl;
 	TEF::Aurora::SpeechRecognition speechRecognition;
 
