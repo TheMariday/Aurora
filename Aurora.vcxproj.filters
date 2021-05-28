@@ -55,6 +55,9 @@
     <ClCompile Include="src\runnable.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\testSuite.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\masterController.h">
@@ -151,6 +154,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\runnable.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\testSuite.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
