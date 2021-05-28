@@ -10,6 +10,7 @@ TEF::Aurora::SmartFuse::SmartFuse()
 
 TEF::Aurora::SmartFuse::~SmartFuse()
 {
+	serialClose(m_serialPort);
 }
 
 bool TEF::Aurora::SmartFuse::Connect()
