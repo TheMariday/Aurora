@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\button.cpp" />
+    <ClCompile Include="src\effect.cpp" />
     <ClCompile Include="src\runnable.cpp" />
     <ClCompile Include="src\effectRunner.cpp" />
     <ClCompile Include="src\masterController.cpp" />
@@ -102,6 +103,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\button.h" />
+    <ClInclude Include="include\tef\aurora\effect.h" />
+    <ClInclude Include="include\tef\aurora\effects\simpleEffect.h" />
+    <ClInclude Include="include\tef\aurora\led.h" />
     <ClInclude Include="include\tef\aurora\runnable.h" />
     <ClInclude Include="include\tef\aurora\effectRunner.h" />
     <ClInclude Include="include\tef\aurora\masterController.h" />

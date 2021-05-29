@@ -58,6 +58,9 @@
     <ClCompile Include="src\testSuite.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\effect.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\masterController.h">
@@ -157,6 +160,15 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\testSuite.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\effect.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\effects\simpleEffect.h">
+      <Filter>effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\led.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
