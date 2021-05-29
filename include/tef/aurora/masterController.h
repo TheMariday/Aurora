@@ -19,10 +19,10 @@ namespace TEF::Aurora {
 		UserControl* GetUserControl() { return &m_userControl; };
 
 	private:
-		bool RunCallback(Command* command);
+		bool RunCallback(std::shared_ptr<Command> command);
 		bool LoadCommand(std::string command);
 
-		Command* m_loadedCommand;
+		std::shared_ptr<Command> m_loadedCommand;
 		Button m_recordButton;
 		Button m_confirmButton;
 		UserControl m_userControl;

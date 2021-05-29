@@ -53,7 +53,7 @@ bool TEF::Aurora::MasterController::Start()
 	return true;
 }
 
-bool TEF::Aurora::MasterController::RunCallback(Command* command)
+bool TEF::Aurora::MasterController::RunCallback(std::shared_ptr<Command> command)
 {
 	if (!command)
 	{
@@ -80,7 +80,7 @@ bool TEF::Aurora::MasterController::RunCallback(Command* command)
 
 bool TEF::Aurora::MasterController::LoadCommand(std::string commandStr)
 {
-	Command* command;
+	std::shared_ptr<Command> command;
 	if (!m_userControl.FetchCommand(commandStr, command))
 	{
 		spdlog::error("Failed to fetch command");

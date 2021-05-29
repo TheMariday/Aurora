@@ -3,6 +3,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <memory>
 
 namespace TEF::Aurora {
 
@@ -60,14 +61,15 @@ namespace TEF::Aurora {
 
 		bool GenerateJSGF(std::string& filepath);
 
-		bool FetchCommand(std::string inputString, Command*& pCommand);
+		bool FetchCommand(std::string inputString, std::shared_ptr<Command>& pCommand);
 
 	private:
-		bool FindCommand(std::string command, Command*& pCommand);
+		bool FindCommand(std::string command, std::shared_ptr<Command>& pCommand);
 
 		bool Unregister(std::string command);
 
-		std::vector<Command*> m_allCommands;
+		
+		std::vector<std::shared_ptr<Command>> m_allCommands;
 
 	};
 }

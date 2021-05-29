@@ -109,7 +109,7 @@ bool TEF::Aurora::TestSuite::UserControlTest()
 {
 	TEF::Aurora::UserControl userControl;
 
-	TEF::Aurora::Command* command;
+	std::shared_ptr<Command> command;
 	std::atomic hit = false;
 	{
 		hit = false;
@@ -169,7 +169,6 @@ bool TEF::Aurora::TestSuite::SmartFuseTest()
 
 bool TEF::Aurora::TestSuite::AutoTest()
 {
-	spdlog::set_level(spdlog::level::debug);
 
 	TEF::Aurora::Sound notify("sysdefault:CARD=Device");
 

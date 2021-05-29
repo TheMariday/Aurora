@@ -84,8 +84,8 @@ struct CommandBool : public TEF::Aurora::Command
 
 struct CommandInt : public TEF::Aurora::Command
 {
-	CommandInt(std::string command, std::function<bool(int)>& callback, std::map<std::string, int> argMap, bool requiresConfirmation) : 
-		m_callback(callback), 
+	CommandInt(std::string command, std::function<bool(int)>& callback, std::map<std::string, int> argMap, bool requiresConfirmation) :
+		m_callback(callback),
 		m_argMap(argMap) {
 		m_type = "int";
 		m_command = command;
@@ -116,8 +116,8 @@ struct CommandInt : public TEF::Aurora::Command
 
 struct CommandStr : public TEF::Aurora::Command
 {
-	CommandStr(std::string command, std::function<bool(std::string)>& callback, std::vector<std::string> argMap, bool requiresConfirmation) : 
-		m_callback(callback), 
+	CommandStr(std::string command, std::function<bool(std::string)>& callback, std::vector<std::string> argMap, bool requiresConfirmation) :
+		m_callback(callback),
 		m_argMap(argMap) {
 		m_type = "string";
 		m_command = command;
@@ -152,8 +152,6 @@ TEF::Aurora::UserControl::UserControl()
 
 TEF::Aurora::UserControl::~UserControl()
 {
-	for (Command* command : m_allCommands)
-		delete command;
 }
 
 
@@ -161,7 +159,7 @@ bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<b
 {
 	spdlog::debug("User Control registering void command {}", command);
 
-	Command* pCommand;
+	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
 		std::string existingType = pCommand->GetType(); // get type failed
@@ -172,13 +170,13 @@ bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<b
 		}
 
 		spdlog::warn("User Control overwriting command {}", command);
-		CommandVoid* pCommandVoid = (CommandVoid*)pCommand;
+		CommandVoid* pCommandVoid = (CommandVoid*)pCommand.get();
 		pCommandVoid->m_callback = callback;
 		pCommandVoid->SetConfirmationRequired(requiresConfirmation);
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandVoid(command, callback, requiresConfirmation));
+		m_allCommands.emplace_back(std::make_shared<CommandVoid>(command, callback, requiresConfirmation));
 	}
 
 	return true;
@@ -189,7 +187,7 @@ bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<b
 {
 	spdlog::debug("User Control registering bool command {}", command);
 
-	Command* pCommand;
+	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
 		std::string existingType = pCommand->GetType();
@@ -200,13 +198,13 @@ bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<b
 		}
 
 		spdlog::warn("User Control overwriting command {}", command);
-		CommandBool* pCommandBool = (CommandBool*)pCommand;
+		CommandBool* pCommandBool = (CommandBool*)pCommand.get();
 		pCommandBool->m_callback = callback;
 		pCommandBool->SetConfirmationRequired(requiresConfirmation);
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandBool(command, callback, m_boolOptions, requiresConfirmation));
+		m_allCommands.emplace_back(std::make_shared<CommandBool>(command, callback, m_boolOptions, requiresConfirmation));
 	}
 
 	return true;
@@ -217,7 +215,7 @@ bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::func
 {
 	spdlog::debug("User Control registering int command {}", command);
 
-	Command* pCommand;
+	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
 		std::string existingType = pCommand->GetType();
@@ -228,14 +226,14 @@ bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::func
 		}
 
 		spdlog::warn("User Control overwriting command {}", command);
-		CommandInt* pCommandInt = (CommandInt*)pCommand;
+		CommandInt* pCommandInt = (CommandInt*)pCommand.get();
 		pCommandInt->m_callback = callback;
 		pCommandInt->SetConfirmationRequired(requiresConfirmation);
 
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandInt(command, callback, m_intOptions, requiresConfirmation));
+		m_allCommands.emplace_back(std::make_shared<CommandInt>(command, callback, m_intOptions, requiresConfirmation));
 	}
 
 	return true;
@@ -246,7 +244,7 @@ bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<s
 {
 	spdlog::debug("User Control registering string command {}", command);
 
-	Command* pCommand;
+	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
 		std::string existingType = pCommand->GetType();
@@ -268,14 +266,14 @@ bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<s
 		}
 
 		spdlog::warn("User Control overwriting command {}", command);
-		CommandStr* pCommandString = (CommandStr*)pCommand;
+		CommandStr* pCommandString = (CommandStr*)pCommand.get();
 		pCommandString->m_callback = callback;
 		pCommandString->SetConfirmationRequired(requiresConfirmation);
 
 	}
 	else
 	{
-		m_allCommands.push_back(new CommandStr(command, callback, validArgs, requiresConfirmation));
+		m_allCommands.emplace_back(std::make_shared<CommandStr>(command, callback, validArgs, requiresConfirmation));
 	}
 
 	return true;
@@ -291,7 +289,7 @@ bool TEF::Aurora::UserControl::Unregister(std::string command)
 {
 	spdlog::debug("User Control unregistering command {}", command);
 
-	Command* pCommand;
+	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
 		spdlog::error("User Control cannot unregister command {} as it does not exist", command);
@@ -304,7 +302,7 @@ bool TEF::Aurora::UserControl::Unregister(std::string command)
 }
 
 
-bool TEF::Aurora::UserControl::FetchCommand(std::string inputString, Command*& pCommand)
+bool TEF::Aurora::UserControl::FetchCommand(std::string inputString, std::shared_ptr<Command>& pCommand)
 {
 	spdlog::debug("User Control processing input '{}'", inputString);
 
@@ -335,9 +333,10 @@ bool TEF::Aurora::UserControl::FetchCommand(std::string inputString, Command*& p
 	return false;
 }
 
-bool TEF::Aurora::UserControl::FindCommand(std::string command, Command*& pCommand)
+bool TEF::Aurora::UserControl::FindCommand(std::string command, std::shared_ptr<Command>& pCommand)
 {
-	std::vector<Command*>::iterator it = std::find_if(m_allCommands.begin(), m_allCommands.end(), [command](Command* s) { return s->GetCommand() == command; });
+
+	auto it = std::find_if(m_allCommands.begin(), m_allCommands.end(), [command](std::shared_ptr<Command> s) { return s->GetCommand() == command; });
 	if (it == m_allCommands.end())
 	{
 		return false;
@@ -358,7 +357,7 @@ bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
 	ss << "grammar highbeam;\n\n";
 
 	std::vector<std::string> commands;
-	for (Command* command : m_allCommands)
+	for (std::shared_ptr<Command>& command : m_allCommands)
 	{
 		std::string commandString = command->GetCommand();
 		commands.push_back(commandString);
