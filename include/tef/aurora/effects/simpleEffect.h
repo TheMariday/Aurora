@@ -16,7 +16,14 @@ namespace TEF::Aurora::Effects
 		bool Render(std::vector<TEF::Aurora::LED>& leds) override
 		{
 			for (LED& led : leds)
-				led.r = 1;
+			{
+				switch (led.index % 3) {
+				case(0): led.r = 1; break;
+				case(1): led.g = 1; break;
+				case(2): led.b = 1; break;
+				}
+			}
+
 			return true;
 		}
 	};

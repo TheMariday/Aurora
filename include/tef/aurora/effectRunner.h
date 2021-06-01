@@ -29,6 +29,8 @@ namespace TEF::Aurora {
 		OPCClient m_opc;
 		std::vector<uint8_t> m_frameBuffer;
 
+		const int m_ledCount = 512;
+
 	};
 
 };

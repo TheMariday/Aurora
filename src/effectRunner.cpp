@@ -6,10 +6,23 @@ TEF::Aurora::EffectRunner::EffectRunner(std::string hostport)
 	SetFPS(60);
 	m_opc.resolve(hostport.c_str());
 
-	if (m_opc.tryConnect())
+	if (!m_opc.tryConnect())
 	{
 		spdlog::error("cannot connect");
 	}
+
+	for (int i = 0; i < m_ledCount; i++)
+	{
+		m_leds.emplace_back();
+		m_leds.back().index = i;
+	}
+	
+
+	// Set up an empty framebuffer, with OPC packet header
+	int frameBytes = m_ledCount * 3;
+	
+	m_frameBuffer.resize(sizeof(OPCClient::Header) + frameBytes);
+	OPCClient::Header::view(m_frameBuffer).init(0, 0, frameBytes);
 }
 
 TEF::Aurora::EffectRunner::~EffectRunner()
@@ -30,13 +43,13 @@ bool TEF::Aurora::EffectRunner::MainLoopCallback()
 	for (auto& effect : m_effects)
 		effect->Render(m_leds);
 
-	// send m_leds buffer to hardware
-	return true;
+	return WriteToFC();
 }
 
 bool TEF::Aurora::EffectRunner::WriteToFC()
 {
 	if (!m_opc.tryConnect()) {
+		spdlog::error("Effect Runner could not connect to fadecandy board");
 		return false;
 	}
 

@@ -1,8 +1,8 @@
 #include <spdlog/spdlog.h>
 #include <chrono>
-#include <atomic>
-#include "tef/aurora/runnable.h"
-#include "tef/aurora/testSuite.h"
+#include "tef/aurora/effectRunner.h"
+#include "tef/aurora/effects/simpleEffect.h"
+#include <shared_mutex>
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 
@@ -10,17 +10,14 @@ int main(int argc, char* argv[])
 {
 	spdlog::set_level(spdlog::level::debug);
 
-	TEF::Aurora::TestSuite::AutoTest();
+	TEF::Aurora::EffectRunner effectRunner("localhost");
 
 
-	//EffectRunner effectRunner;
-	//RedEffect redEffect;
+	auto pRedEffect = std::make_shared<TEF::Aurora::Effects::RedEffect>();
 
-	//std::shared_ptr<Effect> redEffect(new RedEffect);
+	effectRunner.AddEffect(pRedEffect);
 
-	//effectRunner.AddEffect(redEffect);
-	//effectRunner.Run();
-
+	effectRunner.Run();
 
 	Sleep(10000);
 }
