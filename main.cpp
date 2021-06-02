@@ -2,6 +2,7 @@
 #include <chrono>
 #include "tef/aurora/effectRunner.h"
 #include "tef/aurora/effects/simpleEffect.h"
+#include "tef/aurora/smartFuse.h"
 #include <shared_mutex>
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
@@ -12,6 +13,12 @@ int main(int argc, char* argv[])
 
 	TEF::Aurora::EffectRunner effectRunner("localhost");
 
+	TEF::Aurora::SmartFuse smartFuse;
+	smartFuse.Connect();
+	Sleep(1000);
+	smartFuse.Run();
+
+	smartFuse.SetFet(7, false);
 
 	auto pRedEffect = std::make_shared<TEF::Aurora::Effects::RedEffect>();
 
@@ -19,5 +26,5 @@ int main(int argc, char* argv[])
 
 	effectRunner.Run();
 
-	Sleep(10000);
+	Sleep(2000);
 }

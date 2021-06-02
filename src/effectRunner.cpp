@@ -27,6 +27,10 @@ TEF::Aurora::EffectRunner::EffectRunner(std::string hostport)
 
 TEF::Aurora::EffectRunner::~EffectRunner()
 {
+	for (LED& led : m_leds)
+		led.Black();
+
+	WriteToFC();
 }
 
 bool TEF::Aurora::EffectRunner::AddEffect(std::shared_ptr<Effect> effect)

@@ -10,19 +10,20 @@ TEF::Aurora::SmartFuse::SmartFuse()
 
 TEF::Aurora::SmartFuse::~SmartFuse()
 {
+	StopAll();
 	serialClose(m_serialPort);
 }
 
 bool TEF::Aurora::SmartFuse::Connect()
 {
+	wiringPiSetup();
+
 	m_serialPort = serialOpen("/dev/ttyUSB0", 57600);
 	if (m_serialPort < 0)	/* open serial port */
 	{
 		spdlog::error("Unable to open serial device");
 		return false;
 	}
-
-	wiringPiSetup();
 
 	m_front = -1;
 
@@ -31,8 +32,13 @@ bool TEF::Aurora::SmartFuse::Connect()
 
 bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled)
 {
-	char c = channel * 2 + int(enabled);
-	serialPutchar(m_serialPort, c);
+	if (m_serialPort < 0)
+	{
+		spdlog::error("Smart Fuse cannot set fet as smart fuse is not connected");
+		return false;
+	}
+
+	serialPutchar(m_serialPort, channel * 2 + int(enabled));
 
 	std::scoped_lock lock(m_stateMutex);
 	m_fetStates[channel] = enabled;
