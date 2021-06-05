@@ -104,6 +104,7 @@
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\button.h" />
     <ClInclude Include="include\tef\aurora\effect.h" />
+    <ClInclude Include="include\tef\aurora\effects\paw.h" />
     <ClInclude Include="include\tef\aurora\effects\simpleEffect.h" />
     <ClInclude Include="include\tef\aurora\led.h" />
     <ClInclude Include="include\tef\aurora\runnable.h" />

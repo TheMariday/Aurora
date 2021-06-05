@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include "tef/aurora/effect.h"
 #include <spdlog/spdlog.h>
 #include "atomic"
@@ -7,7 +8,7 @@
 namespace TEF::Aurora::Effects
 {
 
-	class RedEffect : public Effect
+	class PawEffect : public Effect
 	{
 	public:
 
@@ -17,11 +18,9 @@ namespace TEF::Aurora::Effects
 			{
 				for (LED& led : leds)
 				{
-					switch (led.index % 3) {
-					case(0): led.r = m_brightness / 10.0; break;
-					case(1): led.g = m_brightness / 10.0; break;
-					case(2): led.b = m_brightness / 10.0; break;
-					}
+					led.r = r / 10.0;
+					led.g = g / 10.0;
+					led.b = b / 10.0;
 				}
 			}
 
@@ -29,7 +28,9 @@ namespace TEF::Aurora::Effects
 		}
 
 		std::atomic_bool m_running = false;
-		std::atomic_int m_brightness = 10;
+		std::atomic_int r = 0;
+		std::atomic_int g = 0;
+		std::atomic_int b = 0;
 	};
 
 };

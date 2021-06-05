@@ -171,6 +171,9 @@
     <ClInclude Include="include\tef\aurora\led.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\tef\aurora\effects\paw.h">
+      <Filter>effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\svl\LICENSE">
