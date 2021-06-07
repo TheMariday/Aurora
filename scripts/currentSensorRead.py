@@ -32,8 +32,10 @@ class CurrentController:
             self.setBoardFET(board, False)
 
     def setBoardFET(self, board, state):
-        s = "%i" % (board*2+int(state))
-        self.ard.write(s.encode(encoding='UTF-8'))
+        s = chr(board*2+int(state)).encode()
+        print("setting board to", board, state, s)
+        self.ard.write(s)
+        #self.ard.flush()
 
     def getBoardFET(self, board):
         return self.boardFET[board]
