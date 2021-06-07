@@ -38,10 +38,8 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled)
 		return false;
 	}
 
-	serialPutchar(m_serialPort, channel * 2 + int(enabled));
-
-	std::scoped_lock lock(m_stateMutex);
-	m_fetStates[channel] = enabled;
+	unsigned char c = channel * 2 + int(enabled);
+	serialPutchar(m_serialPort, c);
 
 	return true;
 }

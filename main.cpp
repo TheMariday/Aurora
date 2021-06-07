@@ -10,14 +10,12 @@
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 
-int main(int argc, char* argv[])
+void ShovelDemo()
 {
-	spdlog::set_level(spdlog::level::debug);
-
 	std::atomic_bool running = true;
 	TEF::Aurora::MasterController masterController;
 	TEF::Aurora::EffectRunner effectRunner("localhost");
-	
+
 	auto pPaw = std::make_shared<TEF::Aurora::Effects::PawEffect>();
 
 	auto pCrap = std::make_shared<TEF::Aurora::Effects::PawEffect>();
@@ -57,48 +55,27 @@ int main(int argc, char* argv[])
 
 	while (running)
 		Sleep(1000);
-
-	return true;
 }
-/*
-auto pRedEffect = std::make_shared<TEF::Aurora::Effects::RedEffect>();
-	effectRunner.AddEffect(pRedEffect);
 
-	masterController.GetUserControl()->RegisterVoid("start simple effect", [&pRedEffect]() {
-		pRedEffect->m_running = true;
-		return true;
-		});
-
-	masterController.GetUserControl()->RegisterVoid("stop simple effect", [&pRedEffect]() {
-		pRedEffect->m_running = false;
-		return true;
-		});
-
-	masterController.GetUserControl()->RegisterLimitedInt("set simple effect brightness to", [&pRedEffect](int brightness) {
-		pRedEffect->m_brightness = brightness;
-		return true;
-		});
-
-	masterController.GetUserControl()->RegisterVoid("get simple effect brightness", [&pRedEffect, &masterController]() {
-		std::stringstream ss;
-		ss << "simple effect brightness is set to " << pRedEffect->m_brightness;
-		masterController.GetSound()->AddSpeech(ss);
-		return true;
-		}, false);
-
-	masterController.GetUserControl()->RegisterVoid("quit", [&running]() { running = false; return true; });
-	TEF::Aurora::EffectRunner effectRunner("localhost");
+int main(int argc, char* argv[])
+{
+	spdlog::set_level(spdlog::level::debug);
 
 	TEF::Aurora::SmartFuse smartFuse;
 	smartFuse.Connect();
-	Sleep(1000);
 	smartFuse.Run();
 
-	smartFuse.SetFet(7, false);
+	bool state = true;
+	float current;
+	while (true)
+	{
+		smartFuse.SetFet(7, state);
+		smartFuse.GetCurrent(7, current);
+		spdlog::debug("fet 7 current: {}", current);
+		state = !state;
+		Sleep(1000);
+	}
+	
 
-	auto pRedEffect = std::make_shared<TEF::Aurora::Effects::RedEffect>();
-
-	effectRunner.AddEffect(pRedEffect);
-
-	effectRunner.Run();
-*/
+	return true;
+}
