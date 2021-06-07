@@ -5,7 +5,7 @@ import time
 
 if __name__ == '__main__':
     
-    cc = currentSensorRead.CurrentController()
+    cc = currentSensorRead.CurrentController("/dev/ttyUSB0")
     client = opc.Client('localhost:7890')
 
     cc.flush()
@@ -15,8 +15,7 @@ if __name__ == '__main__':
         cc.setBoardFET(7, f)
         f = not f
         time.sleep(2)
-    
-
+        print("looping")
 
 
     # for i in range(10):
