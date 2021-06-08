@@ -15,12 +15,14 @@ namespace TEF::Aurora {
 		explicit EffectRunner(std::string hostport = "localhost:7890");
 
 		~EffectRunner();
+		void Stop();
 
 		bool AddEffect(std::shared_ptr<Effect> effect);
 
 		bool MainLoopCallback() override;
 
 		bool WriteToFC();
+
 
 	private:
 		std::vector<LED> m_leds;

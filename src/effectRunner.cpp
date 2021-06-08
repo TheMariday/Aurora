@@ -27,6 +27,11 @@ TEF::Aurora::EffectRunner::EffectRunner(std::string hostport)
 
 TEF::Aurora::EffectRunner::~EffectRunner()
 {
+	Stop();
+}
+
+void TEF::Aurora::EffectRunner::Stop()
+{
 	for (LED& led : m_leds)
 		led.Black();
 

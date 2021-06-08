@@ -27,6 +27,10 @@ bool TEF::Aurora::SmartFuse::Connect()
 
 	m_front = -1;
 
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+
+	StopAll();
+
 	return true;
 }
 
@@ -84,11 +88,24 @@ bool TEF::Aurora::SmartFuse::DecodeBuffer()
 		msb = m_charBuffer[3 * i + 1];
 		fet = m_charBuffer[3 * i + 2];
 		current = (msb << 8 | lsb);
-		m_currentReadings[i] = current;
+		m_currentReadings[i] = MeasurementToAmps(current, i != 7);
 		m_fetStates[i] = fet;
 	}
 
 	return true;
+}
+
+float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement, bool asc10)
+{
+	if (asc10)
+	{
+		return -1;
+	}
+	else
+	{
+		return (measurement * 0.0579) - 24.6;
+	}
+
 }
 
 bool TEF::Aurora::SmartFuse::Print()

@@ -61,6 +61,9 @@
     <ClCompile Include="src\effect.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\safety.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\masterController.h">
@@ -171,7 +174,10 @@
     <ClInclude Include="include\tef\aurora\led.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\effects\paw.h">
+    <ClInclude Include="include\tef\aurora\safety.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\effects\debugEffect.h">
       <Filter>effects</Filter>
     </ClInclude>
   </ItemGroup>

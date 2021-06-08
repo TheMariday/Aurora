@@ -27,6 +27,8 @@ namespace TEF::Aurora {
 
 		bool DecodeBuffer();
 
+		float MeasurementToAmps(int measurement, bool asc10 = true);
+
 
 		const static int m_channels = 8;
 		float m_currentReadings[m_channels];

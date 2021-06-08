@@ -1,14 +1,91 @@
 #include <spdlog/spdlog.h>
 #include <chrono>
 #include "tef/aurora/effectRunner.h"
-#include "tef/aurora/effects/simpleEffect.h"
-#include "tef/aurora/effects/paw.h"
+#include "tef/aurora/effects/debugEffect.h"
 #include "tef/aurora/smartFuse.h"
 #include <shared_mutex>
 #include <atomic>
 #include "tef/aurora/testSuite.h"
+#include "tef/aurora/safety.h"
+#include <iostream>
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
+
+void waitForEnter()
+{
+	do {} while (std::cin.get() != '\n');
+}
+
+int main(int argc, char* argv[])
+{
+	spdlog::set_level(spdlog::level::debug);
+
+	TEF::Aurora::Safety safety;
+	safety.BuildCurrentMatrix();
+	safety.PrintCurrentMatrix();
+
+	return true;
+}
+
+/*
+{
+	pPaw->r = 10;
+	Sleep(sleep);
+	smartFuse.GetCurrent(7, r);
+	spdlog::debug("Current: {}", r);
+	Sleep(5000);
+	pPaw->Black();
+}
+
+{
+	pPaw->g = 10;
+	Sleep(sleep);
+	smartFuse.GetCurrent(7, g);
+	spdlog::debug("Current: {}", g);
+	Sleep(5000);
+	pPaw->Black();
+}
+
+{
+	pPaw->b = 10;
+	Sleep(sleep);
+	smartFuse.GetCurrent(7, b);
+	spdlog::debug("Current: {}", b);
+	Sleep(5000);
+	pPaw->Black();
+}
+*/
+
+/*
+for (int i = 0; i <= 7; i++)
+{
+	pPaw->r = i;
+	pPaw->g = i;
+	Sleep(sleep);
+	smartFuse.GetCurrent(7, r);
+
+	pPaw->Black();
+
+	pPaw->g = i;
+	pPaw->b = i;
+	Sleep(sleep);
+	smartFuse.GetCurrent(7, g);
+
+	pPaw->Black();
+
+	pPaw->b = i;
+	pPaw->r = i;
+	Sleep(sleep);
+	smartFuse.GetCurrent(7, b);
+
+	pPaw->Black();
+
+	std::cout << i << "," << r << "," << g << "," << b << std::endl;
+}
+*/
+
+
+/*
 
 void ShovelDemo()
 {
@@ -57,25 +134,4 @@ void ShovelDemo()
 		Sleep(1000);
 }
 
-int main(int argc, char* argv[])
-{
-	spdlog::set_level(spdlog::level::debug);
-
-	TEF::Aurora::SmartFuse smartFuse;
-	smartFuse.Connect();
-	smartFuse.Run();
-
-	bool state = true;
-	float current;
-	while (true)
-	{
-		smartFuse.SetFet(7, state);
-		smartFuse.GetCurrent(7, current);
-		spdlog::debug("fet 7 current: {}", current);
-		state = !state;
-		Sleep(1000);
-	}
-	
-
-	return true;
-}
+*/

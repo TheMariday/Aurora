@@ -1,14 +1,11 @@
 #pragma once
-#pragma once
 #include "tef/aurora/effect.h"
-#include <spdlog/spdlog.h>
 #include "atomic"
-#include "tef/aurora/masterController.h"
 
 namespace TEF::Aurora::Effects
 {
 
-	class PawEffect : public Effect
+	class DebugEffect : public Effect
 	{
 	public:
 
@@ -23,6 +20,13 @@ namespace TEF::Aurora::Effects
 			}
 
 			return true;
+		}
+
+		void Black()
+		{
+			r = 0;
+			g = 0;
+			b = 0;
 		}
 
 		std::atomic_bool m_running = false;
