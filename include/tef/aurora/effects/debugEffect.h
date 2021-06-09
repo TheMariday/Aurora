@@ -11,12 +11,11 @@ namespace TEF::Aurora::Effects
 
 		bool Render(std::vector<TEF::Aurora::LED>& leds) override
 		{
-
-			for (LED& led : leds)
+			for (int c = 0; c < maxLeds; c++)
 			{
-				led.r = r / 10.0;
-				led.g = g / 10.0;
-				led.b = b / 10.0;
+				leds[c].r = r / 10.0;
+				leds[c].g = g / 10.0;
+				leds[c].b = b / 10.0;
 			}
 
 			return true;
@@ -33,6 +32,7 @@ namespace TEF::Aurora::Effects
 		std::atomic_int r = 0;
 		std::atomic_int g = 0;
 		std::atomic_int b = 0;
+		std::atomic_int maxLeds = 250;
 	};
 
 };

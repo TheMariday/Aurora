@@ -180,6 +180,9 @@
     <ClInclude Include="include\tef\aurora\effects\debugEffect.h">
       <Filter>effects</Filter>
     </ClInclude>
+    <ClInclude Include="include\tef\aurora\properties.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\svl\LICENSE">

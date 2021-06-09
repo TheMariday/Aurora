@@ -108,6 +108,7 @@
     <ClInclude Include="include\tef\aurora\effects\debugEffect.h" />
     <ClInclude Include="include\tef\aurora\effects\simpleEffect.h" />
     <ClInclude Include="include\tef\aurora\led.h" />
+    <ClInclude Include="include\tef\aurora\properties.h" />
     <ClInclude Include="include\tef\aurora\runnable.h" />
     <ClInclude Include="include\tef\aurora\effectRunner.h" />
     <ClInclude Include="include\tef\aurora\masterController.h" />

@@ -1,5 +1,32 @@
 #include <spdlog/spdlog.h>
-#include <chrono>
+#include "tef/aurora/properties.h"
+
+#define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
+
+
+int main(int argc, char* argv[])
+{
+	spdlog::set_level(spdlog::level::debug);
+
+	TEF::Aurora::Properties::CurrentMatrix cmLoad;
+
+	TEF::Aurora::Properties::LoadProperty(cmLoad);
+
+	spdlog::debug("loaded: {}", cmLoad.data[1][1][1]);
+
+	return true;
+
+	//currently segfaulint when trying to delete cmLoad;
+}
+
+/*
+* 
+* 
+void waitForEnter()
+{
+	do {} while (std::cin.get() != '\n');
+}
+* #include <chrono>
 #include "tef/aurora/effectRunner.h"
 #include "tef/aurora/effects/debugEffect.h"
 #include "tef/aurora/smartFuse.h"
@@ -8,25 +35,10 @@
 #include "tef/aurora/testSuite.h"
 #include "tef/aurora/safety.h"
 #include <iostream>
-
-#define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
-
-void waitForEnter()
-{
-	do {} while (std::cin.get() != '\n');
-}
-
-int main(int argc, char* argv[])
-{
-	spdlog::set_level(spdlog::level::debug);
-
-	TEF::Aurora::Safety safety;
+* 	TEF::Aurora::Safety safety;
 	safety.BuildCurrentMatrix();
 	safety.PrintCurrentMatrix();
-
-	return true;
-}
-
+*/
 /*
 {
 	pPaw->r = 10;
