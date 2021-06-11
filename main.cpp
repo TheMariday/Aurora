@@ -1,5 +1,5 @@
 #include <spdlog/spdlog.h>
-#include "tef/aurora/properties.h"
+#include "tef/aurora/safety.h"
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 
@@ -8,11 +8,13 @@ int main(int argc, char* argv[])
 {
 	spdlog::set_level(spdlog::level::debug);
 
-	TEF::Aurora::Properties::CurrentMatrix cmLoad;
+	TEF::Aurora::Safety safety;
 
-	TEF::Aurora::Properties::LoadProperty(cmLoad);
+	safety.LoadCurrentMatrix();
 
-	spdlog::debug("loaded: {}", cmLoad.data[1][1][1]);
+	safety.FilterCurrentMatrix();
+
+	safety.PrintCurrentMatrix();
 
 	return true;
 
@@ -20,8 +22,8 @@ int main(int argc, char* argv[])
 }
 
 /*
-* 
-* 
+*
+*
 void waitForEnter()
 {
 	do {} while (std::cin.get() != '\n');
