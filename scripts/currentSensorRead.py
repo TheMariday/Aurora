@@ -1,74 +1,66 @@
 import serial
 import time
 
-
 class CurrentController:
 
-    def __init__(self, port='COM5', baud=57600, boardCount=8):
-        self.ard = serial.Serial(port,baud)
-        self.delimeter = b'\xff\xff'
-        self.boardCount = boardCount
-        self.packet_size = self.boardCount*3 + len(self.delimeter)
+    def __init__(self, port='COM9', baud=57600, boardCount=8, timeout=1):
+        self.ard = serial.Serial(port, baud, timeout=timeout)
+        time.sleep(2)
 
-        time.sleep(0.5)
+        self.send(100)
+        if self.read() != 1:
+            print("Failed to handshake")
 
-        self.boardCurrent = [0]*boardCount
-        self.boardFET = [0]*boardCount
+    def send(self, val):
+        self.ard.write(chr(val).encode())
+    
+    def read(self):
 
-        self.calibrationOffset = -420
-        self.calibrationMultiplier = 61
+        msg  = self.ard.read(2);
+        if(len(msg) != 2):
+            print("didn't recieve enough data")
+            return 0
+        lsb, msb = msg
+        return msb << 8 | lsb
 
-        self.disableAll()
+    def setFet(self, board, state):
+        self.send(board+state*8)
+        return self.read()
 
-    def __repr__(self):
-        s = "CurrentController:\n"
-        for board in range(self.boardCount):
-            s += "board %i: " % board + ("enabled" if self.boardFET[board] else "disabled") + ", Draw = %i\n" % self.boardCurrent[board]
+    def getCurrent(self, board):
+        self.send(board+8*2)
+        return self.read()
+
+    def getAll(self):
+        self.send(24);
         
-        return s
+        currents = []
+        for _ in range(8):
+            currents.append(self.read())
+            if currents[-1] == 0:
+                return 0;
 
-    def disableAll(self):
-        for board in range(self.boardCount):
-            self.setBoardFET(board, False)
+        return currents
 
-    def setBoardFET(self, board, state):
-        s = chr(board*2+int(state)).encode()
-        print("setting board to", board, state, s)
-        self.ard.write(s)
-        #self.ard.flush()
+def printAll(values):
 
-    def getBoardFET(self, board):
-        return self.boardFET[board]
+    print("-"*50)
+    for i in range(8):
+        print("%i: %i %s" % (i, values[i], int((values[i]-400)/5)*"#"))
 
-    def getBoardCurrent(self, board):
-        return self.boardCurrent[board]
+def unitsToAmps(units):
+    return (units-494.8)*(25/1024)
 
-    def flush(self):
-        self.ard.flushInput()
-        msg = self.ard.read_until(self.delimeter);
+if __name__ == "__main__":
 
-    def refresh(self, flush=False):
+    cc = CurrentController("COM10")
 
-        if flush:
-            self.flush()
+    #unloaded noise deviance = 32mA
+    #unloaded noise range    = 200mA
 
-        msg = self.ard.read_until(self.delimeter);
+    board = 7
+    before = cc.getCurrent(board)
+    after = cc.setFet(board,True)
 
-        if len(msg) != self.packet_size:
-            print("Recieved message not long enough!")
-            return False
-
-
-        for board in range(8):
-            lsb, msb, fet  = msg[board*3:board*3+3]
-
-            current = (msb << 8 | lsb)
-
-            #current += self.calibrationOffset
-            #current *= self.calibrationMultiplier
-
-            self.boardCurrent[board] = current
-            self.boardFET[board] = fet
-
-        return True
+    print(after-before)
 

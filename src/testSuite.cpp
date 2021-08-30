@@ -156,15 +156,11 @@ bool TEF::Aurora::TestSuite::SmartFuseTest()
 	TEF::Aurora::SmartFuse smartFuse;
 	smartFuse.Connect();
 	Sleep(1000);
-	smartFuse.Print();
-	smartFuse.SetFet(0, true);
+	int fetState;
+	smartFuse.SetFet(0, true, fetState);
 	Sleep(1000);
 
-	bool fetState;
-	smartFuse.GetFet(0, fetState);
-	if (!fetState) return false;
-
-	return true;
+	return fetState;
 }
 
 bool TEF::Aurora::TestSuite::AutoTest()

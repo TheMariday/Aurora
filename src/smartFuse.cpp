@@ -4,6 +4,25 @@
 #include <wiringPi.h>
 #include <wiringSerial.h>
 
+// General parameters
+#define CHANNELS 8
+#define TIMEOUT 1000
+#define BAUD 57600
+
+// Unique call codes
+#define SERIAL_PING 100
+#define SERIAL_STOP_ALL  101
+#define SERIAL_GET_ALL  102
+
+// Call indexes (to set fet 4 to on, call SERIAL_FET_ON+4)
+#define SERIAL_FET_OFF CHANNELS*0
+#define SERIAL_FET_ON  CHANNELS*1
+#define SERIAL_GET     CHANNELS*2
+
+// Response codes
+#define RESP_SUCCESS 1
+#define RESP_FAIL 0
+
 TEF::Aurora::SmartFuse::SmartFuse()
 {
 }
@@ -14,27 +33,22 @@ TEF::Aurora::SmartFuse::~SmartFuse()
 	serialClose(m_serialPort);
 }
 
-bool TEF::Aurora::SmartFuse::Connect()
+bool TEF::Aurora::SmartFuse::Connect(std::string port)
 {
 	wiringPiSetup();
 
-	m_serialPort = serialOpen("/dev/ttyUSB0", 57600);
+	m_serialPort = serialOpen(port.c_str(), BAUD);
 	if (m_serialPort < 0)	/* open serial port */
 	{
 		spdlog::error("Unable to open serial device");
 		return false;
 	}
 
-	m_front = -1;
-
-	std::this_thread::sleep_for(std::chrono::seconds(1));
-
-	StopAll();
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 
 	return true;
 }
-
-bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled)
+bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 {
 	if (m_serialPort < 0)
 	{
@@ -42,110 +56,86 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled)
 		return false;
 	}
 
-	unsigned char c = channel * 2 + int(enabled);
-	serialPutchar(m_serialPort, c);
+	serialPutchar(m_serialPort, (enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
 
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::GetFet(int channel, bool& enabled)
+
+bool TEF::Aurora::SmartFuse::GetCurrent(int channel, int& current)
 {
-	std::scoped_lock lock(m_stateMutex);
-	enabled = m_fetStates[channel];
+	if (m_serialPort < 0)
+	{
+		spdlog::error("Smart Fuse cannot get the current as smart fuse is not connected");
+		return false;
+	}
+
+	serialPutchar(m_serialPort, SERIAL_GET + channel);
+
+	current = Read();
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::GetCurrent(int channel, float& current)
+bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<int>& currents)
 {
-	std::scoped_lock lock(m_stateMutex);
-	current = m_currentReadings[channel];
+	if (m_serialPort < 0)
+	{
+		spdlog::error("Smart Fuse cannot get the current as smart fuse is not connected");
+		return false;
+	}
+
+	serialPutchar(m_serialPort, SERIAL_GET_ALL);
+	currents.resize(CHANNELS);
+	for (int& current : currents)
+	{
+		current = Read();
+		if (current == 0)
+		{
+			spdlog::error("Smart Fuse failed to read a board current");
+			return false;
+		}
+	}
+	
 	return true;
-}
+};
+
 
 bool TEF::Aurora::SmartFuse::StopAll()
 {
-	for (int channel = 0; channel < m_channels; channel++)
+	if (m_serialPort < 0)
 	{
-		if (!SetFet(channel, false))
-		{
-			spdlog::error("Smart Fuse cannot stop channel {}", channel);
-		}
-
+		spdlog::error("Smart Fuse cannot stop as smart fuse is not connected");
+		return false;
 	}
-	return true;
+
+	serialPutchar(m_serialPort, SERIAL_STOP_ALL);
+	return Read() == 1;
 }
 
-
-bool TEF::Aurora::SmartFuse::DecodeBuffer()
+int TEF::Aurora::SmartFuse::Read()
 {
-	std::scoped_lock lock(m_stateMutex);
-	char lsb, msb;
-	int current;
-	bool fet;
-	for (int i = 0; i < 8; i++)
+	if (m_serialPort < 0)
 	{
-		lsb = m_charBuffer[3 * i + 0];
-		msb = m_charBuffer[3 * i + 1];
-		fet = m_charBuffer[3 * i + 2];
-		current = (msb << 8 | lsb);
-		m_currentReadings[i] = MeasurementToAmps(current, i != 7);
-		m_fetStates[i] = fet;
+		spdlog::error("Smart Fuse cannot be read as smart fuse is not connected");
+		return 0;
 	}
 
-	return true;
+	char lsb = 0;
+	char msb = 0;
+
+	lsb = serialGetchar(m_serialPort);
+	msb = serialGetchar(m_serialPort);
+
+	if ((lsb == -1) || (msb == -1))
+	{
+		spdlog::error("Smart Fuse failed to read a byte");
+		return 0;
+	}
+
+	return msb << 8 | lsb;
 }
 
-float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement, bool asc10)
+float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement)
 {
-	if (asc10)
-	{
-		return -1;
-	}
-	else
-	{
-		return (measurement * 0.0579) - 24.6;
-	}
-
+	return (measurement - 494.8) * (25 / 1024);
 }
-
-bool TEF::Aurora::SmartFuse::Print()
-{
-	std::scoped_lock lock(m_stateMutex);
-
-	for (int i = 0; i < 8; i++)
-	{
-		spdlog::debug("Sensor {}: Fet: {}, Current: {}", i, m_fetStates[i], m_currentReadings[i]);
-	}
-	return true;
-}
-
-bool TEF::Aurora::SmartFuse::MainLoopCallback()
-{
-	if (serialDataAvail(m_serialPort))
-	{
-		m_front++;
-
-		char d = serialGetchar(m_serialPort);		/* receive character serially*/
-		m_charBuffer[m_front] = d;
-
-		if (m_front < 1)
-			return true;
-
-		if (m_charBuffer[m_front] == 255 and m_charBuffer[m_front - 1] == 255)
-		{
-			if (m_front == 25)
-			{
-				DecodeBuffer();
-			}
-			m_front = -1;
-		}
-
-	}
-	else
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(2));
-	}
-
-	return true;
-}
-

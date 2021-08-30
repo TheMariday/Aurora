@@ -1,45 +1,33 @@
 #pragma once
-#include "tef/aurora/runnable.h"
-#include <mutex>
-#include <atomic>
+#include <vector>
+#include <string>
 
 namespace TEF::Aurora {
 
-	class SmartFuse : public Runnable
+	class SmartFuse
 	{
 	public:
 		SmartFuse();
 		~SmartFuse();
 
-		bool Connect();
+		bool Connect(std::string port = "/dev/ttyUSB0");
 
-		bool SetFet(int channel, bool enabled);
-		bool GetFet(int channel, bool& enabled);
-		bool GetCurrent(int channel, float& current);
-
+		bool SetFet(int channel, bool enabled, int& current);
+		bool GetCurrent(int channel, int& current);
+		bool GetCurrent(std::vector<int>& currents);
 		bool StopAll();
-
-		bool Print();
 
 	private:
 
-		bool MainLoopCallback() override;
+		int Read();
 
-		bool DecodeBuffer();
-
-		float MeasurementToAmps(int measurement, bool asc10 = true);
-
+		float MeasurementToAmps(int measurement);
 
 		const static int m_channels = 8;
-		float m_currentReadings[m_channels];
-		bool m_fetStates[m_channels];
-
-		std::mutex m_stateMutex;
 
 		int m_serialPort;
 
 		char m_charBuffer[50];
-		int m_front;
 
 	};
 };

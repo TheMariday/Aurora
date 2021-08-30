@@ -16,7 +16,6 @@ namespace TEF::Aurora {
 		Safety()
 		{
 			m_smartFuse.Connect();
-			m_smartFuse.Run();
 		};
 
 		~Safety()
@@ -33,9 +32,10 @@ namespace TEF::Aurora {
 
 			effectRunner.Run();
 
-			m_smartFuse.SetFet(7, true);
+			int v;
+			m_smartFuse.SetFet(7, true, v);
 
-			float current;
+			int current;
 
 			for (int r = 0; r < 10; r++)
 			{
@@ -49,13 +49,13 @@ namespace TEF::Aurora {
 
 						std::this_thread::sleep_for(std::chrono::milliseconds(100));
 						m_smartFuse.GetCurrent(7, current);
-						m_currentMatrix.data[r][g][b] = current - 0.65;
+						m_currentMatrix.data[r][g][b] = current;
 						spdlog::debug("rgb: {} {} {}", r, g, b);
 					}
 				}
 			}
 
-			m_smartFuse.SetFet(7, false);
+			m_smartFuse.SetFet(7, false, v);
 
 			effectRunner.Stop();
 

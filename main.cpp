@@ -8,13 +8,25 @@ int main(int argc, char* argv[])
 {
 	spdlog::set_level(spdlog::level::debug);
 
-	TEF::Aurora::Safety safety;
+	TEF::Aurora::SmartFuse smartFuse;
 
-	safety.LoadCurrentMatrix();
+	smartFuse.Connect();
 
-	safety.FilterCurrentMatrix();
 
-	safety.PrintCurrentMatrix();
+	int board = 7;
+	int before, after;
+	smartFuse.GetCurrent(board, before);
+	smartFuse.SetFet(board, true, after);
+
+	spdlog::info("difference: {}", after - before);
+
+	//TEF::Aurora::Safety safety;
+
+	//safety.LoadCurrentMatrix();
+
+	//safety.FilterCurrentMatrix();
+
+	//safety.PrintCurrentMatrix();
 
 	return true;
 
@@ -99,8 +111,8 @@ for (int i = 0; i <= 7; i++)
 */
 
 
-/*
 
+/*
 void ShovelDemo()
 {
 	std::atomic_bool running = true;
@@ -114,18 +126,18 @@ void ShovelDemo()
 	effectRunner.AddEffect(pPaw);
 	effectRunner.AddEffect(pCrap);
 
-	masterController.GetUserControl()->RegisterBool("rainbow effect", [&pCrap](bool b) {
-		pCrap->m_running = b;
+	masterController.GetUserControl()->RegisterBool("rainbow effect", [&pCrap](bool running) {
+		pCrap->m_running = running;
 		return true;
 		});
 
 	masterController.GetUserControl()->RegisterLimitedInt("set red to", [&pPaw](int r) {
-		pPaw->g = r;
+		pPaw->r = r;
 		return true;
 		});
 
 	masterController.GetUserControl()->RegisterLimitedInt("set green to", [&pPaw](int g) {
-		pPaw->r = g;
+		pPaw->g = g;
 		return true;
 		});
 
@@ -147,5 +159,4 @@ void ShovelDemo()
 	while (running)
 		Sleep(1000);
 }
-
 */
