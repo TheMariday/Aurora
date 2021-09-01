@@ -41,11 +41,9 @@ bool TEF::Aurora::SmartFuse::Connect(std::string port)
 
 	// Check for errors
 	if (m_serialPort < 0) {
-		printf("Error connecting\n");
+		spdlog::error("Smart Fuse failed to connect to hardware");
+		return false;
 	}
-
-	printf("connected, sleeping\n");
-
 
 	struct termios tty;
 
@@ -54,7 +52,8 @@ bool TEF::Aurora::SmartFuse::Connect(std::string port)
 	// must have been initialized with a call to tcgetattr() overwise behaviour
 	// is undefined
 	if (tcgetattr(m_serialPort, &tty) != 0) {
-		printf("Error %i from tcgetattr: %i\n", errno, errno);
+		spdlog::error("Smart Fuse failed to get termios settings");
+		return false;
 	}
 
 
@@ -80,19 +79,29 @@ bool TEF::Aurora::SmartFuse::Connect(std::string port)
 
 	// Save tty settings, also checking for error
 	if (tcsetattr(m_serialPort, TCSANOW, &tty) != 0) {
-		printf("Error %i from tcsetattr", errno);
+		spdlog::error("Smart Fuse failed to set termios settings");
+		return false;
 	}
 
-	printf("connected, sleeping\n");
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+
+	if (tcflush(m_serialPort, TCIOFLUSH) != 0)
+	{
+		spdlog::error("Smart Fuse failed to flush stream after connecting");
+		return false;
+	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
-	tcflush(m_serialPort, TCIOFLUSH);
-
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+	if (!Ping())
+	{
+		spdlog::error("Smart Fuse connected but failed ping check");
+		return false;
+	}
 
 	return true;
 }
+
 bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 {
 	if (m_serialPort < 0)
@@ -151,12 +160,23 @@ bool TEF::Aurora::SmartFuse::StopAll()
 {
 	if (m_serialPort < 0)
 	{
-		spdlog::error("Smart Fuse cannot stop as smart fuse is not connected");
+		spdlog::error("Smart Fuse cannot stop all fuses as hardware is not connected");
 		return false;
 	}
 
-	Write(SERIAL_STOP_ALL);
-	return Read() == RESP_SUCCESS;
+	if (!Write(SERIAL_STOP_ALL))
+	{
+		spdlog::error("Smart Fuse failed to write stop all command");
+		return false;
+	}
+
+	if (Read() != RESP_SUCCESS)
+	{
+		spdlog::error("Smart Fuse returned an unexpected response when trying to stop all fuses");
+		return false;
+	}
+
+	return true;
 }
 
 int TEF::Aurora::SmartFuse::Read()
@@ -166,27 +186,46 @@ int TEF::Aurora::SmartFuse::Read()
 		spdlog::error("Smart Fuse cannot be read as smart fuse is not connected");
 		return 0;
 	}
+
 	char read_buf[2];
 	int n = read(m_serialPort, &read_buf, sizeof(read_buf));
+
+	if (n != 2)
+	{
+		spdlog::error("Smart Fuse failed to read the full 2 bytes needed");
+		return 0;
+	}
 
 	return read_buf[1] << 8 | read_buf[0];
 }
 
-int TEF::Aurora::SmartFuse::Write(int flag)
+bool TEF::Aurora::SmartFuse::Ping()
+{
+	Write(SERIAL_PING);
+	return Read() == 1;
+}
+
+bool TEF::Aurora::SmartFuse::Write(int flag)
 {
 	if (m_serialPort < 0)
 	{
-		spdlog::error("Smart Fuse cannot be written to as smart fuse is not connected");
-		return 0;
+		spdlog::error("Smart Fuse cannot be written to as hardware is not connected");
+		return false;
 	}
 
 	unsigned char flagChar = flag;
 	int bytesWritten = write(m_serialPort, &flagChar, 1);
-	return bytesWritten == 1;
-}
 
+	if (bytesWritten != 1)
+	{
+		spdlog::error("Smart Fuse failed to write data for some reason");
+		return false;
+	}
+
+	return true;
+}
 
 float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement)
 {
-	return (measurement - 494.8) * (25 / 1024);
+	return (measurement - 494.8) * (25 / 1024); // Which is roughly 20ma per step
 }

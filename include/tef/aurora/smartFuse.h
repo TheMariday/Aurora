@@ -19,12 +19,12 @@ namespace TEF::Aurora {
 
 	private:
 
-		int Write(int flag);
+		bool Ping();
+
+		bool Write(int flag);
 		int Read();
 
 		float MeasurementToAmps(int measurement);
-
-		const static int m_channels = 8;
 
 		int m_serialPort = -1;
 
