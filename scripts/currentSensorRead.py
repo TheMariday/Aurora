@@ -53,7 +53,7 @@ def unitsToAmps(units):
 
 if __name__ == "__main__":
 
-    cc = CurrentController("COM10")
+    cc = CurrentController("COM11")
 
     #unloaded noise deviance = 32mA
     #unloaded noise range    = 200mA

@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Aurora", "Aurora.vcxproj", "{1FA221EF-379A-4E6C-BA5E-95FFF0474356}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rpi_playground", "..\rpi_playground\rpi_playground.vcxproj", "{B956735F-CBD6-46F1-835F-2946019082F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -25,6 +27,18 @@ Global
 		{1FA221EF-379A-4E6C-BA5E-95FFF0474356}.Release|ARM64.ActiveCfg = Release|ARM64
 		{1FA221EF-379A-4E6C-BA5E-95FFF0474356}.Release|ARM64.Build.0 = Release|ARM64
 		{1FA221EF-379A-4E6C-BA5E-95FFF0474356}.Release|ARM64.Deploy.0 = Release|ARM64
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Debug|ARM.ActiveCfg = Debug|ARM
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Debug|ARM.Build.0 = Debug|ARM
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Debug|ARM.Deploy.0 = Debug|ARM
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Debug|ARM64.Build.0 = Debug|ARM64
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Release|ARM.ActiveCfg = Release|ARM
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Release|ARM.Build.0 = Release|ARM
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Release|ARM.Deploy.0 = Release|ARM
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Release|ARM64.Build.0 = Release|ARM64
+		{B956735F-CBD6-46F1-835F-2946019082F0}.Release|ARM64.Deploy.0 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

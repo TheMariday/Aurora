@@ -1,8 +1,10 @@
 #include "tef/aurora/smartFuse.h"
 #include <spdlog/spdlog.h>
 
-#include <wiringPi.h>
-#include <wiringSerial.h>
+#include <fcntl.h> // Contains file controls like O_RDWR
+#include <errno.h> // Error integer and strerror() function
+#include <termios.h> // Contains POSIX terminal control definitions
+#include <unistd.h> // write(), read(), close()
 
 // General parameters
 #define CHANNELS 8
@@ -30,21 +32,64 @@ TEF::Aurora::SmartFuse::SmartFuse()
 TEF::Aurora::SmartFuse::~SmartFuse()
 {
 	StopAll();
-	serialClose(m_serialPort);
+	close(m_serialPort);
 }
 
 bool TEF::Aurora::SmartFuse::Connect(std::string port)
 {
-	wiringPiSetup();
+	m_serialPort = open(port.c_str(), O_RDWR);
 
-	m_serialPort = serialOpen(port.c_str(), BAUD);
-	if (m_serialPort < 0)	/* open serial port */
-	{
-		spdlog::error("Unable to open serial device");
-		return false;
+	// Check for errors
+	if (m_serialPort < 0) {
+		printf("Error connecting\n");
 	}
 
-	std::this_thread::sleep_for(std::chrono::seconds(2));
+	printf("connected, sleeping\n");
+
+
+	struct termios tty;
+
+	// Read in existing settings, and handle any error
+	// NOTE: This is important! POSIX states that the struct passed to tcsetattr()
+	// must have been initialized with a call to tcgetattr() overwise behaviour
+	// is undefined
+	if (tcgetattr(m_serialPort, &tty) != 0) {
+		printf("Error %i from tcgetattr: %i\n", errno, errno);
+	}
+
+
+	tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
+	tty.c_cflag &= ~CSIZE; // Clear all the size bits, then use one of the statements below
+	tty.c_cflag |= CS8; // 8 bits per byte (most common)
+	tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
+	tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
+	tty.c_lflag &= ~ICANON;
+	tty.c_lflag &= ~ECHO; // Disable echo
+	tty.c_lflag &= ~ECHOE; // Disable erasure
+	tty.c_lflag &= ~ECHONL; // Disable new-line echo
+	tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
+	tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
+	tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL); // Disable any special handling of received bytes
+	tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+	tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+	tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+	tty.c_cc[VMIN] = 0;
+
+	cfsetispeed(&tty, B57600);
+	cfsetospeed(&tty, B57600);
+
+	// Save tty settings, also checking for error
+	if (tcsetattr(m_serialPort, TCSANOW, &tty) != 0) {
+		printf("Error %i from tcsetattr", errno);
+	}
+
+	printf("connected, sleeping\n");
+
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+
+	tcflush(m_serialPort, TCIOFLUSH);
+
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	return true;
 }
@@ -55,8 +100,10 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 		spdlog::error("Smart Fuse cannot set fet as smart fuse is not connected");
 		return false;
 	}
+	
+	Write((enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
 
-	serialPutchar(m_serialPort, (enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
+	current = Read();
 
 	return true;
 }
@@ -70,7 +117,7 @@ bool TEF::Aurora::SmartFuse::GetCurrent(int channel, int& current)
 		return false;
 	}
 
-	serialPutchar(m_serialPort, SERIAL_GET + channel);
+	Write(SERIAL_GET + channel);
 
 	current = Read();
 	return true;
@@ -84,7 +131,7 @@ bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<int>& currents)
 		return false;
 	}
 
-	serialPutchar(m_serialPort, SERIAL_GET_ALL);
+	Write(SERIAL_GET_ALL);
 	currents.resize(CHANNELS);
 	for (int& current : currents)
 	{
@@ -108,8 +155,8 @@ bool TEF::Aurora::SmartFuse::StopAll()
 		return false;
 	}
 
-	serialPutchar(m_serialPort, SERIAL_STOP_ALL);
-	return Read() == 1;
+	Write(SERIAL_STOP_ALL);
+	return Read() == RESP_SUCCESS;
 }
 
 int TEF::Aurora::SmartFuse::Read()
@@ -119,21 +166,25 @@ int TEF::Aurora::SmartFuse::Read()
 		spdlog::error("Smart Fuse cannot be read as smart fuse is not connected");
 		return 0;
 	}
+	char read_buf[2];
+	int n = read(m_serialPort, &read_buf, sizeof(read_buf));
 
-	char lsb = 0;
-	char msb = 0;
+	return read_buf[1] << 8 | read_buf[0];
+}
 
-	lsb = serialGetchar(m_serialPort);
-	msb = serialGetchar(m_serialPort);
-
-	if ((lsb == -1) || (msb == -1))
+int TEF::Aurora::SmartFuse::Write(int flag)
+{
+	if (m_serialPort < 0)
 	{
-		spdlog::error("Smart Fuse failed to read a byte");
+		spdlog::error("Smart Fuse cannot be written to as smart fuse is not connected");
 		return 0;
 	}
 
-	return msb << 8 | lsb;
+	unsigned char flagChar = flag;
+	int bytesWritten = write(m_serialPort, &flagChar, 1);
+	return bytesWritten == 1;
 }
+
 
 float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement)
 {
