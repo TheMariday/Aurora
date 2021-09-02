@@ -1,58 +1,10 @@
 #include "tef/aurora/sound.h"
+#include "tef/aurora/cmd.h"
+
 #include <spdlog/spdlog.h>
 #include <algorithm>
 #include <sstream>
-
-struct CMD
-{
-	std::string command = "";
-	std::string response = "";
-	int status = 0;
-};
-
-bool execCommand(CMD* cmd)
-{
-	if (cmd->command.empty())
-	{
-		spdlog::error("Cannot call empty command");
-		return false;
-	}
-
-	spdlog::debug("Command Executor: {}", cmd->command.c_str());
-	cmd->status = 0;
-	auto pPipe = ::popen(cmd->command.c_str(), "r");
-	if (pPipe == nullptr)
-	{
-		spdlog::error("Command Executor cannot open pipe");
-		return false;
-	}
-
-	std::array<char, 256> buffer;
-
-	while (not std::feof(pPipe))
-	{
-		auto bytes = std::fread(buffer.data(), 1, buffer.size(), pPipe);
-		cmd->response.append(buffer.data(), bytes);
-	}
-
-	//std::this_thread::sleep_for(std::chrono::seconds(1));//what's this doing here?
-
-	auto rc = ::pclose(pPipe);
-
-	if (WIFEXITED(rc))
-	{
-		cmd->status = WEXITSTATUS(rc);
-	}
-
-	return true;
-}
-
-bool quickCommand(std::string command)
-{
-	CMD cmd;
-	cmd.command = command;
-	return execCommand(&cmd);
-}
+#include <mutex>
 
 TEF::Aurora::Sound::Sound(std::string device)
 {
@@ -146,7 +98,7 @@ bool TEF::Aurora::Sound::MainLoopCallback()
 		speech = m_speeches.front();
 	}
 
-	if (!quickCommand(SpeechToCommand(speech)))
+	if (!TEF::Aurora::CMD::quickCommand(SpeechToCommand(speech)))
 	{
 		spdlog::error("Failed to speak");
 		return false;
@@ -167,7 +119,7 @@ bool TEF::Aurora::Sound::MainLoopCallback()
 bool TEF::Aurora::Sound::PlayAudio(std::string filename)
 {
 	std::string command = AudioToCommand(filename);
-	std::thread t(quickCommand, command);
+	std::thread t(TEF::Aurora::CMD::quickCommand, command);
 	t.detach();
 
 	return true;
@@ -180,7 +132,7 @@ bool TEF::Aurora::Sound::StopAudio(std::string filename)
 
 bool TEF::Aurora::Sound::Stop()
 {
-	return quickCommand("pkill aplay");
+	return TEF::Aurora::CMD::quickCommand("pkill aplay");
 }
 
 std::string TEF::Aurora::Sound::SpeechToCommand(std::string speech)
@@ -227,5 +179,5 @@ bool TEF::Aurora::Sound::StopCommand(std::string command)
 {
 	command = "pkill -f -x \"" + command + "\"";
 
-	return quickCommand(command);
+	return TEF::Aurora::CMD::quickCommand(command);
 }

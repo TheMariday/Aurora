@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 
+
 namespace TEF::Aurora {
 
 	class SmartFuse
@@ -16,6 +17,8 @@ namespace TEF::Aurora {
 		bool GetCurrent(int channel, int& current);
 		bool GetCurrent(std::vector<int>& currents);
 		bool StopAll();
+
+		bool CheckConnected(std::vector<bool>& connected);
 
 	private:
 

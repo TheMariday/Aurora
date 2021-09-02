@@ -64,7 +64,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;wiringPi</LibraryDependencies>
+      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;usb-1.0;wiringPi</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -75,7 +75,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;wiringpi</LibraryDependencies>
+      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;usb-1.0;wiringpi</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\button.cpp" />
+    <ClCompile Include="src\connectionChecker.cpp" />
     <ClCompile Include="src\effect.cpp" />
     <ClCompile Include="src\runnable.cpp" />
     <ClCompile Include="src\effectRunner.cpp" />
@@ -104,6 +105,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\button.h" />
+    <ClInclude Include="include\tef\aurora\cmd.h" />
+    <ClInclude Include="include\tef\aurora\connectionChecker.h" />
     <ClInclude Include="include\tef\aurora\effect.h" />
     <ClInclude Include="include\tef\aurora\effects\debugEffect.h" />
     <ClInclude Include="include\tef\aurora\effects\simpleEffect.h" />

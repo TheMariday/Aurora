@@ -109,7 +109,7 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 		spdlog::error("Smart Fuse cannot set fet as smart fuse is not connected");
 		return false;
 	}
-	
+
 	Write((enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
 
 	current = Read();
@@ -151,7 +151,7 @@ bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<int>& currents)
 			return false;
 		}
 	}
-	
+
 	return true;
 };
 
@@ -176,6 +176,21 @@ bool TEF::Aurora::SmartFuse::StopAll()
 		return false;
 	}
 
+	return true;
+}
+
+bool TEF::Aurora::SmartFuse::CheckConnected(std::vector<bool>& connected)
+{
+	connected.clear();
+	connected.resize(CHANNELS);
+	for (int channel = 0; channel < CHANNELS; channel++)
+	{
+		int currentBefore, currentAfter;
+		SetFet(channel, false, currentBefore);
+		SetFet(channel, true, currentAfter);
+
+		connected[channel] = currentAfter > currentBefore + 5; // roughly 100ma
+	}
 	return true;
 }
 
