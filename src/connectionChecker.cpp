@@ -1,6 +1,5 @@
 #include <spdlog/spdlog.h>
 #include <sstream>
-#include <libusb-1.0/libusb.h>
 
 #include "tef/aurora/connectionChecker.h"
 #include "tef/aurora/cmd.h"
@@ -21,6 +20,8 @@ bool TEF::Aurora::ConnectionChecker::AddFuse(SmartFuse* smartFuse)
 
 	for (int i = 0; i < 8; i++)
 		m_subsystemStates[i].power = channels[i];
+	
+	return true;
 }
 
 bool TEF::Aurora::ConnectionChecker::MainLoopCallback()

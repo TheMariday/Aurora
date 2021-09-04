@@ -64,7 +64,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;usb-1.0;wiringPi</LibraryDependencies>
+      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;wiringPi</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -75,7 +75,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
-      <LibraryDependencies>pthread;spdlog;pocketsphinx;sphinxbase;sphinxad;usb-1.0;wiringpi</LibraryDependencies>
+      <LibraryDependencies>spdlog;pthread;pocketsphinx;sphinxbase;sphinxad;wiringPi</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>
@@ -122,6 +122,7 @@
     <ClInclude Include="include\tef\aurora\smartFuse.h" />
     <ClInclude Include="include\tef\aurora\sound.h" />
     <ClInclude Include="include\tef\aurora\speechRecognition.h" />
+    <ClInclude Include="include\tef\aurora\temporarySettingsThatIllPutSomehwereElseSomeday.h" />
     <ClInclude Include="include\tef\aurora\testSuite.h" />
     <ClInclude Include="include\tef\aurora\userControl.h" />
     <ClInclude Include="lib\easywsclient\easywsclient.hpp" />

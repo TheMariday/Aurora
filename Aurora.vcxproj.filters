@@ -207,6 +207,9 @@
     <ClInclude Include="include\tef\aurora\fadecandyServerComms.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\tef\aurora\temporarySettingsThatIllPutSomehwereElseSomeday.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\svl\LICENSE">
