@@ -28,9 +28,11 @@
     <Filter Include="lib\rapidjson\internal">
       <UniqueIdentifier>{3ad02be7-c1e6-4ad5-a7ff-92ab1dc8aba6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\easywsclient">
+      <UniqueIdentifier>{83db769d-d29b-4280-8699-cf434f54b6b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="src\masterController.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -65,6 +67,13 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\connectionChecker.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\easywsclient\easywsclient.cpp">
+      <Filter>lib\easywsclient</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\fadecandyServerComms.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -190,6 +199,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\cmd.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\easywsclient\easywsclient.hpp">
+      <Filter>lib\easywsclient</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\fadecandyServerComms.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

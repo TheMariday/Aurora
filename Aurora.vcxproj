@@ -89,10 +89,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lib\easywsclient\easywsclient.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\button.cpp" />
     <ClCompile Include="src\connectionChecker.cpp" />
     <ClCompile Include="src\effect.cpp" />
+    <ClCompile Include="src\fadecandyServerComms.cpp" />
     <ClCompile Include="src\runnable.cpp" />
     <ClCompile Include="src\effectRunner.cpp" />
     <ClCompile Include="src\masterController.cpp" />
@@ -110,6 +112,7 @@
     <ClInclude Include="include\tef\aurora\effect.h" />
     <ClInclude Include="include\tef\aurora\effects\debugEffect.h" />
     <ClInclude Include="include\tef\aurora\effects\simpleEffect.h" />
+    <ClInclude Include="include\tef\aurora\fadecandyServerComms.h" />
     <ClInclude Include="include\tef\aurora\led.h" />
     <ClInclude Include="include\tef\aurora\properties.h" />
     <ClInclude Include="include\tef\aurora\runnable.h" />
@@ -121,6 +124,7 @@
     <ClInclude Include="include\tef\aurora\speechRecognition.h" />
     <ClInclude Include="include\tef\aurora\testSuite.h" />
     <ClInclude Include="include\tef\aurora\userControl.h" />
+    <ClInclude Include="lib\easywsclient\easywsclient.hpp" />
     <ClInclude Include="lib\fadecandy\opc_client.h" />
     <ClInclude Include="lib\rapidjson\document.h" />
     <ClInclude Include="lib\rapidjson\filestream.h" />
