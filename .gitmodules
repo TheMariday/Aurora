@@ -10,3 +10,6 @@
 [submodule "scripts/fakecandy"]
 	path = scripts/fakecandy
 	url = https://github.com/CodeMaterial/fakecandy
+[submodule "lib/easywsclient"]
+	path = lib/easywsclient
+	url = https://github.com/dhbaird/easywsclient
