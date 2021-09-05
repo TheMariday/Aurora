@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClCompile Include="lib\easywsclient\easywsclient.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\batteryMonitor.cpp" />
     <ClCompile Include="src\button.cpp" />
     <ClCompile Include="src\connectionChecker.cpp" />
     <ClCompile Include="src\dacMCP3008.cpp" />
@@ -107,6 +108,7 @@
     <ClCompile Include="src\userControl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\tef\aurora\batteryMonitor.h" />
     <ClInclude Include="include\tef\aurora\button.h" />
     <ClInclude Include="include\tef\aurora\cmd.h" />
     <ClInclude Include="include\tef\aurora\connectionChecker.h" />

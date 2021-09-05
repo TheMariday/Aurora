@@ -1,4 +1,6 @@
 #pragma once
+#define voltage float
+#define ohms int
 
 namespace TEF::Aurora {
 
@@ -7,13 +9,20 @@ namespace TEF::Aurora {
 	public:
 		DacMCP3008();
 
-		bool Connect(int spiChannel=0);
+		bool Connect(int spiChannel = 0);
 
-		bool Read(int channel, int& value);
+		bool isConnected();
+
+		bool Read(int channel, voltage& volts);
+
+		int maxChannels() { return 8; };
 
 	private:
+		bool m_connected = false;
 
-		int m_channelOffset = 200;
+		const int m_channelOffset = 200;
+		const voltage m_maxVoltage = 3.3;
+		const int m_maxValue = 1024;
 
 	};
 }

@@ -24,12 +24,21 @@ bool TEF::Aurora::DacMCP3008::Connect(int spiChannel)
 		//return false;
 	}
 
-	return false;
+	m_connected = true;
+
+	return true;
 }
 
-bool TEF::Aurora::DacMCP3008::Read(int channel, int& value)
+bool TEF::Aurora::DacMCP3008::isConnected()
 {
-	value = analogRead(m_channelOffset + channel);
+	return m_connected;
+}
+
+bool TEF::Aurora::DacMCP3008::Read(int channel, voltage& volts)
+{
+	int value = analogRead(m_channelOffset + channel);
+
+	volts = (float(value) / float(m_maxValue)) * m_maxVoltage;
 	
 	return true;
 }

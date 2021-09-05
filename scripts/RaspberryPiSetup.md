@@ -6,7 +6,7 @@ sudo apt-get upgrade
 
 # General stuff
 ```
-sudo apt-get install git cmake zip unzip
+sudo apt-get install git cmake
 ```
 
 # Wiring pi stuff for gpio
@@ -14,6 +14,12 @@ I want to replace with pizero in the future
 ```
 sudo apt-get install wiringpi
 ```
+
+# Visual Studio remote development
+```
+sudo apt-get install openssh-server g++ gdb make ninja-build rsync zip
+```
+
 # PocketSphinx requirements
 ```
 sudo apt-get install gcc automake autoconf libtool bison swig python-dev libasound2-dev
