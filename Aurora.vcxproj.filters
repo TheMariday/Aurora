@@ -76,6 +76,9 @@
     <ClCompile Include="src\fadecandyServerComms.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\dacMCP3008.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\masterController.h">
@@ -208,6 +211,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\temporarySettingsThatIllPutSomehwereElseSomeday.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\dacMCP3008.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

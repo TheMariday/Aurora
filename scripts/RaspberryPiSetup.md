@@ -6,7 +6,7 @@ sudo apt-get upgrade
 
 # General stuff
 ```
-sudo apt-get install git cmake 
+sudo apt-get install git cmake zip unzip
 ```
 
 # Wiring pi stuff for gpio
@@ -16,7 +16,7 @@ sudo apt-get install wiringpi
 ```
 # PocketSphinx requirements
 ```
-sudo apt-get install install gcc automake autoconf libtool bison swig python-dev libasound2-dev
+sudo apt-get install gcc automake autoconf libtool bison swig python-dev libasound2-dev
 ```
 
 # Spdlog install
@@ -81,4 +81,9 @@ sudo make install
 passwd
 raspberry
 #put your password here
+```
+
+# Raspi-config
+```
+enable spi
 ```
