@@ -11,6 +11,13 @@ TEF::Aurora::MasterController::~MasterController()
 
 bool TEF::Aurora::MasterController::Start()
 {
+
+	// Setup battery monitor, not sure if this should be done here as most of this is control stuff. might break out into a separate hardware class
+	m_dac.Connect();
+	m_batteryMonitor.Connect(&m_dac);
+
+	// Setup speech recognition
+
 	m_speechRecognition.SetRecordFile("/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat");
 
 	m_userControl.RegisterVoid("cancel that", [this]() {
@@ -50,6 +57,8 @@ bool TEF::Aurora::MasterController::Start()
 	m_headset.Run();
 	m_recordButton.Run();
 	m_confirmButton.Run();
+	m_batteryMonitor.Run();
+
 	return true;
 }
 

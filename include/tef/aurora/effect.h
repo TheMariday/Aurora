@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "tef/aurora/led.h"
+#include <chrono>
 
 namespace TEF::Aurora {
 

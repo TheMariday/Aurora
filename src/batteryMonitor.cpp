@@ -2,23 +2,28 @@
 
 #include <spdlog/spdlog.h>
 
-TEF::Aurora::BatteryMonitor::BatteryMonitor(DacMCP3008* dac, voltage minVoltage, std::vector<int> cellPins)
+TEF::Aurora::BatteryMonitor::BatteryMonitor()
+{
+	SetFPS(1);
+}
+
+bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac, voltage minVoltage, std::vector<int> cellPins)
 {
 	if (!dac)
 	{
 		spdlog::error("Battery Monitor initialised without a valid dac");
-		return;
+		return false;
 	}
 
 	if ((cellPins.size() == 0) || (cellPins.size() > dac->maxChannels()))
 	{
 		spdlog::error("Battery Monitor cannot be inintialised as there were too many / not enough pins to assign");
-		return;
+		return false;
 	}
 
 	if (minVoltage < 3)
 	{
-		spdlog::error("Battery Monitor cannot set a minimum cell voltage to below 3v");
+		spdlog::warn("Battery Monitor cannot set a minimum cell voltage to below 3v");
 		minVoltage = 3;
 	}
 
@@ -36,7 +41,14 @@ TEF::Aurora::BatteryMonitor::BatteryMonitor(DacMCP3008* dac, voltage minVoltage,
 
 	m_pDac = dac;
 
-	SetFPS(1);
+	m_connected = true;
+
+	return true;
+}
+
+bool TEF::Aurora::BatteryMonitor::IsConnected()
+{
+	return m_connected;
 }
 
 bool TEF::Aurora::BatteryMonitor::SetLowBatteryCallback(std::function<void(Cell)> func)

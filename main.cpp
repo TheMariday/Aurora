@@ -10,8 +10,8 @@ int main()
 
 	TEF::Aurora::DacMCP3008 dac;
 	dac.Connect();
-	TEF::Aurora::BatteryMonitor batteryMonitor(&dac);
-
+	TEF::Aurora::BatteryMonitor batteryMonitor;
+	batteryMonitor.Connect(&dac);
 	batteryMonitor.Run();
 
 	std::this_thread::sleep_for(std::chrono::hours(1));

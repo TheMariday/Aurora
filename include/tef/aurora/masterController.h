@@ -3,6 +3,8 @@
 #include "tef/aurora/userControl.h"
 #include "tef/aurora/speechRecognition.h"
 #include "tef/aurora/sound.h"
+#include "tef/aurora/batteryMonitor.h"
+#include "tef/aurora/dacMCP3008.h"
 
 namespace TEF::Aurora {
 
@@ -28,6 +30,8 @@ namespace TEF::Aurora {
 		UserControl m_userControl;
 		SpeechRecognition m_speechRecognition;
 		Sound m_headset;
+		BatteryMonitor m_batteryMonitor;
+		DacMCP3008 m_dac;
 	};
 }
 
