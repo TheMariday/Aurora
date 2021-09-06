@@ -26,7 +26,8 @@ bool TEF::Aurora::Runnable::MainLoop()
 	{
 		m_lastMainloop = std::chrono::high_resolution_clock::now();
 
-		MainLoopCallback();
+		if (!MainLoopCallback())
+			spdlog::error("Runnable mainloop returning false");
 
 		if (m_timeDeltaTarget == std::chrono::nanoseconds(0)) continue;
 

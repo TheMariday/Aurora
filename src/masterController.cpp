@@ -15,6 +15,7 @@ bool TEF::Aurora::MasterController::Start()
 	// Setup battery monitor, not sure if this should be done here as most of this is control stuff. might break out into a separate hardware class
 	m_dac.Connect();
 	m_batteryMonitor.Connect(&m_dac);
+	m_batteryMonitor.SetLowBatteryCallback([this](Cell c) {OnLowCell(c); });
 
 	// Setup speech recognition
 
@@ -60,6 +61,11 @@ bool TEF::Aurora::MasterController::Start()
 	m_batteryMonitor.Run();
 
 	return true;
+}
+
+void TEF::Aurora::MasterController::OnLowCell(Cell c)
+{
+	GetSound()->AddSpeech("Low battery");
 }
 
 bool TEF::Aurora::MasterController::RunCallback(std::shared_ptr<Command> command)

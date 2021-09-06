@@ -20,6 +20,8 @@ namespace TEF::Aurora {
 
 		UserControl* GetUserControl() { return &m_userControl; };
 
+		void OnLowCell(Cell c);
+
 	private:
 		bool RunCallback(std::shared_ptr<Command> command);
 		bool LoadCommand(std::string command);
