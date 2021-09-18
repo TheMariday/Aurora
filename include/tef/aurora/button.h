@@ -16,7 +16,7 @@ namespace TEF::Aurora {
 
 		~Button() = default;
 
-		bool Connect(int pin, int debounceTime = 100, int refreshRate = 100);
+		bool Connect(int pin);
 
 		bool IsConnected();
 

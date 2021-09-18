@@ -12,7 +12,7 @@ namespace TEF::Aurora {
 	class EffectRunner : public TEF::Aurora::Runnable
 	{
 	public:
-		explicit EffectRunner(std::string hostport = "localhost:7890");
+		explicit EffectRunner();
 
 		~EffectRunner();
 		void Stop();

@@ -11,7 +11,7 @@ namespace TEF::Aurora {
 		SmartFuse();
 		~SmartFuse();
 
-		bool Connect(std::string port = "/dev/ttyUSB0");
+		bool Connect();
 
 		bool SetFet(int channel, bool enabled, int& current);
 		bool GetCurrent(int channel, int& current);

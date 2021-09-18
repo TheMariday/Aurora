@@ -216,9 +216,6 @@
     <ClInclude Include="include\tef\aurora\fadecandyServerComms.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\temporarySettingsThatIllPutSomehwereElseSomeday.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\tef\aurora\dacMCP3008.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -226,6 +223,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\error.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\settings.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,10 +1,11 @@
 #include "tef/aurora/effectRunner.h"
 #include <spdlog/spdlog.h>
+#include "tef/aurora/settings.h"
 
-TEF::Aurora::EffectRunner::EffectRunner(std::string hostport)
+TEF::Aurora::EffectRunner::EffectRunner()
 {
-	SetFPS(60);
-	m_opc.resolve(hostport.c_str());
+	SetFPS(Settings::FPS_EFFECT);
+	m_opc.resolve(Settings::FADECANDY.c_str());
 
 	if (!m_opc.tryConnect())
 	{

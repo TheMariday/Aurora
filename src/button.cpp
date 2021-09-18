@@ -1,9 +1,9 @@
 #include "tef/aurora/button.h"
 #include <spdlog/spdlog.h>
 #include <sstream>
+#include "tef/aurora/settings.h"
 
-
-bool TEF::Aurora::Button::Connect(int pin, int debounceTime, int refreshRate) {
+bool TEF::Aurora::Button::Connect(int pin) {
 	std::stringstream ss;
 	ss << "gpio export " << pin << " in";
 	spdlog::debug("calling system {}", ss.str());
@@ -14,11 +14,11 @@ bool TEF::Aurora::Button::Connect(int pin, int debounceTime, int refreshRate) {
 	wiringPiSetup(); // This doesn't have a return code and just calls quit() if it fails and I hate it.
 
 	pinMode(m_pin, INPUT);
-	m_debounce = std::chrono::microseconds(debounceTime);
+	m_debounce = std::chrono::microseconds(Settings::TIME_DEBOUNCE);
 
 	m_lastCallback = std::chrono::high_resolution_clock::now();
 
-	SetFPS(refreshRate);
+	SetFPS(Settings::FPS_STANDARD);
 
 	return true;
 }

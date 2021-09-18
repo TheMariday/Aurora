@@ -1,6 +1,6 @@
 #include "tef/aurora/smartFuse.h"
 #include <spdlog/spdlog.h>
-
+#include "tef/aurora/settings.h"
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <errno.h> // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
@@ -35,9 +35,9 @@ TEF::Aurora::SmartFuse::~SmartFuse()
 	close(m_serialPort);
 }
 
-bool TEF::Aurora::SmartFuse::Connect(std::string port)
+bool TEF::Aurora::SmartFuse::Connect()
 {
-	m_serialPort = open(port.c_str(), O_RDWR);
+	m_serialPort = open(Settings::DEVICE_FUSE.c_str(), O_RDWR);
 
 	// Check for errors
 	if (m_serialPort < 0) {
@@ -242,5 +242,6 @@ bool TEF::Aurora::SmartFuse::Write(int flag)
 
 float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement)
 {
+	//This needs to be calibratable
 	return (measurement - 494.8) * (25 / 1024); // Which is roughly 20ma per step
 }

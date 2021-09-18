@@ -3,13 +3,14 @@
 
 #include "tef/aurora/runnable.h"
 #include "tef/aurora/dacMCP3008.h"
+#include "tef/aurora/settings.h"
 
 namespace TEF::Aurora {
 
-	struct VoltageDivider // default 16.17 -> 3.3v divider
+	struct VoltageDivider
 	{
-		ohms R1 = 39'000;
-		ohms R2 = 10'000;
+		ohms R1 = Settings::DIVIDER_OHM_1;
+		ohms R2 = Settings::DIVIDER_OHM_2;
 
 		voltage sensedToActual(voltage sensed);
 	};
@@ -27,7 +28,7 @@ namespace TEF::Aurora {
 	public:
 		BatteryMonitor();
 
-		bool Connect(DacMCP3008* dac, voltage minVoltage = 3.2, std::vector<int> cellPins = { 0, 1, 2, 3 });
+		bool Connect(DacMCP3008* dac);
 
 		bool IsConnected();
 

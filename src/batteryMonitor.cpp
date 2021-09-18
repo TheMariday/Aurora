@@ -4,10 +4,10 @@
 
 TEF::Aurora::BatteryMonitor::BatteryMonitor()
 {
-	SetFPS(1);
+	SetFPS(Settings::FPS_BATTERY);
 }
 
-bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac, voltage minVoltage, std::vector<int> cellPins)
+bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac)
 {
 	if (!dac)
 	{
@@ -15,24 +15,14 @@ bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac, voltage minVoltage, s
 		return false;
 	}
 
-	if ((cellPins.size() == 0) || (cellPins.size() > dac->maxChannels()))
-	{
-		spdlog::error("Battery Monitor cannot be inintialised as there were too many / not enough pins to assign");
-		return false;
-	}
-
-	if (minVoltage < 3)
-	{
-		spdlog::warn("Battery Monitor cannot set a minimum cell voltage to below 3v");
-		minVoltage = 3;
-	}
+	std::vector<int> cellPins = { Settings::PIN_CELL_0, Settings::PIN_CELL_1, Settings::PIN_CELL_2, Settings::PIN_CELL_3 };
 
 	for (int i = 0; i < cellPins.size(); i++)
 	{
 		Cell cell;
 		cell.cellIndex = i;
 		cell.sensePin = cellPins[i];
-		cell.minimumVoltage = minVoltage;
+		cell.minimumVoltage = Settings::VOLTAGE_CELL_MIN;
 		cell.currentVoltage = -1;
 		m_cells.push_back(cell);
 	}
