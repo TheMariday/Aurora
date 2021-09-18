@@ -25,7 +25,7 @@ namespace TEF::Aurora::Settings {
 	inline int DIVIDER_OHM_1 = 39'000;
 	inline int DIVIDER_OHM_2 = 10'000;
 
-	inline int VOLTAGE_CELL_MIN = 3.2;
+	inline float VOLTAGE_CELL_MIN = 3.2;
 
 	// timing
 
