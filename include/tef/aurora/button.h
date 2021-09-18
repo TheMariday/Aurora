@@ -12,9 +12,13 @@ namespace TEF::Aurora {
 	class Button : public Runnable
 	{
 	public:
-		Button(int pin, int debounceTime = 100, int refreshRate = 100);
+		Button() = default;
 
-		~Button() {};
+		~Button() = default;
+
+		bool Connect(int pin, int debounceTime = 100, int refreshRate = 100);
+
+		bool IsConnected();
 
 		bool RegisterCallbackDown(std::function<bool()> callback = {}) { m_downCallback = callback; };
 		bool RegisterCallbackUp(std::function<bool()> callback = {}) { m_upCallback = callback; };
@@ -23,9 +27,9 @@ namespace TEF::Aurora {
 
 		bool MainLoopCallback() override;
 
-		int m_pin;
+		int m_pin = -1;
 		bool m_state = 0;
-		
+
 		std::function<bool()> m_downCallback;
 		std::function<bool()> m_upCallback;
 
@@ -36,9 +40,12 @@ namespace TEF::Aurora {
 	class DacButton : public Runnable
 	{
 	public:
-		DacButton(DacMCP3008& dac, int pin, int debounceTime = 100, int refreshRate = 100);
+		DacButton() = default;
+		~DacButton() = default;
 
-		~DacButton() {};
+		bool Connect(DacMCP3008* dac, int pin, int debounceTime = 100, int refreshRate = 100);
+
+		bool IsConnected();
 
 		bool RegisterCallbackDown(std::function<bool()> callback = {}) { m_downCallback = callback; };
 		bool RegisterCallbackUp(std::function<bool()> callback = {}) { m_upCallback = callback; };

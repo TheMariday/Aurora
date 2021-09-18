@@ -8,8 +8,11 @@ namespace TEF::Aurora {
 
 	class Sound : public Runnable {
 	public:
-		explicit Sound(std::string device = "");
+		Sound();
 		~Sound();
+
+		bool Connect(std::string device);
+		bool IsConnected();
 
 		bool AddSpeech(std::string speech, bool wait = false);
 		bool AddSpeech(std::stringstream& speech, bool wait = false);

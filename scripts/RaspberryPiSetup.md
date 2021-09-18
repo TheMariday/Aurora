@@ -9,6 +9,11 @@ sudo apt-get upgrade
 sudo apt-get install git cmake
 ```
 
+# Audio stuff
+```
+sudo apt-get install espeak
+```
+
 # Wiring pi stuff for gpio
 I want to replace with pizero in the future
 ```

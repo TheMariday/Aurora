@@ -2,6 +2,7 @@
 
 #include "tef/aurora/runnable.h"
 #include "tef/aurora/smartFuse.h"
+#include "tef/aurora/button.h"
 
 namespace TEF::Aurora {
 

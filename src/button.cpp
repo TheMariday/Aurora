@@ -2,11 +2,14 @@
 #include <spdlog/spdlog.h>
 #include <sstream>
 
-TEF::Aurora::Button::Button(int pin, int debounceTime, int refreshRate) :m_pin(pin) {
+
+bool TEF::Aurora::Button::Connect(int pin, int debounceTime, int refreshRate) {
 	std::stringstream ss;
-	ss << "gpio export " << 2 << " in";
+	ss << "gpio export " << pin << " in";
 	spdlog::debug("calling system {}", ss.str());
 	system(ss.str().c_str());
+
+	m_pin = pin;
 
 	wiringPiSetup(); // This doesn't have a return code and just calls quit() if it fails and I hate it.
 
@@ -17,8 +20,12 @@ TEF::Aurora::Button::Button(int pin, int debounceTime, int refreshRate) :m_pin(p
 
 	SetFPS(refreshRate);
 
-	m_downCallback = []() {spdlog::debug("unhandled down callback"); return true; };
-	m_upCallback = []() {spdlog::debug("unhandled up callback"); return true; };
+	return true;
+}
+
+bool TEF::Aurora::Button::IsConnected()
+{
+	return m_pin != -1;
 }
 
 bool TEF::Aurora::Button::MainLoopCallback()
@@ -30,7 +37,16 @@ bool TEF::Aurora::Button::MainLoopCallback()
 	if ((t > m_lastCallback + m_debounce) and (state != m_state))
 	{
 		m_state = state;
-		m_state ? m_downCallback() : m_upCallback();
+
+		switch (m_state)
+		{
+		case(0):
+			if (m_upCallback) m_upCallback();
+			break;
+		case(1):
+			if (m_downCallback) m_downCallback();
+			break;
+		}
 	}
 
 	m_lastCallback = t;
@@ -38,42 +54,44 @@ bool TEF::Aurora::Button::MainLoopCallback()
 	return true;
 }
 
-TEF::Aurora::DacButton::DacButton(DacMCP3008& dac, int pin, int debounceTime, int refreshRate) {
+bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime, int refreshRate) {
 
 	if (pin < 5)
 	{
 		spdlog::error("DacButton cannot connect to pin {} as pin is not set up for button usage", pin);
-		return;
+		return false;
 	}
 
 	if (pin > 7)
 	{
 		spdlog::error("DacButton cannot connect to pin {} as pin is not set up for button usage", pin);
-		return;
+		return false;
 	}
 
-	if (!dac.isConnected())
+	if (!pDac->isConnected())
 	{
 		spdlog::warn("DacButton cannot connect to dac as dac is not connected, connecting dac");
-		if (!dac.Connect())
+		if (!pDac->Connect())
 		{
 			spdlog::error("DacButton failed to connect to unconnected dac");
-			return;
+			return false;
 		}
 	}
 
 	m_pin = pin;
-	m_pDac = &dac;
+	m_pDac = pDac;
 
 	m_debounce = std::chrono::microseconds(debounceTime);
 	m_lastCallback = std::chrono::high_resolution_clock::now();
 
 	SetFPS(refreshRate);
 
-	m_downCallback = []() {spdlog::debug("unhandled down callback"); return true; };
-	m_upCallback = []() {spdlog::debug("unhandled up callback"); return true; };
-	m_disconnectCallback = []() {spdlog::debug("unhandled disconnect callback"); return true; };
-	m_reconnectCallback = []() {spdlog::debug("unhandled reconnect callback"); return true; };
+	return true;
+}
+
+bool TEF::Aurora::DacButton::IsConnected()
+{
+	return m_state != -1;
 }
 
 bool TEF::Aurora::DacButton::MainLoopCallback()
@@ -90,16 +108,21 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 		switch (state)
 		{
 		case -1:
-			m_disconnectCallback();
+			if (m_disconnectCallback) m_disconnectCallback();
 			break;
 		case 0:
 			if (m_state == -1)
-				m_reconnectCallback();
+			{
+				if (m_reconnectCallback) m_reconnectCallback();
+			}
 			else
-				m_upCallback();
+			{
+				if (m_upCallback) m_upCallback();
+			}
+
 			break;
 		case 1:
-			m_downCallback();
+			if (m_downCallback) m_downCallback();
 			break;
 		}
 		m_state = state;
@@ -113,10 +136,9 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 
 int TEF::Aurora::DacButton::VoltageToState(voltage volts)
 {
-	//Needs calibration options
-	if (volts > 2.75)
+	if (volts > 2.2)
 		return 1;
-	else if (volts > 1.92)
+	else if (volts > 1.1)
 		return 0;
 	else
 		return -1;

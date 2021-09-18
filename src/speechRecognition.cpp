@@ -3,36 +3,12 @@
 #include <fstream>
 #include <iostream>
 
-TEF::Aurora::SpeechRecognition::SpeechRecognition()
-{
-	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
-	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", NULL);
-	ps_default_search_args(m_pConfig);
-
-	if (m_pConfig == NULL)
-	{
-		spdlog::error("Speech Recognition failed to setup config ");
-		return;
-	}
-
-	m_pSpeechDecoder = ps_init(m_pConfig);
-
-	if (m_pSpeechDecoder == NULL) {
-		spdlog::error("Speech Recognition failed to initialise the speech decoder");
-		return;
-	}
-
-	m_pDevice = ad_open_dev(cmd_ln_str_r(m_pConfig, "-adcdev"), (int)cmd_ln_float32_r(m_pConfig, "-samprate"));
-
-	if (m_pDevice == NULL)
-	{
-		spdlog::error("Speech Recognition Failed to open the default audio device");
-		return;
-	}
-}
 
 TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 {
+	if (!IsConnected())
+		return;
+
 	m_recording = false;
 
 	if (m_recordingThread.joinable())
@@ -54,8 +30,47 @@ TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 	}
 }
 
+bool TEF::Aurora::SpeechRecognition::Connect()
+{
+	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
+	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", NULL);
+	ps_default_search_args(m_pConfig);
+
+	if (m_pConfig == NULL)
+	{
+		spdlog::error("Speech Recognition failed to setup config ");
+		return false;
+	}
+
+	m_pSpeechDecoder = ps_init(m_pConfig);
+
+	if (m_pSpeechDecoder == NULL) {
+		spdlog::error("Speech Recognition failed to initialise the speech decoder");
+		return false;
+	}
+
+	m_pDevice = ad_open_dev(cmd_ln_str_r(m_pConfig, "-adcdev"), (int)cmd_ln_float32_r(m_pConfig, "-samprate"));
+
+	if (m_pDevice == NULL)
+	{
+		spdlog::error("Speech Recognition Failed to open the default audio device");
+		return false;
+	}
+	return true;
+}
+
+bool TEF::Aurora::SpeechRecognition::IsConnected()
+{
+	return m_pDevice != NULL;
+}
+
 bool TEF::Aurora::SpeechRecognition::Start()
 {
+	if (!IsConnected())
+	{
+		spdlog::error("Speech Recognition cannot start as it is not connected");
+		return false;
+	}
 	m_recording = true;
 	m_recordingThread = std::thread([this]() {RecordLoop(); });
 
@@ -64,6 +79,12 @@ bool TEF::Aurora::SpeechRecognition::Start()
 
 bool TEF::Aurora::SpeechRecognition::Stop()
 {
+	if (!IsConnected())
+	{
+		spdlog::error("Speech Recognition cannot stop as it is not connected");
+		return false;
+	}
+
 	m_recording = false;
 
 	if (m_recordingThread.joinable())

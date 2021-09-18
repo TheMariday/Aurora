@@ -12,8 +12,11 @@ namespace TEF::Aurora {
 	class SpeechRecognition
 	{
 	public:
-		SpeechRecognition();
+		SpeechRecognition() = default;
 		~SpeechRecognition();
+
+		bool Connect();
+		bool IsConnected();
 
 		bool Start();
 		bool Stop();

@@ -23,7 +23,9 @@ bool WaitFor(std::atomic_bool& b, int seconds = 10)
 
 bool WaitForButton()
 {
-	TEF::Aurora::Button confirmButton(3);
+	TEF::Aurora::DacMCP3008 dac;
+	TEF::Aurora::DacButton confirmButton;
+	confirmButton.Connect(&dac, 6);
 	std::atomic_bool pressed = false;
 	confirmButton.RegisterCallbackDown([&pressed]() {pressed = true; return true; });
 	confirmButton.Run();
@@ -33,7 +35,8 @@ bool WaitForButton()
 
 void TEF::Aurora::TestSuite::Test(std::string testName, std::function<bool()> func)
 {
-	TEF::Aurora::Sound headset("sysdefault:CARD=Device");
+	TEF::Aurora::Sound headset;
+	headset.Connect("sysdefault:CARD=Device");
 	headset.Run();
 
 	{
@@ -57,11 +60,13 @@ void TEF::Aurora::TestSuite::Test(std::string testName, std::function<bool()> fu
 
 bool TEF::Aurora::TestSuite::ButtonTest()
 {
-	for (int buttonId = 2; buttonId <= 3; buttonId++)
+	TEF::Aurora::DacMCP3008 dac;
+	for (int buttonId = 6; buttonId <= 7; buttonId++)
 	{
 		spdlog::debug("testing button {}", buttonId);
 
-		TEF::Aurora::Button button(buttonId);
+		TEF::Aurora::DacButton button;
+		button.Connect(&dac, buttonId);
 
 		std::atomic_bool pressed = false;
 		std::atomic_bool released = false;
@@ -87,7 +92,8 @@ bool TEF::Aurora::TestSuite::ButtonTest()
 
 bool TEF::Aurora::TestSuite::SoundTest()
 {
-	TEF::Aurora::Sound headset("sysdefault:CARD=Device");
+	TEF::Aurora::Sound headset;
+	headset.Connect("sysdefault:CARD=Device");
 	headset.Run();
 
 	headset.AddSpeech("Press the confirm button if you can hear me");
@@ -165,9 +171,6 @@ bool TEF::Aurora::TestSuite::SmartFuseTest()
 
 bool TEF::Aurora::TestSuite::AutoTest()
 {
-
-	TEF::Aurora::Sound notify("sysdefault:CARD=Device");
-
 	Test("Button", ButtonTest);
 
 	Test("Sound", SoundTest);

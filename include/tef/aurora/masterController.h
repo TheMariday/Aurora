@@ -5,7 +5,7 @@
 #include "tef/aurora/sound.h"
 #include "tef/aurora/batteryMonitor.h"
 #include "tef/aurora/dacMCP3008.h"
-
+#include "tef/aurora/error.h"
 namespace TEF::Aurora {
 
 	class MasterController
@@ -20,18 +20,23 @@ namespace TEF::Aurora {
 
 		UserControl* GetUserControl() { return &m_userControl; };
 
-		void OnLowCell(Cell c);
+		bool Report(Error e);
+
+		bool CancelCommand();
+
+		bool WhatsLoaded();
 
 	private:
 		bool RunCallback(std::shared_ptr<Command> command);
 		bool LoadCommand(std::string command);
 
 		std::shared_ptr<Command> m_loadedCommand;
-		Button m_recordButton;
-		Button m_confirmButton;
+		DacButton m_recordButton;
+		DacButton m_confirmButton;
 		UserControl m_userControl;
 		SpeechRecognition m_speechRecognition;
 		Sound m_headset;
+		Sound m_tailbass;
 		BatteryMonitor m_batteryMonitor;
 		DacMCP3008 m_dac;
 	};

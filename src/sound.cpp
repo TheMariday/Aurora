@@ -6,10 +6,22 @@
 #include <sstream>
 #include <mutex>
 
-TEF::Aurora::Sound::Sound(std::string device)
+TEF::Aurora::Sound::Sound()
+{
+	SetFPS(0);
+}
+
+bool TEF::Aurora::Sound::Connect(std::string device)
 {
 	m_device = device;
-	SetFPS(0);
+
+	// need to add an "aplay - L" check here to make sure the device is connected
+	return true;
+}
+
+bool TEF::Aurora::Sound::IsConnected()
+{
+	return !m_device.empty();
 }
 
 TEF::Aurora::Sound::~Sound()
@@ -96,6 +108,12 @@ bool TEF::Aurora::Sound::MainLoopCallback()
 		}
 
 		speech = m_speeches.front();
+	}
+
+	if (!IsConnected())
+	{
+		spdlog::warn("Audio is not connected, using logger: ", speech);
+		return true;
 	}
 
 	if (!TEF::Aurora::CMD::quickCommand(SpeechToCommand(speech)))
