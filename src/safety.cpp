@@ -47,8 +47,6 @@ void TEF::Aurora::Safety::BuildCurrentMatrix()
 
 	m_smartFuse.SetFet(7, false, v);
 
-	effectRunner.Stop();
-
 	Properties::SaveProperty<Properties::CurrentMatrix>(m_currentMatrix, m_currentMatrixFilename);
 
 }

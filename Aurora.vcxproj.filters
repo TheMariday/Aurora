@@ -66,9 +66,6 @@
     <ClCompile Include="src\safety.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\connectionChecker.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="lib\easywsclient\easywsclient.cpp">
       <Filter>lib\easywsclient</Filter>
     </ClCompile>
@@ -202,9 +199,6 @@
       <Filter>effects</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\properties.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tef\aurora\connectionChecker.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\tef\aurora\cmd.h">

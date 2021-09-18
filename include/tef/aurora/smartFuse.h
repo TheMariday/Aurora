@@ -1,11 +1,13 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <functional>
+#include "tef/aurora/runnable.h"
 
 
 namespace TEF::Aurora {
 
-	class SmartFuse
+	class SmartFuse : public Runnable
 	{
 	public:
 		SmartFuse();
@@ -13,14 +15,22 @@ namespace TEF::Aurora {
 
 		bool Connect();
 
+		bool Enable() { m_enabled = true; return true; };
+		bool Disable() { m_enabled = false; return true; };
+
 		bool SetFet(int channel, bool enabled, int& current);
 		bool GetCurrent(int channel, int& current);
 		bool GetCurrent(std::vector<int>& currents);
 		bool StopAll();
 
-		bool CheckConnected(std::vector<bool>& connected);
+		bool CheckConnected();
+
+		bool RegisterDisconnect(std::function<bool(int channel)> callback) { m_disconnectCallback = callback; };
+		bool RegisterReconnect(std::function<bool(int channel)> callback) { m_reconnectCallback = callback; };
 
 	private:
+
+		bool MainLoopCallback() override;
 
 		bool Ping();
 
@@ -29,7 +39,16 @@ namespace TEF::Aurora {
 
 		float MeasurementToAmps(int measurement);
 
+		bool m_enabled = true;
+
 		int m_serialPort = -1;
 
+		bool m_connected[8];
+		bool m_enabledChannels[8];
+
+		std::function<bool(int channel)> m_reconnectCallback;
+		std::function<bool(int channel)> m_disconnectCallback;
+
 	};
+
 };

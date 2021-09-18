@@ -5,11 +5,21 @@
 TEF::Aurora::EffectRunner::EffectRunner()
 {
 	SetFPS(Settings::FPS_EFFECT);
+}
+
+TEF::Aurora::EffectRunner::~EffectRunner()
+{
+	Black();
+}
+
+bool TEF::Aurora::EffectRunner::Connect()
+{
 	m_opc.resolve(Settings::FADECANDY.c_str());
 
 	if (!m_opc.tryConnect())
 	{
-		spdlog::error("cannot connect");
+		spdlog::error("Effect Runner cannot connect to OPC client");
+		return false;
 	}
 
 	for (int i = 0; i < m_ledCount; i++)
@@ -17,26 +27,36 @@ TEF::Aurora::EffectRunner::EffectRunner()
 		m_leds.emplace_back();
 		m_leds.back().index = i;
 	}
-	
+
 
 	// Set up an empty framebuffer, with OPC packet header
 	int frameBytes = m_ledCount * 3;
-	
+
 	m_frameBuffer.resize(sizeof(OPCClient::Header) + frameBytes);
 	OPCClient::Header::view(m_frameBuffer).init(0, 0, frameBytes);
+
+	return true;
 }
 
-TEF::Aurora::EffectRunner::~EffectRunner()
-{
-	Stop();
-}
-
-void TEF::Aurora::EffectRunner::Stop()
+void TEF::Aurora::EffectRunner::Black()
 {
 	for (LED& led : m_leds)
 		led.Black();
 
 	WriteToFC();
+}
+
+bool TEF::Aurora::EffectRunner::Disable()
+{
+	m_enabled = false;
+	return true;
+}
+
+bool TEF::Aurora::EffectRunner::StopAll()
+{
+	for (auto& effect : m_effects)
+		effect->Stop();
+	return true;
 }
 
 bool TEF::Aurora::EffectRunner::AddEffect(std::shared_ptr<Effect> effect)
@@ -50,8 +70,11 @@ bool TEF::Aurora::EffectRunner::MainLoopCallback()
 	for (LED& led : m_leds)
 		led.Black();
 
-	for (auto& effect : m_effects)
-		effect->Render(m_leds);
+	if (m_enabled)
+	{
+		for (auto& effect : m_effects)
+			effect->Render(m_leds);
+	}
 
 	return WriteToFC();
 }

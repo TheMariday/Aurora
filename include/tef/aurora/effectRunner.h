@@ -12,13 +12,21 @@ namespace TEF::Aurora {
 	class EffectRunner : public TEF::Aurora::Runnable
 	{
 	public:
-		explicit EffectRunner();
-
+		EffectRunner();
 		~EffectRunner();
-		void Stop();
+
+		bool Connect();
+
+		void Black();
+
+		bool Enable() { m_enabled = true; };
+		bool Disable();
+		bool StopAll();
 
 		bool AddEffect(std::shared_ptr<Effect> effect);
 
+
+	private:
 		bool MainLoopCallback() override;
 
 		bool WriteToFC();
@@ -31,7 +39,9 @@ namespace TEF::Aurora {
 		OPCClient m_opc;
 		std::vector<uint8_t> m_frameBuffer;
 
-		const int m_ledCount = 512;
+		bool m_enabled = true;
+
+		const int m_ledCount = 512; // this needs changing
 
 	};
 

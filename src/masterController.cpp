@@ -28,6 +28,29 @@ bool TEF::Aurora::MasterController::Start()
 			Report(Error(ErrorType::Battery, ErrorLevel::Warning, ss.str()));
 		});
 
+	// Setup SmartFuse
+
+	if (!m_smartFuse.Connect())
+	{
+		spdlog::error("Master Controller cannot connect to smart fuse");
+		return false;
+	}
+
+	m_smartFuse.RegisterDisconnect([this](int channel) 
+		{
+		std::stringstream ss;
+		ss << "Subsystem " << channel << " has disconnected";
+		Report(Error(ErrorType::Electrical, ErrorLevel::Critical, ss.str()));
+		return true;
+		});
+
+	m_smartFuse.RegisterReconnect([this](int channel)
+		{
+			std::stringstream ss;
+			ss << "Subsystem " << channel << " has reconnected";
+			Report(Error(ErrorType::Electrical, ErrorLevel::Info, ss.str()));
+			return true;
+		});
 
 	// Setup record button
 
@@ -95,6 +118,7 @@ bool TEF::Aurora::MasterController::Start()
 
 	// and lets kick everything off!
 
+	m_smartFuse.Run();
 	m_headset.Run();
 	m_recordButton.Run();
 	m_confirmButton.Run();
@@ -103,11 +127,37 @@ bool TEF::Aurora::MasterController::Start()
 	return true;
 }
 
+bool TEF::Aurora::MasterController::CriticalFault()
+{
+	m_fault = true;
+	m_smartFuse.Disable();
+	m_smartFuse.StopAll();
+	m_effectRunner.Disable();
+	m_effectRunner.StopAll();
+	
+	return true;
+}
+
+bool TEF::Aurora::MasterController::ClearFault()
+{
+	m_fault = false;
+	m_effectRunner.Enable();
+	m_smartFuse.Enable();
+	return true;
+}
+
 bool TEF::Aurora::MasterController::Report(Error e)
 {
 	e.log();
+
+	if (e.level == ErrorLevel::Critical)
+	{
+		CriticalFault();
+		GetSound()->AddSpeech("Critical Shutdown in effect");
+	}
+
 	GetSound()->AddSpeech(e.str());
-	// do some stuff here to deal with said error
+
 	return false;
 }
 

@@ -34,6 +34,7 @@ namespace TEF::Aurora::Settings {
 	inline int FPS_STANDARD = 100;
 	inline int FPS_EFFECT = 60;
 	inline int FPS_BATTERY = 1;
+	inline int FPS_FUSE = 1;
 
 	// networking
 

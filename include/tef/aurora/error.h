@@ -29,8 +29,8 @@ namespace TEF::Aurora {
 
 		void log();
 
-		ErrorType m_type;
-		ErrorLevel m_level;
-		std::string m_details;
+		ErrorType type;
+		ErrorLevel level;
+		std::string details;
 	};
 }

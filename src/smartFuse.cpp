@@ -27,6 +27,11 @@
 
 TEF::Aurora::SmartFuse::SmartFuse()
 {
+	SetFPS(Settings::FPS_FUSE);
+	for (bool& v : m_enabledChannels)
+		v = false;
+	for (bool& v : m_connected)
+		v = false;
 }
 
 TEF::Aurora::SmartFuse::~SmartFuse()
@@ -110,7 +115,12 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 		return false;
 	}
 
-	Write((enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
+	// do not enable any fets if system is disabled
+	if (enabled && !m_enabled)
+		Write(SERIAL_GET + channel);
+	else
+		Write((enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
+	
 
 	current = Read();
 
@@ -176,20 +186,47 @@ bool TEF::Aurora::SmartFuse::StopAll()
 		return false;
 	}
 
+	for (bool& v : m_enabledChannels)
+		v = false;
+
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::CheckConnected(std::vector<bool>& connected)
+bool TEF::Aurora::SmartFuse::CheckConnected()
 {
-	connected.clear();
-	connected.resize(CHANNELS);
 	for (int channel = 0; channel < CHANNELS; channel++)
 	{
-		int currentBefore, currentAfter;
-		SetFet(channel, false, currentBefore);
-		SetFet(channel, true, currentAfter);
+		int current;
+		bool connected;
 
-		connected[channel] = currentAfter > currentBefore + 5; // roughly 100ma
+		if (m_enabled)
+		{
+			GetCurrent(channel, current);
+		}
+		else
+		{
+			SetFet(channel, true, current);
+			int c;
+			SetFet(channel, false, c);
+		}
+		connected = current > 512; // this is dumb. needs calibration
+		
+
+		if (connected == m_connected[channel])
+			continue;
+
+		//there must be a difference
+		if (connected)
+		{
+			if (m_reconnectCallback) m_reconnectCallback(channel);
+		}
+		else
+		{
+			if (m_disconnectCallback) m_disconnectCallback(channel);
+		}
+
+		m_connected[channel] = connected;
+
 	}
 	return true;
 }
@@ -212,6 +249,12 @@ int TEF::Aurora::SmartFuse::Read()
 	}
 
 	return read_buf[1] << 8 | read_buf[0];
+}
+
+bool TEF::Aurora::SmartFuse::MainLoopCallback()
+{
+	CheckConnected();
+	return true;
 }
 
 bool TEF::Aurora::SmartFuse::Ping()

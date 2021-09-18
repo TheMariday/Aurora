@@ -1,9 +1,9 @@
 #include "tef/aurora/error.h"
 
-TEF::Aurora::Error::Error(ErrorType type, ErrorLevel level, std::string details):
-	m_type{ type },
-	m_level{ level },
-	m_details{ details }
+TEF::Aurora::Error::Error(ErrorType t, ErrorLevel l, std::string d):
+	type{ t },
+	level{ l },
+	details{ d }
 {
 }
 
@@ -11,7 +11,7 @@ std::string TEF::Aurora::Error::str()
 {
 	std::stringstream ss;
 
-	switch (m_type)
+	switch (type)
 	{
 	case(ErrorType::Electrical):
 		ss << "Electrical system ";
@@ -27,7 +27,7 @@ std::string TEF::Aurora::Error::str()
 		break;
 	}
 
-	switch (m_level)
+	switch (level)
 	{
 	case(ErrorLevel::Critical):
 		ss << "critical, ";
@@ -43,14 +43,14 @@ std::string TEF::Aurora::Error::str()
 		break;
 	}
 
-	ss << m_details;
+	ss << details;
 
 	return ss.str();
 }
 
 void TEF::Aurora::Error::log()
 {
-	switch (m_level)
+	switch (level)
 	{
 	case(ErrorLevel::Critical):
 		spdlog::error(str());
