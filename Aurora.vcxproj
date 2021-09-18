@@ -53,6 +53,7 @@
     </SourcePath>
     <ProjectPublicIncludePath>
     </ProjectPublicIncludePath>
+    <MultiProcNumber>4</MultiProcNumber>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IncludePath>
