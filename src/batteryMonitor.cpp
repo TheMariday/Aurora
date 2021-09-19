@@ -27,8 +27,6 @@ bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac)
 		m_cells.push_back(cell);
 	}
 
-	m_lowBatteryCallback = [](Cell cell) {spdlog::debug("No low battery callback set"); };
-
 	m_pDac = dac;
 
 	m_connected = true;
@@ -39,12 +37,6 @@ bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac)
 bool TEF::Aurora::BatteryMonitor::IsConnected()
 {
 	return m_connected;
-}
-
-bool TEF::Aurora::BatteryMonitor::SetLowBatteryCallback(std::function<void(Cell)> func)
-{
-	m_lowBatteryCallback = func;
-	return true;
 }
 
 bool TEF::Aurora::BatteryMonitor::GetCells(std::vector<Cell>& cells)
@@ -82,8 +74,10 @@ bool TEF::Aurora::BatteryMonitor::MainLoopCallback()
 
 		if (cell.currentVoltage < cell.minimumVoltage)
 		{
-			spdlog::warn("Battery Monitor sensed Cell {} is at {}v which is less than the minimum {}v", cell.cellIndex, cell.currentVoltage, cell.minimumVoltage);
-			m_lowBatteryCallback(cell);
+			std::stringstream lowCell;
+			lowCell << "Cell " << cell.cellIndex << " is low. Cell reads " << cell.currentVoltage << " volts";
+			Error lowCellError(ErrorType::Battery, ErrorLevel::Warning, lowCell.str());
+			Report(lowCellError);
 		}
 	}
 

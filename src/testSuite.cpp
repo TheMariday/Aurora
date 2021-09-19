@@ -148,7 +148,7 @@ bool TEF::Aurora::TestSuite::MasterControllerTest()
 
 	master.GetUserControl()->RegisterVoid("failed test", [&hit]() {hit = false;  return true; });
 
-	master.GetSound()->AddSpeech("Please say passed test to continue");
+	master.GetNotifier()->AddSpeech("Please say passed test to continue");
 
 	master.Start();
 

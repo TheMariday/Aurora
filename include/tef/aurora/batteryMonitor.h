@@ -32,8 +32,6 @@ namespace TEF::Aurora {
 
 		bool IsConnected();
 
-		bool SetLowBatteryCallback(std::function<void(Cell)> func);
-
 		bool GetCells(std::vector<Cell>& cells);
 
 		bool MainLoopCallback() override;
@@ -42,8 +40,6 @@ namespace TEF::Aurora {
 		std::vector<Cell> m_cells;
 
 		VoltageDivider m_voltageDivider;
-
-		std::function<void(Cell)> m_lowBatteryCallback;
 
 		bool m_connected = false;
 	};

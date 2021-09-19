@@ -20,6 +20,13 @@ TEF::Aurora::Runnable::~Runnable()
 	spdlog::debug("Base Effect destroyed");
 }
 
+bool TEF::Aurora::Runnable::Report(Error error)
+{
+	error.log();
+	if (m_errorHandler) m_errorHandler(error);
+	return true;
+}
+
 bool TEF::Aurora::Runnable::MainLoop()
 {
 	while (m_running)

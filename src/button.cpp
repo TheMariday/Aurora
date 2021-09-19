@@ -54,6 +54,17 @@ bool TEF::Aurora::Button::MainLoopCallback()
 	return true;
 }
 
+TEF::Aurora::DacButton::DacButton(std::string name)
+{
+	std::stringstream disconnectDetails;
+	disconnectDetails << name << " button has disconnected";
+	m_disconnectError = Error(ErrorType::Electrical, ErrorLevel::Critical, disconnectDetails.str());
+
+	std::stringstream reconnectDetails;
+	reconnectDetails << name << " button has reconnected";
+	m_reconnectError = Error(ErrorType::Electrical, ErrorLevel::Warning, reconnectDetails.str());
+}
+
 bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime, int refreshRate) {
 
 	if (pin < 5)
@@ -91,7 +102,7 @@ bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime
 
 bool TEF::Aurora::DacButton::IsConnected()
 {
-	return m_state != -1;
+	return m_state != DISCONNECTED;
 }
 
 bool TEF::Aurora::DacButton::MainLoopCallback()
@@ -99,36 +110,40 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 	voltage volts;
 	m_pDac->Read(m_pin, volts);
 
-	int state = VoltageToState(volts);
+	int previousState = m_state;
+	m_state = VoltageToState(volts);
 
 	std::chrono::high_resolution_clock::time_point t = std::chrono::high_resolution_clock::now();
 
-	if ((t > m_lastCallback + m_debounce) and (state != m_state))
-	{
-		switch (state)
-		{
-		case -1:
-			if (m_disconnectCallback) m_disconnectCallback();
-			break;
-		case 0:
-			if (m_state == -1)
-			{
-				if (m_reconnectCallback) m_reconnectCallback();
-			}
-			else
-			{
-				if (m_upCallback) m_upCallback();
-			}
+	// if there's no state change, break
+	if (m_state == previousState) 
+		return true;
 
+	// if the time since last callback is too short, also break
+	if (t < m_lastCallback + m_debounce)
+		return true;
+
+	// if previous state is disconnected, ignore any further state changes and report reconnect
+	if (previousState == DISCONNECTED)
+	{
+		Report(m_reconnectError);
+	}
+	else
+	{
+		switch (m_state)
+		{
+		case(DISCONNECTED):
+			Report(m_disconnectError);
 			break;
-		case 1:
+		case(UP):
+			if (m_upCallback) m_upCallback();
+			break;
+		case(DOWN):
 			if (m_downCallback) m_downCallback();
 			break;
 		}
-		m_state = state;
-
 	}
-
+	
 	m_lastCallback = t;
 
 	return true;
@@ -137,9 +152,9 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 int TEF::Aurora::DacButton::VoltageToState(voltage volts)
 {
 	if (volts > 2.2)
-		return 1;
+		return DOWN;
 	else if (volts > 1.1)
-		return 0;
+		return UP;
 	else
-		return -1;
+		return DISCONNECTED;
 }

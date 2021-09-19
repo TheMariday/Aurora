@@ -120,7 +120,7 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 		Write(SERIAL_GET + channel);
 	else
 		Write((enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
-	
+
 
 	current = Read();
 
@@ -210,22 +210,28 @@ bool TEF::Aurora::SmartFuse::CheckConnected()
 			SetFet(channel, false, c);
 		}
 		connected = current > 512; // this is dumb. needs calibration
-		
 
-		if (connected == m_connected[channel])
-			continue;
 
-		//there must be a difference
-		if (connected)
+		if (connected != m_connected[channel])
 		{
-			if (m_reconnectCallback) m_reconnectCallback(channel);
-		}
-		else
-		{
-			if (m_disconnectCallback) m_disconnectCallback(channel);
-		}
+			m_connected[channel] = connected;
+			//there must be a difference
+			if (connected == true)
+			{
+				std::stringstream ss;
+				ss << "power channel " << channel << " has connected";
+				Error e(ErrorType::Electrical, ErrorLevel::Warning, ss.str());
+				Report(e);
+			}
 
-		m_connected[channel] = connected;
+			if (connected == false)
+			{
+				std::stringstream ss;
+				ss << "power channel " << channel << " has disconnected";
+				Error e(ErrorType::Electrical, ErrorLevel::Critical, ss.str());
+				Report(e);
+			}
+		}
 
 	}
 	return true;

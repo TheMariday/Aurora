@@ -19,9 +19,9 @@ namespace TEF::Aurora {
 
 		bool Start();
 
-		Sound* GetSound() { return &m_headset; };
+		Sound* GetNotifier();
 
-		UserControl* GetUserControl() { return &m_userControl; };
+		UserControl* GetUserControl();
 
 		bool CriticalFault();
 
@@ -29,11 +29,10 @@ namespace TEF::Aurora {
 
 		bool Report(Error e);
 
-		bool CancelCommand();
-
-		bool WhatsLoaded();
-
 	private:
+
+		bool SetupVoiceCommands();
+
 		bool RunCallback(std::shared_ptr<Command> command);
 		bool LoadCommand(std::string command);
 

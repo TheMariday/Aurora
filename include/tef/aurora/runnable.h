@@ -1,4 +1,5 @@
 #pragma once
+#include "tef/aurora/error.h"
 #include <thread>
 #include <atomic>
 
@@ -12,14 +13,21 @@ namespace TEF::Aurora
 		const float GetFPS();
 		const float GetUtilisation() { return m_utilisation; }
 
+		bool RegisterErrorHandler(std::function<void(Error)> handler) { m_errorHandler = handler; };
+
+
 	protected:
-		virtual bool MainLoopCallback() = 0;
 		Runnable();
 		~Runnable();
+		virtual bool MainLoopCallback() = 0;
+		bool Report(Error e);
+
 
 	private:
 
 		bool MainLoop();
+
+		std::function<void(Error)> m_errorHandler;
 
 		std::chrono::nanoseconds m_timeDeltaTarget;
 		float m_utilisation = 0;

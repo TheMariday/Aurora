@@ -21,12 +21,7 @@ bool TEF::Aurora::MasterController::Start()
 	// Setup battery monitor, not sure if this should be done here as most of this is control stuff. might break out into a separate hardware class
 	m_dac.Connect();
 	m_batteryMonitor.Connect(&m_dac);
-	m_batteryMonitor.SetLowBatteryCallback([this](Cell c)
-		{
-			std::stringstream ss;
-			ss << "Cell " << c.cellIndex << "has dropped below acceptable levels";
-			Report(Error(ErrorType::Battery, ErrorLevel::Warning, ss.str()));
-		});
+	m_batteryMonitor.RegisterErrorHandler([this](Error e) {Report(e); });
 
 	// Setup SmartFuse
 
@@ -36,25 +31,11 @@ bool TEF::Aurora::MasterController::Start()
 		return false;
 	}
 
-	m_smartFuse.RegisterDisconnect([this](int channel) 
-		{
-		std::stringstream ss;
-		ss << "Subsystem " << channel << " has disconnected";
-		Report(Error(ErrorType::Electrical, ErrorLevel::Critical, ss.str()));
-		return true;
-		});
-
-	m_smartFuse.RegisterReconnect([this](int channel)
-		{
-			std::stringstream ss;
-			ss << "Subsystem " << channel << " has reconnected";
-			Report(Error(ErrorType::Electrical, ErrorLevel::Info, ss.str()));
-			return true;
-		});
+	m_smartFuse.RegisterErrorHandler([this](Error e) {Report(e); });
 
 	// Setup record button
 
-	if (!m_recordButton.Connect(&m_dac, 6))
+	if (!m_recordButton.Connect(&m_dac, Settings::PIN_RECORD))
 	{
 		spdlog::error("Master Controller cannot connect to record button");
 		return false;
@@ -66,17 +47,11 @@ bool TEF::Aurora::MasterController::Start()
 
 	// Set Record button error handling
 
-	m_recordButton.RegisterCallbackDisconnect([this]() {
-		return Report(Error(ErrorType::Electrical, ErrorLevel::Critical, "Record button has disconnected"));
-		});
-
-	m_recordButton.RegisterCallbackReconnect([this]() {
-		return Report(Error(ErrorType::Electrical, ErrorLevel::Warning, "Record button has reconnected"));
-		});
+	m_recordButton.RegisterErrorHandler([this](Error e) { Report(e); });
 
 	// Setup confirm button
 
-	if (!m_confirmButton.Connect(&m_dac, 7))
+	if (!m_confirmButton.Connect(&m_dac, Settings::PIN_CONFIRM))
 	{
 		spdlog::error("Master Controller cannot connect to record button");
 		return false;
@@ -86,27 +61,21 @@ bool TEF::Aurora::MasterController::Start()
 
 	// Set Confirm button error handling
 
-	m_confirmButton.RegisterCallbackDisconnect([this]() {
-		return Report(Error(ErrorType::Electrical, ErrorLevel::Critical, "Confirm button has disconnected"));
-		});
-
-	m_confirmButton.RegisterCallbackReconnect([this]() {
-		return Report(Error(ErrorType::Electrical, ErrorLevel::Warning, "Confirm button has reconnected"));
-		});
+	m_confirmButton.RegisterErrorHandler([this](Error e) { Report(e); });
 
 	// Setup speech recognition
 
 	if (!m_speechRecognition.Connect())
 	{
-		Report(Error(ErrorType::System, ErrorLevel::Critical, "Speech recognition failed to initialise"));
+		spdlog::error("Speech recognition failed to initialise");
 		return false;
 	};
 
-	m_speechRecognition.SetRecordFile("/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat");
+	// output raw speech recognition snippet if we need to
+	//m_speechRecognition.SetRecordFile("/home/pi/projects/Aurora/bin/ARM/Debug/raw.dat");
 
-	m_userControl.RegisterVoid("cancel that", [this]() {return CancelCommand(); }, false);
-	m_userControl.RegisterVoid("whats loaded", [this]() {return WhatsLoaded(); }, false);
-
+	// Setup all our lovely voice commands
+	SetupVoiceCommands();
 
 	// Set JSGF here. Last step!
 
@@ -120,11 +89,31 @@ bool TEF::Aurora::MasterController::Start()
 
 	m_smartFuse.Run();
 	m_headset.Run();
+	//m_tailbass.Run();
 	m_recordButton.Run();
 	m_confirmButton.Run();
 	m_batteryMonitor.Run();
 
 	return true;
+}
+
+TEF::Aurora::Sound* TEF::Aurora::MasterController::GetNotifier()
+{
+	if (m_headset.IsConnected())
+		return &m_headset;
+	
+	if (m_tailbass.IsConnected())
+		return &m_tailbass;
+
+	// fall back to external even if it's not connected
+	spdlog::error("no audio device to send speech data to! sending it to the headset regardless");
+	return &m_headset;
+
+}
+
+TEF::Aurora::UserControl* TEF::Aurora::MasterController::GetUserControl()
+{
+	return &m_userControl;
 }
 
 bool TEF::Aurora::MasterController::CriticalFault()
@@ -134,7 +123,7 @@ bool TEF::Aurora::MasterController::CriticalFault()
 	m_smartFuse.StopAll();
 	m_effectRunner.Disable();
 	m_effectRunner.StopAll();
-	
+
 	return true;
 }
 
@@ -148,41 +137,66 @@ bool TEF::Aurora::MasterController::ClearFault()
 
 bool TEF::Aurora::MasterController::Report(Error e)
 {
-	e.log();
 
 	if (e.level == ErrorLevel::Critical)
 	{
 		CriticalFault();
-		GetSound()->AddSpeech("Critical Shutdown in effect");
+		GetNotifier()->AddSpeech("Critical Shutdown in effect");
 	}
 
-	GetSound()->AddSpeech(e.str());
+	GetNotifier()->AddSpeech(e.str());
 
 	return false;
 }
 
-bool TEF::Aurora::MasterController::CancelCommand()
-{
-	std::stringstream ss;
-	ss << "canceled command " << m_loadedCommand->GetCommandAndArgs();
-	m_headset.AddSpeech(ss);
-	m_loadedCommand = {};
-	return true;
-}
 
-bool TEF::Aurora::MasterController::WhatsLoaded()
-{
-	std::stringstream ss;
-	if (m_loadedCommand)
-	{
-		ss << "Loaded command " << m_loadedCommand->GetCommandAndArgs();
-	}
-	else
-	{
-		ss << "No command loaded";
-	}
 
-	m_headset.AddSpeech(ss);
+bool TEF::Aurora::MasterController::SetupVoiceCommands()
+{
+
+	m_userControl.RegisterVoid("cancel that", [this]()
+		{
+			std::stringstream ss;
+			ss << "canceled command " << m_loadedCommand->GetCommandAndArgs();
+			m_headset.AddSpeech(ss);
+			m_loadedCommand = {};
+			return true;
+		}, false);
+
+	m_userControl.RegisterVoid("whats loaded", [this]()
+		{
+			std::stringstream ss;
+			if (m_loadedCommand)
+				ss << "Loaded command " << m_loadedCommand->GetCommandAndArgs();
+			else
+				ss << "No command loaded";
+
+			m_headset.AddSpeech(ss);
+			return true;
+		}, false);
+
+	m_userControl.RegisterVoid("clear fault", [this]()
+		{
+			return ClearFault();
+		});
+
+	m_userControl.RegisterVoid("fault", [this]()
+		{
+			return CriticalFault();
+		});
+
+	m_userControl.RegisterVoid("get fault status", [this]()
+		{
+			GetNotifier()->AddSpeech(m_fault ? "There is currently a fault" : "There are currently no faults");
+			return true;
+		});
+
+	m_userControl.RegisterVoid("are you ready", [this]()
+		{
+			GetNotifier()->AddSpeech("I am ready, lets do this!");
+			return true;
+		});
+
 	return true;
 }
 

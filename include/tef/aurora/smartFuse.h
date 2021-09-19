@@ -25,9 +25,6 @@ namespace TEF::Aurora {
 
 		bool CheckConnected();
 
-		bool RegisterDisconnect(std::function<bool(int channel)> callback) { m_disconnectCallback = callback; };
-		bool RegisterReconnect(std::function<bool(int channel)> callback) { m_reconnectCallback = callback; };
-
 	private:
 
 		bool MainLoopCallback() override;
@@ -45,9 +42,6 @@ namespace TEF::Aurora {
 
 		bool m_connected[8];
 		bool m_enabledChannels[8];
-
-		std::function<bool(int channel)> m_reconnectCallback;
-		std::function<bool(int channel)> m_disconnectCallback;
 
 	};
 
