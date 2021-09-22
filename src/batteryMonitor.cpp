@@ -17,7 +17,7 @@ bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac)
 
 	std::vector<int> cellPins = { Settings::PIN_CELL_0, Settings::PIN_CELL_1, Settings::PIN_CELL_2, Settings::PIN_CELL_3 };
 
-	for (int i = 0; i < cellPins.size(); i++)
+	for (unsigned int i = 0; i < cellPins.size(); i++)
 	{
 		Cell cell;
 		cell.cellIndex = i;
@@ -91,5 +91,5 @@ bool TEF::Aurora::BatteryMonitor::MainLoopCallback()
 
 voltage TEF::Aurora::VoltageDivider::sensedToActual(voltage sensed)
 {
-	return (sensed * (R1 + R2)) / float(R2);
+	return (sensed * (float)(R1 + R2)) / float(R2);
 }

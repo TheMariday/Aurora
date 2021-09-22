@@ -25,16 +25,16 @@ namespace TEF::Aurora::Settings {
 	inline int DIVIDER_OHM_1 = 39'000;
 	inline int DIVIDER_OHM_2 = 10'000;
 
-	inline float VOLTAGE_CELL_MIN = 3.2;
+	inline float VOLTAGE_CELL_MIN = 3.2f;
 
 	// timing
 
 	inline int TIME_DEBOUNCE = 100;
 
-	inline int FPS_STANDARD = 100;
-	inline int FPS_EFFECT = 60;
-	inline int FPS_BATTERY = 1;
-	inline int FPS_FUSE = 1;
+	inline float FPS_STANDARD = 100;
+	inline float FPS_EFFECT = 60;
+	inline float FPS_BATTERY = 1;
+	inline float FPS_FUSE = 1;
 
 	// networking
 

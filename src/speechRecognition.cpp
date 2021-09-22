@@ -164,18 +164,6 @@ bool TEF::Aurora::SpeechRecognition::SetJSGF(std::string jsgfFile)
 	return true;
 }
 
-bool TEF::Aurora::SpeechRecognition::RegisterCommandCallback(std::function<bool(std::string)> cb)
-{
-	if (!cb)
-	{
-		spdlog::error("Speech Recognition failed to register command as callback is null");
-		return false;
-	}
-
-	m_commandCallback = cb;
-	return true;
-}
-
 bool TEF::Aurora::SpeechRecognition::RecordLoop()
 {
 	// This is hacky and disgusting and I really want to implement my own ALSA recording system as this is very sloppy

@@ -87,6 +87,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)include;/usr/local/include;$(ProjectDir)lib;/usr/local/include/sphinxbase;/usr/local/include/pocketsphinx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
+      <AdditionalOptions>-Wno-psabi %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -165,6 +166,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)include;/usr/local/include;$(ProjectDir)lib;/usr/local/include/sphinxbase;/usr/local/include/pocketsphinx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
+      <AdditionalOptions>-Wno-psabi %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

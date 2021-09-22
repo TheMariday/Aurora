@@ -65,7 +65,7 @@ TEF::Aurora::DacButton::DacButton(std::string name)
 	m_reconnectError = Error(ErrorType::Electrical, ErrorLevel::Warning, reconnectDetails.str());
 }
 
-bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime, int refreshRate) {
+bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime, float refreshRate) {
 
 	if (pin < 5)
 	{

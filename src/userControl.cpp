@@ -17,7 +17,7 @@ bool Split(std::string& command, std::string& argument)
 	argument = vec.back();
 
 	size_t pos = command.find(argument);
-	if (pos == -1)
+	if (pos == std::string::npos)
 		return false;
 
 	command.replace(pos - 1, command.length(), ""); // the -1 here is to remove the space
@@ -371,7 +371,7 @@ bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
 		else
 		{
 			ss << " ( ";
-			for (int i = 0; i < validArgs.size() - 1; i++)
+			for (unsigned int i = 0; i < validArgs.size() - 1; i++)
 			{
 				ss << validArgs[i] << " | ";
 			}
@@ -389,7 +389,7 @@ bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
 	else
 	{
 		ss << "( ";
-		for (int i = 0; i < commands.size() - 1; i++)
+		for (unsigned int i = 0; i < commands.size() - 1; i++)
 		{
 			ss << "<" << commands[i] << "> | ";
 		}

@@ -107,7 +107,7 @@ bool TEF::Aurora::SmartFuse::Connect()
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
+bool TEF::Aurora::SmartFuse::SetFet(unsigned char channel, bool enabled, int& current)
 {
 	if (m_serialPort < 0)
 	{
@@ -117,9 +117,9 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 
 	// do not enable any fets if system is disabled
 	if (enabled && !m_enabled)
-		Write(SERIAL_GET + channel);
+		Write((unsigned char)(channel + SERIAL_GET));
 	else
-		Write((enabled ? SERIAL_FET_ON : SERIAL_FET_OFF) + channel);
+		Write((unsigned char)(channel + (enabled ? SERIAL_FET_ON : SERIAL_FET_OFF)));
 
 
 	current = Read();
@@ -128,7 +128,7 @@ bool TEF::Aurora::SmartFuse::SetFet(int channel, bool enabled, int& current)
 }
 
 
-bool TEF::Aurora::SmartFuse::GetCurrent(int channel, int& current)
+bool TEF::Aurora::SmartFuse::GetCurrent(unsigned char channel, int& current)
 {
 	if (m_serialPort < 0)
 	{
@@ -136,7 +136,7 @@ bool TEF::Aurora::SmartFuse::GetCurrent(int channel, int& current)
 		return false;
 	}
 
-	Write(SERIAL_GET + channel);
+	Write((unsigned char)(channel + SERIAL_GET));
 
 	current = Read();
 	return true;
@@ -155,7 +155,7 @@ bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<int>& currents)
 	for (int& current : currents)
 	{
 		current = Read();
-		if (current == 0)
+		if (current == RESP_FAIL)
 		{
 			spdlog::error("Smart Fuse failed to read a board current");
 			return false;
@@ -194,10 +194,9 @@ bool TEF::Aurora::SmartFuse::StopAll()
 
 bool TEF::Aurora::SmartFuse::CheckConnected()
 {
-	for (int channel = 0; channel < CHANNELS; channel++)
+	for (unsigned char channel = 0; channel < CHANNELS; channel++)
 	{
-		int current;
-		bool connected;
+		int current = 0;
 
 		if (m_enabled)
 		{
@@ -209,7 +208,7 @@ bool TEF::Aurora::SmartFuse::CheckConnected()
 			int c;
 			SetFet(channel, false, c);
 		}
-		connected = current > 512; // this is dumb. needs calibration
+		bool connected = current > 512; // this is dumb. needs calibration
 
 
 		if (connected != m_connected[channel])
@@ -266,10 +265,10 @@ bool TEF::Aurora::SmartFuse::MainLoopCallback()
 bool TEF::Aurora::SmartFuse::Ping()
 {
 	Write(SERIAL_PING);
-	return Read() == 1;
+	return Read() == RESP_SUCCESS;
 }
 
-bool TEF::Aurora::SmartFuse::Write(int flag)
+bool TEF::Aurora::SmartFuse::Write(unsigned char flag)
 {
 	if (m_serialPort < 0)
 	{
@@ -292,5 +291,5 @@ bool TEF::Aurora::SmartFuse::Write(int flag)
 float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement)
 {
 	//This needs to be calibratable
-	return (measurement - 494.8) * (25 / 1024); // Which is roughly 20ma per step
+	return ((float)measurement - 494.8f) * (25 / 1024); // Which is roughly 20ma per step
 }

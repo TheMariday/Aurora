@@ -13,7 +13,7 @@ namespace TEF::Aurora
 		const float GetFPS();
 		const float GetUtilisation() { return m_utilisation; }
 
-		bool RegisterErrorHandler(std::function<void(Error)> handler) { m_errorHandler = handler; };
+		void RegisterErrorHandler(std::function<void(Error)> handler) { m_errorHandler = handler; };
 
 
 	protected:

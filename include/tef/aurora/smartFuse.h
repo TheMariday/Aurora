@@ -18,8 +18,8 @@ namespace TEF::Aurora {
 		bool Enable() { m_enabled = true; return true; };
 		bool Disable() { m_enabled = false; return true; };
 
-		bool SetFet(int channel, bool enabled, int& current);
-		bool GetCurrent(int channel, int& current);
+		bool SetFet(unsigned char channel, bool enabled, int& current);
+		bool GetCurrent(unsigned char channel, int& current);
 		bool GetCurrent(std::vector<int>& currents);
 		bool StopAll();
 
@@ -31,7 +31,7 @@ namespace TEF::Aurora {
 
 		bool Ping();
 
-		bool Write(int flag);
+		bool Write(unsigned char flag);
 		int Read();
 
 		float MeasurementToAmps(int measurement);

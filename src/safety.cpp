@@ -39,7 +39,7 @@ void TEF::Aurora::Safety::BuildCurrentMatrix()
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 				m_smartFuse.GetCurrent(7, current);
-				m_currentMatrix.data[r][g][b] = current;
+				m_currentMatrix.data[r][g][b] = (float)current;
 				spdlog::debug("rgb: {} {} {}", r, g, b);
 			}
 		}
@@ -85,13 +85,13 @@ void TEF::Aurora::Safety::FilterCurrentMatrix()
 						m_currentMatrixFiltered.data[r][g][b] += m_currentMatrix.data[r][g][b];
 						break;
 					default:
-						m_currentMatrixFiltered.data[r][g][b] += m_currentMatrix.data[r + (axis == 0 ? -1 : 0)][g + (axis == 1 ? -1 : 0)][b + (axis == 2 ? -1 : 0)] / 3.0;
-						m_currentMatrixFiltered.data[r][g][b] += m_currentMatrix.data[r][g][b] / 3.0;
-						m_currentMatrixFiltered.data[r][g][b] += m_currentMatrix.data[r + (axis == 0 ? +1 : 0)][g + (axis == 1 ? +1 : 0)][b + (axis == 2 ? +1 : 0)] / 3.0;
+						m_currentMatrixFiltered.data[r][g][b] += m_currentMatrix.data[r + (axis == 0 ? -1 : 0)][g + (axis == 1 ? -1 : 0)][b + (axis == 2 ? -1 : 0)] / 3.0f;
+						m_currentMatrixFiltered.data[r][g][b] += m_currentMatrix.data[r][g][b] / 3.0f;
+						m_currentMatrixFiltered.data[r][g][b] += m_currentMatrix.data[r + (axis == 0 ? +1 : 0)][g + (axis == 1 ? +1 : 0)][b + (axis == 2 ? +1 : 0)] / 3.0f;
 					}
 				}
 
-				m_currentMatrixFiltered.data[r][g][b] /= 3.0;
+				m_currentMatrixFiltered.data[r][g][b] /= 3.0f;
 
 			}
 		}

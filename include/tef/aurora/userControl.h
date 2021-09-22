@@ -15,7 +15,7 @@ namespace TEF::Aurora {
 		std::string GetType() { return m_type; };
 		std::string GetCommand() { return m_command; }
 
-		bool SetArg(std::string arg) { m_arg = arg; };
+		void SetArg(std::string arg) { m_arg = arg; };
 		std::string GetArg() { return m_arg; };
 
 		std::string GetCommandAndArgs() {

@@ -41,7 +41,7 @@ bool TEF::Aurora::Runnable::MainLoop()
 		std::chrono::high_resolution_clock::time_point nextFrame = m_lastMainloop + m_timeDeltaTarget;
 
 		std::chrono::high_resolution_clock::duration remainingCycles = nextFrame - std::chrono::high_resolution_clock::now();
-		m_utilisation = 1 - (remainingCycles.count() / float(m_timeDeltaTarget.count()));
+		m_utilisation = (float)(1 - (remainingCycles.count() / m_timeDeltaTarget.count()));
 
 		if (m_utilisation > 1 and !m_ignoreOverrun)
 		{
@@ -51,6 +51,7 @@ bool TEF::Aurora::Runnable::MainLoop()
 		std::this_thread::sleep_until(nextFrame);
 
 	}
+	return true;
 }
 
 bool TEF::Aurora::Runnable::Run()
@@ -74,5 +75,5 @@ void TEF::Aurora::Runnable::SetFPS(float fps, bool ignoreOverrun)
 
 const float TEF::Aurora::Runnable::GetFPS()
 {
-	return double(1e+9) / m_timeDeltaTarget.count();
+	return float(double(1e+9) / (double)m_timeDeltaTarget.count());
 }

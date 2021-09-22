@@ -21,8 +21,8 @@ namespace TEF::Aurora {
 
 		bool IsConnected();
 
-		bool RegisterCallbackDown(std::function<bool()> callback = {}) { m_downCallback = callback; };
-		bool RegisterCallbackUp(std::function<bool()> callback = {}) { m_upCallback = callback; };
+		void RegisterCallbackDown(std::function<bool()> callback = {}) { m_downCallback = callback;};
+		void RegisterCallbackUp(std::function<bool()> callback = {}) { m_upCallback = callback; };
 
 	private:
 
@@ -44,12 +44,12 @@ namespace TEF::Aurora {
 		explicit DacButton(std::string name="unknown");
 		~DacButton() = default;
 
-		bool Connect(DacMCP3008* dac, int pin, int debounceTime = 100, int refreshRate = 100);
+		bool Connect(DacMCP3008* dac, int pin, int debounceTime = 100, float refreshRate = 100.0f);
 
 		bool IsConnected();
 
-		bool RegisterCallbackDown(std::function<bool()> callback) { m_downCallback = callback; };
-		bool RegisterCallbackUp(std::function<bool()> callback) { m_upCallback = callback; };
+		void RegisterCallbackDown(std::function<bool()> callback) { m_downCallback = callback; };
+		void RegisterCallbackUp(std::function<bool()> callback) { m_upCallback = callback; };
 
 	private:
 

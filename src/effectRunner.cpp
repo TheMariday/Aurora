@@ -30,7 +30,7 @@ bool TEF::Aurora::EffectRunner::Connect()
 
 
 	// Set up an empty framebuffer, with OPC packet header
-	int frameBytes = m_ledCount * 3;
+	uint16_t frameBytes = (uint16_t)(m_ledCount * 3);
 
 	m_frameBuffer.resize(sizeof(OPCClient::Header) + frameBytes);
 	OPCClient::Header::view(m_frameBuffer).init(0, 0, frameBytes);
@@ -95,7 +95,7 @@ bool TEF::Aurora::EffectRunner::WriteToFC()
 			c *= 255;
 			c = std::max<float>(c, 0);
 			c = std::min<float>(c, 255);
-			*(dest++) = c;
+			*(dest++) = (uint8_t)c;
 		}
 	}
 

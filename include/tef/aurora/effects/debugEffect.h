@@ -13,9 +13,9 @@ namespace TEF::Aurora::Effects
 		{
 			for (int c = 0; c < maxLeds; c++)
 			{
-				leds[c].r = r / 10.0;
-				leds[c].g = g / 10.0;
-				leds[c].b = b / 10.0;
+				leds[c].r = (float)r / 10.0f;
+				leds[c].g = (float)g / 10.0f;
+				leds[c].b = (float)b / 10.0f;
 			}
 
 			return true;

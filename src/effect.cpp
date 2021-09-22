@@ -20,7 +20,7 @@ int TEF::Aurora::Effect::TimeSinceStarted()
 
 	std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 
-	return std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startedAt).count();
+	return (int)std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startedAt).count();
 }
 
 bool TEF::Aurora::Effect::IsRunning()

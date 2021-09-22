@@ -19,7 +19,7 @@ namespace TEF::Aurora {
 
 		void Black();
 
-		bool Enable() { m_enabled = true; };
+		void Enable() { m_enabled = true;};
 		bool Disable();
 		bool StopAll();
 

@@ -21,7 +21,7 @@ namespace TEF::Aurora {
 		bool m_connected = false;
 
 		const int m_channelOffset = 200;
-		const voltage m_maxVoltage = 3.3;
+		const voltage m_maxVoltage = 3.3f;
 		const int m_maxValue = 1024;
 
 	};

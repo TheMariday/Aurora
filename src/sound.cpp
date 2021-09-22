@@ -100,7 +100,7 @@ bool TEF::Aurora::Sound::MainLoopCallback()
 	std::string speech;
 
 	{
-		std::scoped_lock(m_speechesMutex);
+		std::scoped_lock mutex(m_speechesMutex);
 		if (m_speeches.empty())
 		{
 			std::this_thread::sleep_for(std::chrono::microseconds(100));

@@ -1,4 +1,3 @@
-#pragma once
 #include "tef/aurora/dacMCP3008.h"
 
 #include <spdlog/spdlog.h>

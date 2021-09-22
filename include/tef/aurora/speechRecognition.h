@@ -25,7 +25,7 @@ namespace TEF::Aurora {
 
 		bool SetJSGF(std::string jsgfFile);
 
-		bool RegisterCommandCallback(std::function<bool(std::string)> cb);
+		void RegisterCommandCallback(std::function<bool(std::string)> cb) { m_commandCallback = cb; };
 
 	private:
 
