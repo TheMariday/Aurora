@@ -1,3 +1,12 @@
+# Pi setup
+make a ssh.txt file in the boot directory after flashing
+```
+passwd
+raspberry
+#put your password here
+
+```
+
 # Pi cleanup
 ```
 sudo apt-get update
@@ -85,13 +94,6 @@ cd ~/git/pocketsphinx
 make clean all 
 make check 
 sudo make install
-```
-
-# Set password to something more sensible
-```
-passwd
-raspberry
-#put your password here
 ```
 
 # Raspi-config
