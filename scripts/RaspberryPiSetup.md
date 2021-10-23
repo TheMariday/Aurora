@@ -41,11 +41,7 @@ sudo apt-get install gcc automake autoconf libtool bison swig python-dev libasou
 
 # Spdlog install
 ```
-cd ~/git
-git clone https://github.com/gabime/spdlog.git
-cd spdlog && mkdir build && cd build
-cmake .. && make -j
-sudo make install
+sudo apt-get install libspdlog-dev
 ```
 
 # Fadecandy install
