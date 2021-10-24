@@ -185,7 +185,11 @@ float TEF::Aurora::Sound::GetVolume()
 
 std::string TEF::Aurora::Sound::SpeechToCommand(std::string speech)
 {
-	return "espeak '" + speech + "' -z --stdout | aplay -D " + m_device;
+	// this horrible nastyness convers espeaks default 22050hz sample rate to a more sanitary 44.1k. This is required for speech piped through audio-shims
+	// that don't support 22050. Well it produces garbled nonsense if you try.
+	// This could be flicked on and off to reduce over-processing audio for devices that do support 22050hz sample rates but I can't be bothered
+
+	return "espeak '" + speech + "' -z --stdout | sox -t wav -r 22050 - -r 44100 -t wav - | aplay -D " + m_device;
 }
 
 std::string TEF::Aurora::Sound::AudioToCommand(std::string audio)

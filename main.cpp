@@ -18,19 +18,12 @@ int main()
 	tailBass.Run();
 	headset.Run();
 
-	tailBass.PlayAudio(testAudio);
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-	tailBass.StopAudio(testAudio);
 
+	tailBass.AddSpeech("default volume level", true);
 	tailBass.SetVolume(0.1f);
-	tailBass.PlayAudio(testAudio);
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-	tailBass.StopAudio(testAudio);	
-
+	tailBass.AddSpeech("10% volume level", true);
 	tailBass.SetVolume(0.7f);
-	tailBass.PlayAudio(testAudio);
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-	tailBass.StopAudio(testAudio);
+	tailBass.AddSpeech("70% volume level", true);
 
 	headset.AddSpeech("default volume level", true);
 	headset.SetVolume(0.1f);
