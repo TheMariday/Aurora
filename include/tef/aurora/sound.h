@@ -11,7 +11,8 @@ namespace TEF::Aurora {
 		Sound();
 		~Sound();
 
-		bool Connect(std::string device);
+		bool Connect(std::string card = "sndrpihifiberry", std::string device = "softvol", std::string volControl="SoftMaster");
+
 		bool IsConnected();
 
 		bool AddSpeech(std::string speech, bool wait = false);
@@ -27,6 +28,9 @@ namespace TEF::Aurora {
 		bool StopAudio(std::string filename);
 		bool Stop();
 
+		bool SetVolume(float volume);
+		float GetVolume();
+
 	private:
 
 		bool MainLoopCallback() override;
@@ -41,9 +45,13 @@ namespace TEF::Aurora {
 
 
 		std::string m_device = "";
+		std::string m_card = "";
+		std::string m_volControl = "";
 
 		std::mutex m_speechesMutex;
 		std::list<std::string> m_speeches;
+
+		float m_volume = 0.5;
 
 	};
 }

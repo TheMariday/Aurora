@@ -11,11 +11,16 @@ TEF::Aurora::Sound::Sound()
 	SetFPS(0);
 }
 
-bool TEF::Aurora::Sound::Connect(std::string device)
+bool TEF::Aurora::Sound::Connect(std::string card, std::string device, std::string volControl)
 {
 	m_device = device;
+	m_card = card;
+	m_volControl = volControl;
 
 	// need to add an "aplay - L" check here to make sure the device is connected
+
+	SetVolume(m_volume);
+
 	return true;
 }
 
@@ -153,37 +158,44 @@ bool TEF::Aurora::Sound::Stop()
 	return TEF::Aurora::CMD::quickCommand("pkill aplay");
 }
 
+bool TEF::Aurora::Sound::SetVolume(float volume)
+{
+	if (volume > 1) volume = 1.0f;
+	if (volume < 0) volume = 1.0f;
+
+	std::stringstream ss;
+	int volPercentage = static_cast<int>(volume * 100);
+	ss << "amixer sset -c " << m_card << " " << m_volControl << " " << volPercentage << "%";
+
+	if (!TEF::Aurora::CMD::quickCommand(ss.str()))
+	{
+		spdlog::error("Failed to set volume");
+		return false;
+	}
+
+	m_volume = volume;
+	
+	return true;
+}
+
+float TEF::Aurora::Sound::GetVolume()
+{
+	return m_volume;
+}
+
 std::string TEF::Aurora::Sound::SpeechToCommand(std::string speech)
 {
-	std::string command = "espeak '" + speech + "' -z --stdout | aplay";
-
-	if (!m_device.empty())
-	{
-		command += " -D " + m_device;
-	}
-	return command;
+	return "espeak '" + speech + "' -z --stdout | aplay -D " + m_device;
 }
 
 std::string TEF::Aurora::Sound::AudioToCommand(std::string audio)
 {
-	std::string command = "aplay";
-
-	if (!m_device.empty())
-	{
-		command += " -D " + m_device;
-	}
-	command += " " + audio;
-	return command;
+	return  "aplay -D " + m_device + " " + audio;
 }
 
 bool TEF::Aurora::Sound::ForceSpeechStop(std::string speech)
 {
-	std::string command = "aplay";
-
-	if (!m_device.empty())
-	{
-		command += " -D " + m_device;
-	}
+	std::string command = "aplay -D " + m_device;
 
 	return StopCommand(command);
 }
