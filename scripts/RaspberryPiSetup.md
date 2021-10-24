@@ -92,6 +92,12 @@ make check
 sudo make install
 ```
 
+# Set Pocketsphinx library paths
+```
+export LD_LIBRARY_PATH=/usr/local/lib
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+```
+
 # Raspi-config
 
 enable spi
