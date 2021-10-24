@@ -93,6 +93,20 @@ sudo make install
 ```
 
 # Raspi-config
-```
+
 enable spi
+
+# Enable soft vol
+write the following to `~/.asoundrc`
+```
+pcm.softvol { 
+    type softvol 
+    slave { 
+        pcm "default"
+    }
+    control { 
+        name "SoftMaster" 
+        card 0
+    }
+}
 ```
