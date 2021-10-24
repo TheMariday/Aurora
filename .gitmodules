@@ -13,3 +13,6 @@
 [submodule "lib/easywsclient"]
 	path = lib/easywsclient
 	url = https://github.com/dhbaird/easywsclient
+[submodule "lib/tomlplusplus"]
+	path = lib/tomlplusplus
+	url = https://github.com/marzer/tomlplusplus
