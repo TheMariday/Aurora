@@ -1,5 +1,8 @@
+// This entire file needs an overhaul
+
 #include "tef/aurora/safety.h"
 #include "tef/aurora/effectRunner.h"
+#include "tef/aurora/properties.h"
 
 #include <spdlog/spdlog.h>
 #include <iostream>
@@ -10,7 +13,7 @@ TEF::Aurora::Safety::Safety()
 
 bool TEF::Aurora::Safety::Connect()
 {
-	return m_smartFuse.Connect();
+	return m_smartFuse.Connect(Properties::GetProperty<std::string>("fuse", "device").value_or("/dev/ttyUSB0"));
 }
 
 void TEF::Aurora::Safety::BuildCurrentMatrix()
@@ -20,7 +23,7 @@ void TEF::Aurora::Safety::BuildCurrentMatrix()
 	m_debugEffect = std::make_shared<Effects::DebugEffect>();
 	effectRunner.AddEffect(m_debugEffect);
 
-	effectRunner.Run();
+	effectRunner.Run(60);
 
 	int v;
 	m_smartFuse.SetFet(7, true, v);

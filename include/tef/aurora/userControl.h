@@ -59,7 +59,7 @@ namespace TEF::Aurora {
 
 		bool RegisterString(std::string command, std::function<bool(std::string)> cb = {}, bool requiresConfirmation = true);
 
-		bool GenerateJSGF(std::string& filepath);
+		void GenerateJSGF(std::string& filepath);
 
 		bool FetchCommand(std::string inputString, std::shared_ptr<Command>& pCommand);
 

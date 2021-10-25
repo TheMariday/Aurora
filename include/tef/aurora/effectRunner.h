@@ -7,7 +7,7 @@
 
 
 namespace TEF::Aurora {
-	
+
 
 	class EffectRunner : public TEF::Aurora::Runnable
 	{
@@ -15,11 +15,11 @@ namespace TEF::Aurora {
 		EffectRunner();
 		~EffectRunner();
 
-		bool Connect();
+		bool Connect(std::string address);
 
 		void Black();
 
-		void Enable() { m_enabled = true;};
+		void Enable() { m_enabled = true; };
 		bool Disable();
 		bool StopAll();
 
@@ -42,7 +42,6 @@ namespace TEF::Aurora {
 		bool m_enabled = true;
 
 		const int m_ledCount = 512; // this needs changing
-
 	};
 
 };

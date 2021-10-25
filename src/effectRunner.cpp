@@ -1,10 +1,9 @@
 #include "tef/aurora/effectRunner.h"
 #include <spdlog/spdlog.h>
-#include "tef/aurora/settings.h"
 
 TEF::Aurora::EffectRunner::EffectRunner()
 {
-	SetFPS(Settings::FPS_EFFECT);
+
 }
 
 TEF::Aurora::EffectRunner::~EffectRunner()
@@ -12,9 +11,13 @@ TEF::Aurora::EffectRunner::~EffectRunner()
 	Black();
 }
 
-bool TEF::Aurora::EffectRunner::Connect()
+bool TEF::Aurora::EffectRunner::Connect(std::string address)
 {
-	m_opc.resolve(Settings::FADECANDY.c_str());
+	if (!m_opc.resolve(address.c_str()))
+	{
+		spdlog::error("Effect Runner failed to resolve OPC address");
+		return false;
+	}
 
 	if (!m_opc.tryConnect())
 	{

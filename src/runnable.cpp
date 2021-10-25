@@ -7,7 +7,6 @@
 TEF::Aurora::Runnable::Runnable()
 {
 	m_running = false;
-	SetFPS(0);
 }
 
 TEF::Aurora::Runnable::~Runnable()
@@ -54,11 +53,11 @@ bool TEF::Aurora::Runnable::MainLoop()
 	return true;
 }
 
-bool TEF::Aurora::Runnable::Run()
+void TEF::Aurora::Runnable::Run(float fps)
 {
+	SetFPS(fps);
 	m_running = true;
 	m_mainLoopThread = std::thread(&TEF::Aurora::Runnable::MainLoop, this);
-	return true;
 }
 
 void TEF::Aurora::Runnable::SetFPS(float fps, bool ignoreOverrun)

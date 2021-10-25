@@ -1,0 +1,53 @@
+[headset]
+
+enabled = true
+card = "Chroma"
+device = "sysdefault:CARD=Chroma"
+volume_control = "PCM"
+volume_default = 0.5
+
+
+[tail]
+
+enabled = true
+card = "sndrpihifiberry"
+device = "softvol"
+volume_control = "SoftMaster"
+volume_default = 0.5
+
+
+[fuse]
+
+device = "/dev/ttyUSB0"
+fps = 1
+
+
+[buttons]
+
+fps = 100
+pin_record = 6
+pin_confirm = 7
+time_debounce = 100 # ms
+
+
+[battery]
+
+fps = 1
+
+pin_cell_0 = 0 
+pin_cell_1 = 1
+pin_cell_2 = 2
+pin_cell_3 = 3
+
+
+voltage_cell_min = 3.2 # volts
+
+[effect]
+
+fps = 60
+
+
+[fadecandy]
+
+address = "192.168.1.109:7890"
+socket  = "ws://192.168.1.109:7890"

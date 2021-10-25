@@ -1,5 +1,10 @@
 #include "tef/aurora/masterController.h"
+
 #include <spdlog/spdlog.h>
+#include <sstream>
+
+#include "tef/aurora/properties.h"
+
 
 TEF::Aurora::MasterController::MasterController()
 {
@@ -11,63 +16,190 @@ TEF::Aurora::MasterController::~MasterController()
 
 bool TEF::Aurora::MasterController::Start()
 {
+	if (TEF::Aurora::Properties::GetProperty<bool>("headset", "enabled").value_or(false))
+	{
+		if (!StartHeadset()) return false;
+	}
 
-	// Setup headset audio
-	//m_headset.Connect("sysdefault:CARD=Device");
+	if (TEF::Aurora::Properties::GetProperty<bool>("tail", "enabled").value_or(false))
+	{
+		if (!StartTail()) return false;
+	}
 
-	// Setup tail bass
-	//m_tailbass.Connect("I dunno");
+	if (TEF::Aurora::Properties::GetProperty<bool>("battery", "enabled").value_or(false))
+	{
+		if (!StartBattery()) return false;
+	}
 
-	// Setup battery monitor, not sure if this should be done here as most of this is control stuff. might break out into a separate hardware class
-	m_dac.Connect();
-	m_batteryMonitor.Connect(&m_dac);
+	if (TEF::Aurora::Properties::GetProperty<bool>("fuse", "enabled").value_or(false))
+	{
+		if (!StartFuse()) return false;
+	}
+
+	if (TEF::Aurora::Properties::GetProperty<bool>("buttons", "enabled").value_or(false))
+	{
+		if (!StartButtons()) return false;
+	}
+
+	if (TEF::Aurora::Properties::GetProperty<bool>("speech", "enabled").value_or(false))
+	{
+		if (!StartSpeech()) return false;
+	}
+
+	GetNotifier()->AddSpeech("System started up");
+	spdlog::info("Master controller started successfully");
+
+	return true;
+}
+
+bool TEF::Aurora::MasterController::StartHeadset()
+{
+	spdlog::info("Master Controller starting headset");
+	std::optional<std::string> card = Properties::GetProperty<std::string>("headset", "card");
+	std::optional<std::string> device = Properties::GetProperty<std::string>("headset", "device");
+	std::optional<std::string> volumeControl = Properties::GetProperty<std::string>("headset", "volume_control");
+	if (card && device && volumeControl)
+	{
+		m_headset.Connect(card.value(), device.value(), volumeControl.value());
+		m_headset.SetVolume(Properties::GetProperty<float>("headset", "volume_default").value_or(0.5f));
+	}
+	else
+	{
+		spdlog::error("Master Controller failed to start headset as properties file is missing headset parameters");
+		return false;
+	}
+
+	m_headset.Run();
+
+	spdlog::info("Master Controller started headset successfully");
+	return true;
+}
+
+bool TEF::Aurora::MasterController::StartTail()
+{
+	spdlog::info("Master Controller starting tail");
+	std::optional<std::string> card = Properties::GetProperty<std::string>("tail", "card");
+	std::optional<std::string> device = Properties::GetProperty<std::string>("tail", "device");
+	std::optional<std::string> volumeControl = Properties::GetProperty<std::string>("tail", "volume_control");
+	if (card && device && volumeControl)
+	{
+		m_tailbass.Connect(card.value(), device.value(), volumeControl.value());
+		m_headset.SetVolume(Properties::GetProperty<float>("headset", "volume_default").value_or(1.0f));
+	}
+	else
+	{
+		spdlog::error("Master Controller failed to start tail as properties file is missing headset parameters");
+		return false;
+	}
+
+	m_tailbass.Run();
+	
+	spdlog::info("Master Controller started tail successfully");
+	return true;
+}
+
+bool TEF::Aurora::MasterController::StartBattery()
+{
+	spdlog::info("Master Controller starting battery systems");
+	if (!m_dac.Connect())
+	{
+		spdlog::error("Master Controller failed to start battery system as it cannot connect to the DAC");
+		return false;
+	}
+	std::vector<int> batteryPins =
+	{
+		Properties::GetProperty<int>("battery", "pin_cell_0").value_or(0),
+		Properties::GetProperty<int>("battery", "pin_cell_1").value_or(1),
+		Properties::GetProperty<int>("battery", "pin_cell_2").value_or(2),
+		Properties::GetProperty<int>("battery", "pin_cell_3").value_or(3),
+	};
+
+	float minVoltage = Properties::GetProperty<float>("battery", "voltage_cell_min").value_or(3.2f);
+
+	if (!m_batteryMonitor.Connect(&m_dac, batteryPins, minVoltage))
+	{
+		spdlog::error("Master Controller failed to start battery system as battery monitor failed to connect");
+		return false;
+	}
+
 	m_batteryMonitor.RegisterErrorHandler([this](Error e) {Report(e); });
 
-	// Setup SmartFuse
+	m_batteryMonitor.Run(Properties::GetProperty<float>("battery", "fps").value_or(1.0f));
 
-	if (!m_smartFuse.Connect())
+	spdlog::info("Master Controller started battery system successfully");
+	return true;
+}
+
+bool TEF::Aurora::MasterController::StartFuse()
+{
+	spdlog::info("Master Controller starting smart fuse systems");
+	if (!m_smartFuse.Connect(Properties::GetProperty<std::string>("smartfuse", "device").value_or("/dev/ttyUSB0")))
 	{
-		spdlog::error("Master Controller cannot connect to smart fuse");
+		spdlog::error("Master Controller failed to start smart fuse as it cannot connect");
 		return false;
 	}
 
 	m_smartFuse.RegisterErrorHandler([this](Error e) {Report(e); });
 
-	// Setup record button
+	m_smartFuse.Run(Properties::GetProperty<float>("fuse", "fps").value_or(1.0f));
 
-	if (!m_recordButton.Connect(&m_dac, Settings::PIN_RECORD))
+	spdlog::info("Master Controller started smart fuse system successfully");
+	return true;
+}
+
+bool TEF::Aurora::MasterController::StartButtons()
+{
+	spdlog::info("Master Controller starting button systems");
+
+	// Setup record button
+	if (!m_recordButton.Connect(&m_dac, Properties::GetProperty<int>("buttons", "pin_record").value_or(6)))
 	{
-		spdlog::error("Master Controller cannot connect to record button");
+		spdlog::error("Master Controller failed to start buttons as record button cannot connect");
 		return false;
 	};
 
-	m_recordButton.RegisterCallbackDown([this]() {return m_speechRecognition.Start(); });
+	m_recordButton.SetName("record");
+	m_recordButton.RegisterErrorHandler([this](Error e) { Report(e); });
 
+	m_recordButton.RegisterCallbackDown([this]() {return m_speechRecognition.Start(); });
 	m_recordButton.RegisterCallbackUp([this]() {return m_speechRecognition.Stop(); });
 
-	// Set Record button error handling
-
-	m_recordButton.RegisterErrorHandler([this](Error e) { Report(e); });
+	m_recordButton.Run(Properties::GetProperty<float>("buttons", "fps").value_or(100.0f));
 
 	// Setup confirm button
 
-	if (!m_confirmButton.Connect(&m_dac, Settings::PIN_CONFIRM))
+	if (!m_confirmButton.Connect(&m_dac, Properties::GetProperty<int>("buttons", "pin_confirm").value_or(6)))
 	{
-		spdlog::error("Master Controller cannot connect to record button");
+		spdlog::error("Master Controller failed to start buttons as confirm button cannot connect");
 		return false;
 	};
 
-	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(m_loadedCommand); });
-
-	// Set Confirm button error handling
-
+	m_confirmButton.SetName("confirm");
 	m_confirmButton.RegisterErrorHandler([this](Error e) { Report(e); });
 
-	// Setup speech recognition
+	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(m_loadedCommand); });
 
-	if (!m_speechRecognition.Connect())
+	m_confirmButton.Run(Properties::GetProperty<float>("buttons", "fps").value_or(100.0f));
+
+	spdlog::info("Master Controller started button system successfully");
+	return true;
+}
+
+bool TEF::Aurora::MasterController::StartSpeech()
+{
+	spdlog::info("Master Controller starting speech recognition systems");
+
+	std::optional<std::string> device = Properties::GetProperty<std::string>("speech", "device");
+
+	if (!device)
 	{
-		spdlog::error("Speech recognition failed to initialise");
+		spdlog::error("Master Controller failed to start speech as properties file is missing the speech device");
+		return false;
+	}
+
+	if (!m_speechRecognition.Connect(device.value()))
+	{
+		spdlog::error("Master Controller failed to start speech recognition as it failed to connect");
 		return false;
 	};
 
@@ -81,28 +213,24 @@ bool TEF::Aurora::MasterController::Start()
 
 	std::string jsgfFilepath = "/home/pi/temp/pocketsphinx/test.gram";
 	m_userControl.GenerateJSGF(jsgfFilepath);
-	m_speechRecognition.SetJSGF(jsgfFilepath);
+	if (!m_speechRecognition.SetJSGF(jsgfFilepath))
+	{
+		spdlog::error("Master Controller failed to start speech recognition as it failed to set the JSGF file");
+		return false;
+	}
 
 	m_speechRecognition.RegisterCommandCallback([this](std::string command) {return LoadCommand(command); });
 
-	// and lets kick everything off!
-
-	m_smartFuse.Run();
-	m_headset.Run();
-	//m_tailbass.Run();
-	m_recordButton.Run();
-	m_confirmButton.Run();
-	m_batteryMonitor.Run();
-
+	spdlog::info("Master Controller started speech recognition system successfully");
 	return true;
 }
 
 TEF::Aurora::Sound* TEF::Aurora::MasterController::GetNotifier()
 {
-	if (m_headset.IsConnected())
+	if (TEF::Aurora::Properties::GetProperty<bool>("headset", "enabled").value_or(false))
 		return &m_headset;
-	
-	if (m_tailbass.IsConnected())
+
+	if (TEF::Aurora::Properties::GetProperty<bool>("headset", "enabled").value_or(false))
 		return &m_tailbass;
 
 	// fall back to external even if it's not connected
@@ -137,21 +265,19 @@ bool TEF::Aurora::MasterController::ClearFault()
 
 bool TEF::Aurora::MasterController::Report(Error e)
 {
-
 	if (e.level == ErrorLevel::Critical)
 	{
 		CriticalFault();
+		m_faultError = e;
 		GetNotifier()->AddSpeech("Critical Shutdown in effect");
 	}
 
-	GetNotifier()->AddSpeech(e.str());
+	GetNotifier()->AddSpeech(m_faultError.str());
 
 	return false;
 }
 
-
-
-bool TEF::Aurora::MasterController::SetupVoiceCommands()
+void TEF::Aurora::MasterController::SetupVoiceCommands()
 {
 
 	m_userControl.RegisterVoid("cancel that", [this]()
@@ -178,33 +304,91 @@ bool TEF::Aurora::MasterController::SetupVoiceCommands()
 	m_userControl.RegisterVoid("clear fault", [this]()
 		{
 			return ClearFault();
-		});
+		}, true);
 
 	m_userControl.RegisterVoid("fault", [this]()
 		{
 			return CriticalFault();
-		});
+		}, false);
 
-	m_userControl.RegisterVoid("get fault status", [this]()
+	m_userControl.RegisterVoid("get active fault", [this]()
 		{
-			GetNotifier()->AddSpeech(m_fault ? "There is currently a fault" : "There are currently no faults");
+			if (m_fault)
+			{
+				GetNotifier()->AddSpeech("There is currently a fault");
+				GetNotifier()->AddSpeech(m_faultError.str());
+			}
+			else
+			{
+				GetNotifier()->AddSpeech("There are no faults");
+			}
+
 			return true;
-		});
+		}, false);
 
 	m_userControl.RegisterVoid("are you ready", [this]()
 		{
 			GetNotifier()->AddSpeech("I am ready, lets do this!");
 			return true;
-		});
+		}, false);
 
-	return true;
+
+	m_userControl.RegisterLimitedInt("set headset volume to ", [this](int v)
+		{
+			m_headset.SetVolume(static_cast<float>(v) / 10.0f);
+			std::stringstream ss;
+			ss << "headset volume set to " << v * 10 << " percent";
+			GetNotifier()->AddSpeech(ss);
+			return true;
+		}, true);
+
+	m_userControl.RegisterLimitedInt("set tail volume to ", [this](int v)
+		{
+			m_headset.SetVolume(static_cast<float>(v) / 10.0f);
+			std::stringstream ss;
+			ss << "tail volume set to " << v * 10 << " percent";
+			GetNotifier()->AddSpeech(ss);
+			return true;
+		}, true);
+
+	m_userControl.RegisterVoid("get headset volume", [this]()
+		{
+			int volume = static_cast<int>(m_headset.GetVolume() * 100);
+
+			std::stringstream ss;
+			ss << "headset volume at " << volume << " percent";
+			GetNotifier()->AddSpeech(ss);
+			return true;
+		}, false);
+
+	m_userControl.RegisterVoid("get tail volume", [this]()
+		{
+			int volume = static_cast<int>(m_headset.GetVolume() * 100);
+
+			std::stringstream ss;
+			ss << "tail volume at " << volume << " percent";
+			GetNotifier()->AddSpeech(ss);
+			return true;
+		}, false);
+
+	m_userControl.RegisterVoid("stop tail audio", [this]()
+		{
+			m_tailbass.Stop();
+			return true;
+		}, false);
+	
+	m_userControl.RegisterVoid("play eminem", [this]()
+		{
+			m_tailbass.PlayAudio("~/eminem.wav");
+			return true;
+		}, true);
 }
 
 bool TEF::Aurora::MasterController::RunCallback(std::shared_ptr<Command> command)
 {
 	if (!command)
 	{
-		spdlog::warn("no callback to run");
+		spdlog::warn("Master Controller cannot run callback as there are no callbacks to run");
 		m_headset.AddSpeech("No callback registered");
 		return false;
 	}
@@ -230,7 +414,7 @@ bool TEF::Aurora::MasterController::LoadCommand(std::string commandStr)
 	std::shared_ptr<Command> command;
 	if (!m_userControl.FetchCommand(commandStr, command))
 	{
-		spdlog::error("Failed to fetch command");
+		spdlog::error("Master Controller failed to fetch command");
 		return false;
 	}
 

@@ -347,7 +347,7 @@ bool TEF::Aurora::UserControl::FindCommand(std::string command, std::shared_ptr<
 	return true;
 }
 
-bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
+void TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
 {
 	std::ofstream ss;
 
@@ -397,6 +397,4 @@ bool TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
 	}
 
 	ss.close();
-
-	return true;
 }

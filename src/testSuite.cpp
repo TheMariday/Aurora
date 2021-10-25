@@ -4,9 +4,11 @@
 #include <atomic>
 #include <string>
 
-#include <tef/aurora/smartFuse.h>
-#include <tef/aurora/masterController.h>
-#include <tef/aurora/button.h>
+#include "tef/aurora/smartFuse.h"
+#include "tef/aurora/masterController.h"
+#include "tef/aurora/button.h"
+#include "tef/aurora/properties.h"
+
 
 #define Sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 
@@ -28,7 +30,7 @@ bool WaitForButton()
 	confirmButton.Connect(&dac, 6);
 	std::atomic_bool pressed = false;
 	confirmButton.RegisterCallbackDown([&pressed]() {pressed = true; return true; });
-	confirmButton.Run();
+	confirmButton.Run(TEF::Aurora::Properties::GetProperty<float>("buttons", "fps").value_or(1.0f));
 	if (!WaitFor(pressed)) return false;
 	return true;
 }
@@ -74,7 +76,7 @@ bool TEF::Aurora::TestSuite::ButtonTest()
 		button.RegisterCallbackDown([&pressed]() {pressed = true; return true; });
 		button.RegisterCallbackUp([&released]() {released = true; return true; });
 
-		button.Run();
+		button.Run(TEF::Aurora::Properties::GetProperty<float>("buttons", "fps").value_or(1.0f));
 
 		spdlog::debug("please press and release button {}", buttonId);
 
@@ -94,7 +96,7 @@ bool TEF::Aurora::TestSuite::SoundTest()
 {
 	TEF::Aurora::Sound headset;
 	headset.Connect("sysdefault:CARD=Device");
-	headset.Run();
+	headset.Run(100);
 
 	headset.AddSpeech("Press the confirm button if you can hear me");
 
@@ -160,7 +162,7 @@ bool TEF::Aurora::TestSuite::MasterControllerTest()
 bool TEF::Aurora::TestSuite::SmartFuseTest()
 {
 	TEF::Aurora::SmartFuse smartFuse;
-	smartFuse.Connect();
+	smartFuse.Connect(Properties::GetProperty<std::string>("fuse", "address").value_or("/dev/ttyUSB0"));
 	Sleep(1000);
 	int fetState;
 	smartFuse.SetFet(0, true, fetState);

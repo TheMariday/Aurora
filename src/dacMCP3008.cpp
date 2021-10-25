@@ -33,7 +33,7 @@ bool TEF::Aurora::DacMCP3008::isConnected()
 	return m_connected;
 }
 
-bool TEF::Aurora::DacMCP3008::Read(int channel, voltage& volts)
+bool TEF::Aurora::DacMCP3008::Read(int channel, float& volts)
 {
 	int value = analogRead(m_channelOffset + channel);
 

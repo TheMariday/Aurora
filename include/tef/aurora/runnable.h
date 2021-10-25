@@ -8,8 +8,8 @@ namespace TEF::Aurora
 	class Runnable
 	{
 	public:
-		bool Run();
-		void SetFPS(const float fps, bool ignoreOverrun = false);
+		void Run(float fps = 0);
+		
 		const float GetFPS();
 		const float GetUtilisation() { return m_utilisation; }
 
@@ -24,6 +24,8 @@ namespace TEF::Aurora
 
 
 	private:
+
+		void SetFPS(const float fps, bool ignoreOverrun = false);
 
 		bool MainLoop();
 

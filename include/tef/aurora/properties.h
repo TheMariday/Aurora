@@ -1,9 +1,13 @@
 #pragma once
 #include <string>
+#include <optional>
+#include <spdlog/spdlog.h>
+#include <iostream>
+#include "../lib/tomlplusplus/toml.hpp"
 
 namespace TEF::Aurora::Properties
 {
-
+	// this all needs removing / cleaning
 	template<class T>
 	bool SaveProperty(T prop, std::string filename)
 	{
@@ -27,4 +31,21 @@ namespace TEF::Aurora::Properties
 	struct CurrentMatrix {
 		float data[10][10][10] = { 0 };
 	};
+
+
+	template<class T>
+	std::optional<T> GetProperty(std::string section, std::string key)
+	{
+		toml::table tbl;
+		try
+		{
+			tbl = toml::parse_file("/home/pi/aurora_properties.toml");
+			return tbl[section][key].value<T>();
+		}
+		catch (const toml::parse_error& err)
+		{
+			return {};
+		}
+	};
+
 };

@@ -1,26 +1,16 @@
 #pragma once
-#include <functional>
 
 #include "tef/aurora/runnable.h"
 #include "tef/aurora/dacMCP3008.h"
-#include "tef/aurora/settings.h"
 
 namespace TEF::Aurora {
-
-	struct VoltageDivider
-	{
-		ohms R1 = Settings::DIVIDER_OHM_1;
-		ohms R2 = Settings::DIVIDER_OHM_2;
-
-		voltage sensedToActual(voltage sensed);
-	};
 
 	struct Cell
 	{
 		int cellIndex;
 		int sensePin;
-		voltage currentVoltage;
-		voltage minimumVoltage;
+		float currentVoltage;
+		float minimumVoltage;
 	};
 
 	class BatteryMonitor : public Runnable
@@ -28,7 +18,7 @@ namespace TEF::Aurora {
 	public:
 		BatteryMonitor();
 
-		bool Connect(DacMCP3008* dac);
+		bool Connect(DacMCP3008* dac, std::vector<int> cellPins, float minVoltage);
 
 		bool IsConnected();
 
@@ -36,10 +26,14 @@ namespace TEF::Aurora {
 
 		bool MainLoopCallback() override;
 	private:
+
+		float sensedVoltageToActual(float sensed);
+
+		float m_r1 = 39'000;
+		float m_r2 = 10'000;
+
 		DacMCP3008* m_pDac;
 		std::vector<Cell> m_cells;
-
-		VoltageDivider m_voltageDivider;
 
 		bool m_connected = false;
 	};

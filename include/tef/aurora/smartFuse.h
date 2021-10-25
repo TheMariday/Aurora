@@ -13,7 +13,7 @@ namespace TEF::Aurora {
 		SmartFuse();
 		~SmartFuse();
 
-		bool Connect();
+		bool Connect(std::string device);
 
 		bool Enable() { m_enabled = true; return true; };
 		bool Disable() { m_enabled = false; return true; };

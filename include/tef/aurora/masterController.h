@@ -19,6 +19,13 @@ namespace TEF::Aurora {
 
 		bool Start();
 
+		bool StartHeadset();
+		bool StartTail();
+		bool StartBattery();
+		bool StartFuse();
+		bool StartButtons();
+		bool StartSpeech();
+
 		Sound* GetNotifier();
 
 		UserControl* GetUserControl();
@@ -31,12 +38,13 @@ namespace TEF::Aurora {
 
 	private:
 
-		bool SetupVoiceCommands();
+		void SetupVoiceCommands();
 
 		bool RunCallback(std::shared_ptr<Command> command);
 		bool LoadCommand(std::string command);
 
 		bool m_fault = false;
+		Error m_faultError;
 
 		std::shared_ptr<Command> m_loadedCommand;
 		DacButton m_recordButton;

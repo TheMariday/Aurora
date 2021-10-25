@@ -8,7 +8,6 @@
 
 TEF::Aurora::Sound::Sound()
 {
-	SetFPS(0);
 }
 
 bool TEF::Aurora::Sound::Connect(std::string card, std::string device, std::string volControl)

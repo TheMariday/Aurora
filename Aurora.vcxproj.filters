@@ -31,6 +31,9 @@
     <Filter Include="lib\easywsclient">
       <UniqueIdentifier>{83db769d-d29b-4280-8699-cf434f54b6b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\tomlplusplus">
+      <UniqueIdentifier>{d56cedc8-e130-4bdd-9a9a-317c0b061d5b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\masterController.cpp">
@@ -219,8 +222,8 @@
     <ClInclude Include="include\tef\aurora\error.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\settings.h">
-      <Filter>include</Filter>
+    <ClInclude Include="lib\tomlplusplus\toml.hpp">
+      <Filter>lib\tomlplusplus</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

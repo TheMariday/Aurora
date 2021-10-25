@@ -5,6 +5,7 @@ TEF::Aurora::Error::Error(ErrorType t, ErrorLevel l, std::string d):
 	level{ l },
 	details{ d }
 {
+
 }
 
 std::string TEF::Aurora::Error::str()
@@ -30,7 +31,7 @@ std::string TEF::Aurora::Error::str()
 	switch (level)
 	{
 	case(ErrorLevel::Critical):
-		ss << "critical, ";
+		ss << "critical error, ";
 		break;
 	case(ErrorLevel::Warning):
 		ss << "warning, ";

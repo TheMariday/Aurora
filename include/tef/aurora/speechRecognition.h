@@ -15,7 +15,7 @@ namespace TEF::Aurora {
 		SpeechRecognition() = default;
 		~SpeechRecognition();
 
-		bool Connect();
+		bool Connect(std::string audioDevice);
 		bool IsConnected();
 
 		bool Start();

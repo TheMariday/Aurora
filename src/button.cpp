@@ -1,9 +1,11 @@
 #include "tef/aurora/button.h"
+
 #include <spdlog/spdlog.h>
 #include <sstream>
-#include "tef/aurora/settings.h"
 
-bool TEF::Aurora::Button::Connect(int pin) {
+#include "tef/aurora/error.h"
+
+bool TEF::Aurora::Button::Connect(int pin, int debounce) {
 	std::stringstream ss;
 	ss << "gpio export " << pin << " in";
 	spdlog::debug("calling system {}", ss.str());
@@ -14,11 +16,9 @@ bool TEF::Aurora::Button::Connect(int pin) {
 	wiringPiSetup(); // This doesn't have a return code and just calls quit() if it fails and I hate it.
 
 	pinMode(m_pin, INPUT);
-	m_debounce = std::chrono::microseconds(Settings::TIME_DEBOUNCE);
+	m_debounce = std::chrono::microseconds(debounce);
 
 	m_lastCallback = std::chrono::high_resolution_clock::now();
-
-	SetFPS(Settings::FPS_STANDARD);
 
 	return true;
 }
@@ -54,18 +54,12 @@ bool TEF::Aurora::Button::MainLoopCallback()
 	return true;
 }
 
-TEF::Aurora::DacButton::DacButton(std::string name)
+TEF::Aurora::DacButton::DacButton()
 {
-	std::stringstream disconnectDetails;
-	disconnectDetails << name << " button has disconnected";
-	m_disconnectError = Error(ErrorType::Electrical, ErrorLevel::Critical, disconnectDetails.str());
 
-	std::stringstream reconnectDetails;
-	reconnectDetails << name << " button has reconnected";
-	m_reconnectError = Error(ErrorType::Electrical, ErrorLevel::Warning, reconnectDetails.str());
 }
 
-bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime, float refreshRate) {
+bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime) {
 
 	if (pin < 5)
 	{
@@ -95,8 +89,6 @@ bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime
 	m_debounce = std::chrono::microseconds(debounceTime);
 	m_lastCallback = std::chrono::high_resolution_clock::now();
 
-	SetFPS(refreshRate);
-
 	return true;
 }
 
@@ -107,7 +99,7 @@ bool TEF::Aurora::DacButton::IsConnected()
 
 bool TEF::Aurora::DacButton::MainLoopCallback()
 {
-	voltage volts;
+	float volts;
 	m_pDac->Read(m_pin, volts);
 
 	int previousState = m_state;
@@ -116,7 +108,7 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 	std::chrono::high_resolution_clock::time_point t = std::chrono::high_resolution_clock::now();
 
 	// if there's no state change, break
-	if (m_state == previousState) 
+	if (m_state == previousState)
 		return true;
 
 	// if the time since last callback is too short, also break
@@ -126,30 +118,42 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 	// if previous state is disconnected, ignore any further state changes and report reconnect
 	if (previousState == DISCONNECTED)
 	{
-		Report(m_reconnectError);
+		std::stringstream reconnectDetails;
+		reconnectDetails << m_name << " button has reconnected";
+		Error reconnectError = Error(ErrorType::Electrical, ErrorLevel::Warning, reconnectDetails.str());
+		Report(reconnectError);
 	}
 	else
 	{
 		switch (m_state)
 		{
 		case(DISCONNECTED):
-			Report(m_disconnectError);
-			break;
+		{
+			std::stringstream disconnectDetails;
+			disconnectDetails << m_name << " button has disconnected";
+			Error disconnectError = Error(ErrorType::Electrical, ErrorLevel::Critical, disconnectDetails.str());
+			Report(disconnectError);
+		}
+		break;
 		case(UP):
+		{
 			if (m_upCallback) m_upCallback();
-			break;
+		}
+		break;
 		case(DOWN):
+		{
 			if (m_downCallback) m_downCallback();
-			break;
+		}
+		break;
 		}
 	}
-	
+
 	m_lastCallback = t;
 
 	return true;
 }
 
-int TEF::Aurora::DacButton::VoltageToState(voltage volts)
+int TEF::Aurora::DacButton::VoltageToState(float volts)
 {
 	if (volts > 2.2)
 		return DOWN;

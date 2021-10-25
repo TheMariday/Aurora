@@ -128,7 +128,6 @@
     <ClInclude Include="include\tef\aurora\smartFuse.h" />
     <ClInclude Include="include\tef\aurora\sound.h" />
     <ClInclude Include="include\tef\aurora\speechRecognition.h" />
-    <ClInclude Include="include\tef\aurora\settings.h" />
     <ClInclude Include="include\tef\aurora\testSuite.h" />
     <ClInclude Include="include\tef\aurora\userControl.h" />
     <ClInclude Include="lib\easywsclient\easywsclient.hpp" />
@@ -156,6 +155,7 @@
     <ClInclude Include="lib\svl\Vec2.h" />
     <ClInclude Include="lib\svl\Vec3.h" />
     <ClInclude Include="lib\svl\Vec4.h" />
+    <ClInclude Include="lib\tomlplusplus\toml.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\rapidjson\README.md" />

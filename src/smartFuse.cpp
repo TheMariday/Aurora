@@ -1,6 +1,5 @@
 #include "tef/aurora/smartFuse.h"
 #include <spdlog/spdlog.h>
-#include "tef/aurora/settings.h"
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <errno.h> // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
@@ -27,7 +26,6 @@
 
 TEF::Aurora::SmartFuse::SmartFuse()
 {
-	SetFPS(Settings::FPS_FUSE);
 	for (bool& v : m_enabledChannels)
 		v = false;
 	for (bool& v : m_connected)
@@ -40,9 +38,9 @@ TEF::Aurora::SmartFuse::~SmartFuse()
 	close(m_serialPort);
 }
 
-bool TEF::Aurora::SmartFuse::Connect()
+bool TEF::Aurora::SmartFuse::Connect(std::string device)
 {
-	m_serialPort = open(Settings::DEVICE_FUSE.c_str(), O_RDWR);
+	m_serialPort = open(device.c_str(), O_RDWR);
 
 	// Check for errors
 	if (m_serialPort < 0) {

@@ -1,17 +1,15 @@
 #include "tef/aurora/fadecandyServerComms.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <string>
-#include <sstream>
-
 #include <spdlog/spdlog.h>
+
+#include <string>
 
 
 TEF::Aurora::FadecandyServerComms::FadecandyServerComms()
 {
-	m_stateChangeCallback = [](std::string, bool) {spdlog::debug("Fadecandy Server Comms state change callback hit with no registered callback"); };
-	SetFPS(60);
+	m_stateChangeCallback = [](std::string, bool) {
+		spdlog::debug("Fadecandy Server Comms state change callback hit with no registered callback");
+	};
 }
 
 TEF::Aurora::FadecandyServerComms::~FadecandyServerComms()
@@ -43,16 +41,19 @@ bool TEF::Aurora::FadecandyServerComms::MainLoopCallback()
 		spdlog::error("Fadecandy Server Comms failed to run mainloop as websocket has not been connected");
 		return false;
 	}
-	
 
-	if (m_pWebsocket->getReadyState() == easywsclient::WebSocket::WebSocket::CLOSED) 
+
+	if (m_pWebsocket->getReadyState() == easywsclient::WebSocket::WebSocket::CLOSED)
 	{
 		spdlog::error("Fadecandy Server Comms failed to communicate with server as Websocket has been closed");
 		return false;
 	}
+
 	m_pWebsocket->poll();
-	m_pWebsocket->dispatch([this](const std::string& message) {this->handleMessage(message); });
-	
+	m_pWebsocket->dispatch([this](const std::string& message) {
+		this->handleMessage(message);
+		});
+
 	return true;
 }
 
@@ -73,7 +74,7 @@ void TEF::Aurora::FadecandyServerComms::handleMessage(const std::string& message
 	while (true)
 	{
 		found = msg.find("serial");
-		if (found == std::string::npos) 
+		if (found == std::string::npos)
 			break;
 		std::string serial = msg.substr(found + 9, 16);
 		msg = msg.substr(found + 9 + 16);

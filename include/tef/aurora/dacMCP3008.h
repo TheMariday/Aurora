@@ -1,6 +1,4 @@
 #pragma once
-#define voltage float
-#define ohms int
 
 namespace TEF::Aurora {
 
@@ -13,7 +11,7 @@ namespace TEF::Aurora {
 
 		bool isConnected();
 
-		bool Read(int channel, voltage& volts);
+		bool Read(int channel, float& volts);
 
 		int maxChannels() { return 8; };
 
@@ -21,8 +19,7 @@ namespace TEF::Aurora {
 		bool m_connected = false;
 
 		const int m_channelOffset = 200;
-		const voltage m_maxVoltage = 3.3f;
+		const float m_maxVoltage = 3.3f;
 		const int m_maxValue = 1024;
-
 	};
 }

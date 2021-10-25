@@ -30,10 +30,10 @@ TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 	}
 }
 
-bool TEF::Aurora::SpeechRecognition::Connect()
+bool TEF::Aurora::SpeechRecognition::Connect(std::string audioDevice)
 {
 	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
-	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", NULL);
+	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", "-adcdev", audioDevice, NULL);
 	ps_default_search_args(m_pConfig);
 
 	if (m_pConfig == NULL)

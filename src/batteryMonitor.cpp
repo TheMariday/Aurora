@@ -1,13 +1,11 @@
 #include "tef/aurora/batteryMonitor.h"
-
 #include <spdlog/spdlog.h>
 
 TEF::Aurora::BatteryMonitor::BatteryMonitor()
 {
-	SetFPS(Settings::FPS_BATTERY);
 }
 
-bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac)
+bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac, std::vector<int> cellPins, float minVoltage)
 {
 	if (!dac)
 	{
@@ -15,14 +13,12 @@ bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac)
 		return false;
 	}
 
-	std::vector<int> cellPins = { Settings::PIN_CELL_0, Settings::PIN_CELL_1, Settings::PIN_CELL_2, Settings::PIN_CELL_3 };
-
 	for (unsigned int i = 0; i < cellPins.size(); i++)
 	{
 		Cell cell;
 		cell.cellIndex = i;
 		cell.sensePin = cellPins[i];
-		cell.minimumVoltage = Settings::VOLTAGE_CELL_MIN;
+		cell.minimumVoltage = minVoltage;
 		cell.currentVoltage = -1;
 		m_cells.push_back(cell);
 	}
@@ -54,23 +50,31 @@ bool TEF::Aurora::BatteryMonitor::MainLoopCallback()
 	}
 
 	// this strangeness is because the voltage across line 0->1 = cell 1, but 0->2 is cell 1+2, 0->3 = cell 1+2+3 etc
-	voltage cumulativePrevious = 0;
+	float cumulativePreviousVoltage = 0;
 
 	for (Cell& cell : m_cells)
 	{
-		voltage cumulativeSensed, cumulativeActual;
-		m_pDac->Read(cell.sensePin, cumulativeSensed);
-		cumulativeActual = m_voltageDivider.sensedToActual(cumulativeSensed);
-
-		if (cumulativeActual < 1)
+		float cumulativeSensedVoltage;
+		if (!m_pDac->Read(cell.sensePin, cumulativeSensedVoltage))
 		{
-			spdlog::warn("Battery Monitor pin {} disconnected", cell.sensePin);
+			spdlog::error("failed to read sense pin {}", cell.sensePin);
+			return false;
+		};
+
+		float cumulativeActualVoltage = sensedVoltageToActual(cumulativeSensedVoltage);
+
+		if (cumulativeActualVoltage < 1)
+		{
+			std::stringstream cellDisconnect;
+			cellDisconnect << "Cell " << cell.cellIndex << " has disconnected";
+			Error cellDisconnectError(ErrorType::Battery, ErrorLevel::Critical, cellDisconnect.str());
+			Report(cellDisconnectError);
 			return false;
 		}
 
-		cell.currentVoltage = cumulativeActual - cumulativePrevious;
+		cell.currentVoltage = cumulativeActualVoltage - cumulativePreviousVoltage;
 
-		cumulativePrevious = cumulativeActual;
+		cumulativePreviousVoltage = cumulativeActualVoltage;
 
 		if (cell.currentVoltage < cell.minimumVoltage)
 		{
@@ -81,15 +85,10 @@ bool TEF::Aurora::BatteryMonitor::MainLoopCallback()
 		}
 	}
 
-	for (Cell& cell : m_cells)
-	{
-		spdlog::debug("Battery Monitor Cell {} is at {}v", cell.cellIndex, cell.currentVoltage);
-	}
-
 	return true;
 }
 
-voltage TEF::Aurora::VoltageDivider::sensedToActual(voltage sensed)
+float TEF::Aurora::BatteryMonitor::sensedVoltageToActual(float sensedVoltage)
 {
-	return (sensed * (float)(R1 + R2)) / float(R2);
+	return (sensedVoltage * (float)(m_r1 + m_r2)) / float(m_r2);
 }
