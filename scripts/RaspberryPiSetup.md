@@ -103,7 +103,7 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 enable spi
 
 # Enable soft vol
-write the following to `~/.asoundrc`
+write the following to `/etc/asound.conf`
 ```
 pcm.softvol { 
     type softvol 

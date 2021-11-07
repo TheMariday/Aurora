@@ -75,7 +75,7 @@ bool TEF::Aurora::MasterController::StartHeadset()
 	if (card && device && volumeControl)
 	{
 		m_headset.Connect(card.value(), device.value(), volumeControl.value());
-		m_headset.SetVolume(Properties::GetProperty<float>("headset", "volume_default").value_or(0.5f));
+		m_headset.SetVolume(Properties::GetProperty<float>("headset", "volume_default").value_or(1.0f));
 	}
 	else
 	{
@@ -98,7 +98,7 @@ bool TEF::Aurora::MasterController::StartTail()
 	if (card && device && volumeControl)
 	{
 		m_tailbass.Connect(card.value(), device.value(), volumeControl.value());
-		m_headset.SetVolume(Properties::GetProperty<float>("headset", "volume_default").value_or(1.0f));
+		m_tailbass.SetVolume(Properties::GetProperty<float>("tail", "volume_default").value_or(0.5f));
 	}
 	else
 	{
@@ -379,7 +379,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 
 	m_userControl.RegisterLimitedInt("set tail volume to ", [this](int v)
 		{
-			m_headset.SetVolume(static_cast<float>(v) / 10.0f);
+			m_tailbass.SetVolume(static_cast<float>(v) / 10.0f);
 			std::stringstream ss;
 			ss << "tail volume set to " << v * 10 << " percent";
 			GetNotifier()->AddSpeech(ss);
