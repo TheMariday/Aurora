@@ -31,6 +31,8 @@ bool TEF::Aurora::FadecandyServerComms::Connect(std::string url)
 
 	m_pWebsocket->send("{\"type\": \"list_connected_devices\"}");
 
+	m_connected = true;
+
 	return true;
 }
 

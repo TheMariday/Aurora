@@ -20,17 +20,14 @@ bool TEF::Aurora::Sound::Connect(std::string card, std::string device, std::stri
 
 	SetVolume(m_volume);
 
-	return true;
-}
+	m_connected = true;
 
-bool TEF::Aurora::Sound::IsConnected()
-{
-	return !m_device.empty();
+	return true;
 }
 
 TEF::Aurora::Sound::~Sound()
 {
-
+	Stop();
 }
 
 bool TEF::Aurora::Sound::AddSpeech(const std::string speech, bool wait)
@@ -138,11 +135,20 @@ bool TEF::Aurora::Sound::MainLoopCallback()
 	return true;
 }
 
-bool TEF::Aurora::Sound::PlayAudio(std::string filename)
+bool TEF::Aurora::Sound::PlayAudio(std::string filename, bool block)
 {
 	std::string command = AudioToCommand(filename);
-	std::thread t(TEF::Aurora::CMD::quickCommand, command);
-	t.detach();
+
+	if (block)
+	{
+		TEF::Aurora::CMD::quickCommand(command);
+	}
+	else
+	{
+		std::thread t(TEF::Aurora::CMD::quickCommand, command);
+		t.detach();
+	}
+
 
 	return true;
 }
@@ -173,7 +179,7 @@ bool TEF::Aurora::Sound::SetVolume(float volume)
 	}
 
 	m_volume = volume;
-	
+
 	return true;
 }
 

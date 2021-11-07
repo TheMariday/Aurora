@@ -28,7 +28,7 @@ TEF::Aurora::SmartFuse::SmartFuse()
 {
 	for (bool& v : m_enabledChannels)
 		v = false;
-	for (bool& v : m_connected)
+	for (bool& v : m_channelConnected)
 		v = false;
 }
 
@@ -102,6 +102,8 @@ bool TEF::Aurora::SmartFuse::Connect(std::string device)
 		return false;
 	}
 
+	m_connected = true;
+
 	return true;
 }
 
@@ -166,7 +168,7 @@ bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<int>& currents)
 
 bool TEF::Aurora::SmartFuse::StopAll()
 {
-	if (m_serialPort < 0)
+	if (!IsConnected())
 	{
 		spdlog::error("Smart Fuse cannot stop all fuses as hardware is not connected");
 		return false;
@@ -209,9 +211,9 @@ bool TEF::Aurora::SmartFuse::CheckConnected()
 		bool connected = current > 512; // this is dumb. needs calibration
 
 
-		if (connected != m_connected[channel])
+		if (connected != m_channelConnected[channel])
 		{
-			m_connected[channel] = connected;
+			m_channelConnected[channel] = connected;
 			//there must be a difference
 			if (connected == true)
 			{

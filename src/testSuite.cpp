@@ -30,7 +30,8 @@ bool WaitForButton()
 	confirmButton.Connect(&dac, 6);
 	std::atomic_bool pressed = false;
 	confirmButton.RegisterCallbackDown([&pressed]() {pressed = true; return true; });
-	confirmButton.Run(TEF::Aurora::Properties::GetProperty<float>("buttons", "fps").value_or(1.0f));
+	confirmButton.SetFPS(TEF::Aurora::Properties::GetProperty<float>("buttons", "fps").value_or(1.0f));
+	confirmButton.Run();
 	if (!WaitFor(pressed)) return false;
 	return true;
 }
@@ -76,7 +77,8 @@ bool TEF::Aurora::TestSuite::ButtonTest()
 		button.RegisterCallbackDown([&pressed]() {pressed = true; return true; });
 		button.RegisterCallbackUp([&released]() {released = true; return true; });
 
-		button.Run(TEF::Aurora::Properties::GetProperty<float>("buttons", "fps").value_or(1.0f));
+		button.SetFPS(TEF::Aurora::Properties::GetProperty<float>("buttons", "fps").value_or(1.0f));
+		button.Run();
 
 		spdlog::debug("please press and release button {}", buttonId);
 
@@ -96,7 +98,8 @@ bool TEF::Aurora::TestSuite::SoundTest()
 {
 	TEF::Aurora::Sound headset;
 	headset.Connect("sysdefault:CARD=Device");
-	headset.Run(100);
+	headset.SetFPS(100);
+	headset.Run();
 
 	headset.AddSpeech("Press the confirm button if you can hear me");
 

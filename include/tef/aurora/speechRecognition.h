@@ -2,21 +2,22 @@
 #include <chrono>
 #include <sys/select.h>
 #include <atomic>
+#include <optional>
 #include <thread>
 #include <sphinxbase/ad.h>
 #include <pocketsphinx/pocketsphinx.h>
 #include <mutex>
 #include <functional>
+#include <tef/aurora/runnable.h>
 
 namespace TEF::Aurora {
-	class SpeechRecognition
+	class SpeechRecognition : public Runnable
 	{
 	public:
 		SpeechRecognition() = default;
 		~SpeechRecognition();
 
 		bool Connect(std::string audioDevice);
-		bool IsConnected();
 
 		bool Start();
 		bool Stop();
@@ -49,6 +50,6 @@ namespace TEF::Aurora {
 
 		std::function<bool(std::string)> m_commandCallback;
 
-		std::string m_audioFilepathDebug;
+		std::optional<std::string> m_audioFilepathDebug;
 	};
 }

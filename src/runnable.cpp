@@ -15,8 +15,11 @@ TEF::Aurora::Runnable::~Runnable()
 	if (m_mainLoopThread.joinable()) {
 		m_mainLoopThread.join();
 	}
+}
 
-	spdlog::debug("Base Effect destroyed");
+bool TEF::Aurora::Runnable::MainLoopCallback()
+{
+	return true;
 }
 
 bool TEF::Aurora::Runnable::Report(Error error)
@@ -24,6 +27,11 @@ bool TEF::Aurora::Runnable::Report(Error error)
 	error.log();
 	if (m_errorHandler) m_errorHandler(error);
 	return true;
+}
+
+bool TEF::Aurora::Runnable::IsConnected()
+{
+	return m_connected;
 }
 
 bool TEF::Aurora::Runnable::MainLoop()
@@ -53,10 +61,19 @@ bool TEF::Aurora::Runnable::MainLoop()
 	return true;
 }
 
-void TEF::Aurora::Runnable::Run(float fps)
+void TEF::Aurora::Runnable::Run()
 {
-	SetFPS(fps);
 	m_running = true;
+
+	m_timeDeltaTarget = std::chrono::nanoseconds((m_fps <= 0) ? 0 : int(1e+9 / m_fps));
+
+	// if the thread is running we can't run it again
+	if (m_mainLoopThread.joinable())
+	{
+		spdlog::error("{} cannot be Run twice", typeid(*this).name());
+		return;
+	}
+
 	m_mainLoopThread = std::thread(&TEF::Aurora::Runnable::MainLoop, this);
 }
 
@@ -64,12 +81,9 @@ void TEF::Aurora::Runnable::SetFPS(float fps, bool ignoreOverrun)
 {
 	m_ignoreOverrun = ignoreOverrun;
 
-	m_timeDeltaTarget = std::chrono::nanoseconds(0);
+	m_fps = fps;
 
-	if (fps > 0) {
-		m_timeDeltaTarget = std::chrono::nanoseconds(int(1e+9 / fps));
-	}
-	spdlog::debug("Framerate set to {}ns", m_timeDeltaTarget.count());
+	spdlog::debug("Framerate set to {}", m_fps);
 }
 
 const float TEF::Aurora::Runnable::GetFPS()

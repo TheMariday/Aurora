@@ -40,7 +40,7 @@ namespace TEF::Aurora {
 
 		int m_serialPort = -1;
 
-		bool m_connected[8];
+		bool m_channelConnected[8];
 		bool m_enabledChannels[8];
 
 	};

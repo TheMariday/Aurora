@@ -23,7 +23,8 @@ void TEF::Aurora::Safety::BuildCurrentMatrix()
 	m_debugEffect = std::make_shared<Effects::DebugEffect>();
 	effectRunner.AddEffect(m_debugEffect);
 
-	effectRunner.Run(60);
+	effectRunner.SetFPS(60);
+	effectRunner.Run();
 
 	int v;
 	m_smartFuse.SetFet(7, true, v);

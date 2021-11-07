@@ -20,8 +20,6 @@ namespace TEF::Aurora {
 
 		bool Connect(DacMCP3008* dac, std::vector<int> cellPins, float minVoltage);
 
-		bool IsConnected();
-
 		bool GetCells(std::vector<Cell>& cells);
 
 		bool MainLoopCallback() override;

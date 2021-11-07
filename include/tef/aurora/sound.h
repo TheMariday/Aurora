@@ -13,8 +13,6 @@ namespace TEF::Aurora {
 
 		bool Connect(std::string card = "sndrpihifiberry", std::string device = "softvol", std::string volControl="SoftMaster");
 
-		bool IsConnected();
-
 		bool AddSpeech(std::string speech, bool wait = false);
 		bool AddSpeech(std::stringstream& speech, bool wait = false);
 		bool RemoveSpeech(std::string speech);
@@ -24,7 +22,7 @@ namespace TEF::Aurora {
 		void WaitFor(std::string speech);
 		void WaitFor();
 
-		bool PlayAudio(std::string filename);
+		bool PlayAudio(std::string filename, bool block = false);
 		bool StopAudio(std::string filename);
 		bool Stop();
 

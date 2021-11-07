@@ -36,15 +36,19 @@ namespace TEF::Aurora {
 
 		bool Report(Error e);
 
-	private:
-
 		void SetupVoiceCommands();
+
+		bool HasQuit() { return m_quit; };
+
+	private:
 
 		bool RunCallback(std::shared_ptr<Command> command);
 		bool LoadCommand(std::string command);
 
 		bool m_fault = false;
 		Error m_faultError;
+
+		std::vector<Runnable*> m_connectedRunnable;
 
 		std::shared_ptr<Command> m_loadedCommand;
 		DacButton m_recordButton;
@@ -57,6 +61,8 @@ namespace TEF::Aurora {
 		DacMCP3008 m_dac;
 		EffectRunner m_effectRunner;
 		SmartFuse m_smartFuse;
+
+		std::atomic_bool m_quit = false;
 	};
 }
 

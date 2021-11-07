@@ -5,69 +5,17 @@
 
 #include "tef/aurora/error.h"
 
-bool TEF::Aurora::Button::Connect(int pin, int debounce) {
-	std::stringstream ss;
-	ss << "gpio export " << pin << " in";
-	spdlog::debug("calling system {}", ss.str());
-	system(ss.str().c_str());
 
-	m_pin = pin;
 
-	wiringPiSetup(); // This doesn't have a return code and just calls quit() if it fails and I hate it.
+bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, std::string name, int debounceTime) {
 
-	pinMode(m_pin, INPUT);
-	m_debounce = std::chrono::microseconds(debounce);
-
-	m_lastCallback = std::chrono::high_resolution_clock::now();
-
-	return true;
-}
-
-bool TEF::Aurora::Button::IsConnected()
-{
-	return m_pin != -1;
-}
-
-bool TEF::Aurora::Button::MainLoopCallback()
-{
-	int state = digitalRead(m_pin);
-
-	std::chrono::high_resolution_clock::time_point t = std::chrono::high_resolution_clock::now();
-
-	if ((t > m_lastCallback + m_debounce) and (state != m_state))
-	{
-		m_state = state;
-
-		switch (m_state)
-		{
-		case(0):
-			if (m_upCallback) m_upCallback();
-			break;
-		case(1):
-			if (m_downCallback) m_downCallback();
-			break;
-		}
-	}
-
-	m_lastCallback = t;
-
-	return true;
-}
-
-TEF::Aurora::DacButton::DacButton()
-{
-
-}
-
-bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime) {
-
-	if (pin < 5)
+	if (pin < 4)
 	{
 		spdlog::error("DacButton cannot connect to pin {} as pin is not set up for button usage", pin);
 		return false;
 	}
 
-	if (pin > 7)
+	if (pin > 6)
 	{
 		spdlog::error("DacButton cannot connect to pin {} as pin is not set up for button usage", pin);
 		return false;
@@ -89,12 +37,17 @@ bool TEF::Aurora::DacButton::Connect(DacMCP3008* pDac, int pin, int debounceTime
 	m_debounce = std::chrono::microseconds(debounceTime);
 	m_lastCallback = std::chrono::high_resolution_clock::now();
 
-	return true;
-}
+	//This is called manually here to ensure that the IsConnected call has the correct state
+	MainLoopCallback();
 
-bool TEF::Aurora::DacButton::IsConnected()
-{
-	return m_state != DISCONNECTED;
+	if (m_state != UP)
+	{
+		spdlog::error("Button started in an invalid state");
+		return false;
+	}
+
+	m_connected = true;
+	return true;
 }
 
 bool TEF::Aurora::DacButton::MainLoopCallback()
@@ -155,9 +108,9 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 
 int TEF::Aurora::DacButton::VoltageToState(float volts)
 {
-	if (volts > 2.2)
+	if (volts < 1.1)
 		return DOWN;
-	else if (volts > 1.1)
+	else if (volts < 2.2)
 		return UP;
 	else
 		return DISCONNECTED;

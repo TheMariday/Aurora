@@ -30,10 +30,6 @@ bool TEF::Aurora::BatteryMonitor::Connect(DacMCP3008* dac, std::vector<int> cell
 	return true;
 }
 
-bool TEF::Aurora::BatteryMonitor::IsConnected()
-{
-	return m_connected;
-}
 
 bool TEF::Aurora::BatteryMonitor::GetCells(std::vector<Cell>& cells)
 {

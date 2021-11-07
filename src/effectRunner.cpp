@@ -38,6 +38,8 @@ bool TEF::Aurora::EffectRunner::Connect(std::string address)
 	m_frameBuffer.resize(sizeof(OPCClient::Header) + frameBytes);
 	OPCClient::Header::view(m_frameBuffer).init(0, 0, frameBytes);
 
+	m_connected = true;
+
 	return true;
 }
 

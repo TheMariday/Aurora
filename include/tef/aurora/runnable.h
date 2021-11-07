@@ -8,8 +8,10 @@ namespace TEF::Aurora
 	class Runnable
 	{
 	public:
-		void Run(float fps = 0);
-		
+		void Run();
+
+		void SetFPS(const float fps, bool ignoreOverrun = false);
+
 		const float GetFPS();
 		const float GetUtilisation() { return m_utilisation; }
 
@@ -19,22 +21,27 @@ namespace TEF::Aurora
 	protected:
 		Runnable();
 		~Runnable();
-		virtual bool MainLoopCallback() = 0;
+		virtual bool MainLoopCallback();
 		bool Report(Error e);
 
+		bool IsConnected();
+
+		std::atomic<bool> m_connected = false;
 
 	private:
-
-		void SetFPS(const float fps, bool ignoreOverrun = false);
 
 		bool MainLoop();
 
 		std::function<void(Error)> m_errorHandler;
 
 		std::chrono::nanoseconds m_timeDeltaTarget;
+
+		float m_fps = 1;
+
 		float m_utilisation = 0;
 
 		std::atomic<bool> m_running;
+
 		bool m_ignoreOverrun = false;
 
 		std::thread m_mainLoopThread;

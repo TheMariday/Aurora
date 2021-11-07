@@ -11,8 +11,13 @@ int main()
 
 	TEF::Aurora::MasterController mc;
 
-	mc.Start();
+	if (!mc.Start())
+		return 0;
 
-	std::this_thread::sleep_for(std::chrono::seconds(1000));
+	while(!mc.HasQuit())
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 
+	mc.GetNotifier()->PlayAudio("/home/pi/media/cyclops/AI_engine_down.wav", true);
+
+	return 1;
 }

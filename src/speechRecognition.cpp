@@ -33,7 +33,7 @@ TEF::Aurora::SpeechRecognition::~SpeechRecognition()
 bool TEF::Aurora::SpeechRecognition::Connect(std::string audioDevice)
 {
 	static const arg_t cont_args_def[] = { POCKETSPHINX_OPTIONS, {"-adcdev", ARG_STRING, NULL, "Name of audio device to use for input."}, CMDLN_EMPTY_OPTION };
-	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", "-adcdev", audioDevice, NULL);
+	m_pConfig = cmd_ln_init(NULL, cont_args_def, FALSE, "-inmic", "yes", "-adcdev", audioDevice.c_str(), NULL);
 	ps_default_search_args(m_pConfig);
 
 	if (m_pConfig == NULL)
@@ -56,12 +56,10 @@ bool TEF::Aurora::SpeechRecognition::Connect(std::string audioDevice)
 		spdlog::error("Speech Recognition Failed to open the default audio device");
 		return false;
 	}
-	return true;
-}
 
-bool TEF::Aurora::SpeechRecognition::IsConnected()
-{
-	return m_pDevice != NULL;
+	m_connected = true;
+
+	return true;
 }
 
 bool TEF::Aurora::SpeechRecognition::Start()
@@ -105,9 +103,9 @@ bool TEF::Aurora::SpeechRecognition::Stop()
 			return false;
 		}
 
-		if (!m_audioFilepathDebug.empty())
+		if (!m_audioFilepathDebug.has_value())
 		{
-			SaveBuffer(m_audioFilepathDebug);
+			SaveBuffer(m_audioFilepathDebug.value());
 		}
 	}
 
