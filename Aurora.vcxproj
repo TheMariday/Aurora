@@ -99,6 +99,7 @@
     <ClCompile Include="src\effect.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\fadecandyServerComms.cpp" />
+    <ClCompile Include="src\MasterControllerCommands.cpp" />
     <ClCompile Include="src\runnable.cpp" />
     <ClCompile Include="src\effectRunner.cpp" />
     <ClCompile Include="src\masterController.cpp" />

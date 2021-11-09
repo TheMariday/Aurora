@@ -8,7 +8,7 @@ bool Split(std::string& command, std::string& argument)
 	std::istringstream iss(command);
 	std::vector<std::string> vec((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
 
-	if (std::size(vec) < 2)
+	if (vec.size() < 2)
 	{
 		argument = "";
 		return true;
@@ -335,16 +335,16 @@ bool TEF::Aurora::UserControl::FetchCommand(std::string inputString, std::shared
 
 bool TEF::Aurora::UserControl::FindCommand(std::string command, std::shared_ptr<Command>& pCommand)
 {
-
-	auto it = std::find_if(m_allCommands.begin(), m_allCommands.end(), [command](std::shared_ptr<Command> s) { return s->GetCommand() == command; });
-	if (it == m_allCommands.end())
+	for (std::shared_ptr<Command> s : m_allCommands)
 	{
-		return false;
+		if (s->GetCommand() == command)
+		{
+			pCommand = s;
+			return true;
+		}
 	}
 
-	pCommand = *it;
-
-	return true;
+	return false;
 }
 
 void TEF::Aurora::UserControl::GenerateJSGF(std::string& filepath)
