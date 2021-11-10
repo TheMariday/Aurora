@@ -75,6 +75,7 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 		reconnectDetails << m_name << " button has reconnected";
 		Error reconnectError = Error(ErrorType::Electrical, ErrorLevel::Warning, reconnectDetails.str());
 		Report(reconnectError);
+		std::this_thread::sleep_for(std::chrono::seconds(2)); // we sleep here because we don't want to get any weird debouncing issues when connecting / disconnecting
 	}
 	else
 	{
@@ -86,6 +87,7 @@ bool TEF::Aurora::DacButton::MainLoopCallback()
 			disconnectDetails << m_name << " button has disconnected";
 			Error disconnectError = Error(ErrorType::Electrical, ErrorLevel::Critical, disconnectDetails.str());
 			Report(disconnectError);
+			std::this_thread::sleep_for(std::chrono::seconds(2)); // we sleep here because we don't want to get any weird debouncing issues when connecting / disconnecting
 		}
 		break;
 		case(UP):

@@ -32,6 +32,9 @@ TEF::Aurora::Sound::~Sound()
 
 bool TEF::Aurora::Sound::AddSpeech(const std::string speech, bool wait)
 {
+	if (speech == "") return true;
+	if (speech == " ") return true;
+
 	spdlog::debug("Adding {}blocking speech: {}", wait ? "" : "non", speech);
 	{
 		std::scoped_lock lock(m_speechesMutex);
@@ -166,7 +169,7 @@ bool TEF::Aurora::Sound::Stop()
 bool TEF::Aurora::Sound::SetVolume(float volume)
 {
 	if (volume > 1) volume = 1.0f;
-	if (volume < 0) volume = 1.0f;
+	if (volume < 0) volume = 0.0f;
 
 	std::stringstream ss;
 	int volPercentage = static_cast<int>(volume * 100);

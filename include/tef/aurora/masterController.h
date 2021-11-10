@@ -42,8 +42,9 @@ namespace TEF::Aurora {
 
 	private:
 
-		bool RunCallback(std::shared_ptr<Command> command);
+		bool RunLoadedCallback();
 		bool LoadCommand(std::string command);
+		bool UnloadCommand();
 
 		bool m_fault = false;
 		Error m_faultError;

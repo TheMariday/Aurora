@@ -60,9 +60,6 @@
     <ClCompile Include="src\runnable.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\testSuite.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\effect.cpp">
       <Filter>src</Filter>
     </ClCompile>

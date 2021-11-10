@@ -119,6 +119,7 @@ bool TEF::Aurora::SpeechRecognition::Stop()
 	char const* command = ps_get_hyp(m_pSpeechDecoder, &score);
 	if (command == NULL) {
 		spdlog::warn("Speech Recognition failed to recognise any audio");
+		m_commandCallback("");
 		return false;
 	}
 
@@ -127,7 +128,7 @@ bool TEF::Aurora::SpeechRecognition::Stop()
 	if (!m_commandCallback)
 	{
 		spdlog::warn("Speech Recognition has no command handler");
-		return true;
+		return false;
 	}
 
 	m_commandCallback(std::string(command));

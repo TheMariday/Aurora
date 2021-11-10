@@ -26,7 +26,7 @@ namespace TEF::Aurora {
 
 		bool SetJSGF(std::string jsgfFile);
 
-		void RegisterCommandCallback(std::function<bool(std::string)> cb) { m_commandCallback = cb; };
+		void RegisterCommandCallback(std::function<void(std::string command)> cb) { m_commandCallback = cb; };
 
 	private:
 
@@ -48,7 +48,7 @@ namespace TEF::Aurora {
 		short m_audioBuffer[m_sampleRate * m_maxRecordTime];
 		int m_audioBufferFront;
 
-		std::function<bool(std::string)> m_commandCallback;
+		std::function<void(std::string command)> m_commandCallback;
 
 		std::optional<std::string> m_audioFilepathDebug;
 	};

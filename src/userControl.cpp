@@ -3,6 +3,16 @@
 #include <fstream>
 
 
+std::map<std::string, bool> boolOptions = {
+	{"no", false}, {"false", false}, {"off", false}, {"disable", false},
+	{"yes", true}, {"true",true}, {"on",true}, {"enable", true}
+};
+
+std::map<std::string, int> intOptions = {
+	{"zero",0}, {"one",1}, {"two",2}, {"three",3}, {"four", 4},
+	{"five",5}, {"six", 6}, {"seven", 7}, {"eight", 8}, {"nine", 9}, {"ten", 10}
+};
+
 bool Split(std::string& command, std::string& argument)
 {
 	std::istringstream iss(command);
@@ -27,40 +37,35 @@ bool Split(std::string& command, std::string& argument)
 
 struct CommandVoid : public TEF::Aurora::Command
 {
-	CommandVoid(std::string command, std::function<bool()>& callback, bool requiresConfirmation) : m_callback(callback) {
+	CommandVoid(std::string command, std::function<std::string()>& callback, TEF::Aurora::LaunchAction launchAction) : m_callback(callback) {
 		m_type = "void";
 		m_command = command;
-		m_requiresConfirmation = requiresConfirmation;
+		m_launchAction = launchAction;
 	};
 
-	std::function<bool()> m_callback;
+	std::function<std::string()> m_callback;
 
 	bool GetValidArgs(std::vector<std::string>& valid) override
 	{
 		return true;
 	}
 
-	bool Run() override {
-
-		if (!m_callback)
-		{
-			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
-			return false;
-		}
-
+	std::string Run() override 
+	{
 		return m_callback();
 	}
 };
 
 struct CommandBool : public TEF::Aurora::Command
 {
-	CommandBool(std::string command, std::function<bool(bool)>& callback, std::map<std::string, bool> argMap, bool requiresConfirmation) : m_callback(callback), m_argMap(argMap) {
+	CommandBool(std::string command, std::function<std::string(bool)>& callback, TEF::Aurora::LaunchAction launchAction) : m_callback(callback) {
+		m_argMap = boolOptions;
 		m_type = "bool";
 		m_command = command;
-		m_requiresConfirmation = requiresConfirmation;
+		m_launchAction = launchAction;
 	};
 
-	std::function<bool(bool)> m_callback;
+	std::function<std::string(bool)> m_callback;
 	std::map<std::string, bool> m_argMap;
 
 	bool GetValidArgs(std::vector<std::string>& valid) override
@@ -70,29 +75,23 @@ struct CommandBool : public TEF::Aurora::Command
 		return true;
 	}
 
-	bool Run() override {
-
-		if (!m_callback)
-		{
-			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
-			return false;
-		}
-
+	std::string Run() override 
+	{
 		return m_callback(m_argMap[m_arg]);
 	}
 };
 
 struct CommandInt : public TEF::Aurora::Command
 {
-	CommandInt(std::string command, std::function<bool(int)>& callback, std::map<std::string, int> argMap, bool requiresConfirmation) :
-		m_callback(callback),
-		m_argMap(argMap) {
+	CommandInt(std::string command, std::function<std::string(int)>& callback, TEF::Aurora::LaunchAction launchAction) :
+		m_callback(callback) {
+		m_argMap = intOptions;
 		m_type = "int";
 		m_command = command;
-		m_requiresConfirmation = requiresConfirmation;
+		m_launchAction = launchAction;
 	};
 
-	std::function<bool(int)> m_callback;
+	std::function<std::string(int)> m_callback;
 	std::map<std::string, int> m_argMap;
 
 	bool GetValidArgs(std::vector<std::string>& valid) override
@@ -102,29 +101,23 @@ struct CommandInt : public TEF::Aurora::Command
 		return true;
 	}
 
-	bool Run() override {
-
-		if (!m_callback)
-		{
-			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
-			return false;
-		}
-
+	std::string Run() override 
+	{
 		return m_callback(m_argMap[m_arg]);
 	}
 };
 
 struct CommandStr : public TEF::Aurora::Command
 {
-	CommandStr(std::string command, std::function<bool(std::string)>& callback, std::vector<std::string> argMap, bool requiresConfirmation) :
+	CommandStr(std::string command, std::function<std::string(std::string)>& callback, std::vector<std::string> argMap, TEF::Aurora::LaunchAction launchAction) :
 		m_callback(callback),
 		m_argMap(argMap) {
 		m_type = "string";
 		m_command = command;
-		m_requiresConfirmation = requiresConfirmation;
+		m_launchAction = launchAction;
 	};
 
-	std::function<bool(std::string)> m_callback;
+	std::function<std::string(std::string)> m_callback;
 	std::vector<std::string> m_argMap;
 
 	bool GetValidArgs(std::vector<std::string>& valid) override
@@ -133,155 +126,79 @@ struct CommandStr : public TEF::Aurora::Command
 		return true;
 	}
 
-	bool Run() override
+	std::string Run() override
 	{
-
-		if (!m_callback)
-		{
-			spdlog::warn("Command \"{}\" ({}) has no associated callback", m_command, m_type);
-			return false;
-		}
-
 		return m_callback(m_arg);
 	}
+
 };
 
-TEF::Aurora::UserControl::UserControl()
-{
-}
 
-TEF::Aurora::UserControl::~UserControl()
-{
-}
-
-
-bool TEF::Aurora::UserControl::RegisterVoid(std::string command, std::function<bool()> callback, bool requiresConfirmation)
+bool TEF::Aurora::UserControl::RegisterVoid(std::string command, LaunchAction launchAction, std::function<std::string()> callback)
 {
 	spdlog::debug("User Control registering void command {}", command);
 
 	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
-		std::string existingType = pCommand->GetType(); // get type failed
-		if (existingType != "void")
-		{
-			spdlog::error("You cannot overwrite command type ({}) with a different type. (void)", existingType);
-			return false;
-		}
+		spdlog::error("overwriting commands has been disabled");
+		return false;
+	}
 
-		spdlog::warn("User Control overwriting command {}", command);
-		CommandVoid* pCommandVoid = (CommandVoid*)pCommand.get();
-		pCommandVoid->m_callback = callback;
-		pCommandVoid->SetConfirmationRequired(requiresConfirmation);
-	}
-	else
-	{
-		m_allCommands.emplace_back(std::make_shared<CommandVoid>(command, callback, requiresConfirmation));
-	}
+	m_allCommands.emplace_back(std::make_shared<CommandVoid>(command, callback, launchAction));
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterBool(std::string command, std::function<bool(bool)> callback, bool requiresConfirmation)
+bool TEF::Aurora::UserControl::RegisterBool(std::string command, LaunchAction launchAction, std::function<std::string(bool)> callback)
 {
 	spdlog::debug("User Control registering bool command {}", command);
 
 	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
-		std::string existingType = pCommand->GetType();
-		if (existingType != "bool")
-		{
-			spdlog::error("You cannot overwrite command type ({}) with a different type. (bool)", existingType);
-			return false;
-		}
+		spdlog::error("overwriting commands has been disabled");
+		return false;
+	}
 
-		spdlog::warn("User Control overwriting command {}", command);
-		CommandBool* pCommandBool = (CommandBool*)pCommand.get();
-		pCommandBool->m_callback = callback;
-		pCommandBool->SetConfirmationRequired(requiresConfirmation);
-	}
-	else
-	{
-		m_allCommands.emplace_back(std::make_shared<CommandBool>(command, callback, m_boolOptions, requiresConfirmation));
-	}
+	m_allCommands.emplace_back(std::make_shared<CommandBool>(command, callback, launchAction));
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, std::function<bool(int)> callback, bool requiresConfirmation)
+bool TEF::Aurora::UserControl::RegisterLimitedInt(std::string command, LaunchAction launchAction, std::function<std::string(int)> callback)
 {
 	spdlog::debug("User Control registering int command {}", command);
 
 	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
-		std::string existingType = pCommand->GetType();
-		if (existingType != "int")
-		{
-			spdlog::error("You cannot overwrite command type ({}) with a different type. (int)", existingType);
-			return false;
-		}
-
-		spdlog::warn("User Control overwriting command {}", command);
-		CommandInt* pCommandInt = (CommandInt*)pCommand.get();
-		pCommandInt->m_callback = callback;
-		pCommandInt->SetConfirmationRequired(requiresConfirmation);
-
+		spdlog::error("overwriting commands has been disabled");
+		return false;
 	}
-	else
-	{
-		m_allCommands.emplace_back(std::make_shared<CommandInt>(command, callback, m_intOptions, requiresConfirmation));
-	}
+
+	m_allCommands.emplace_back(std::make_shared<CommandInt>(command, callback, launchAction));
 
 	return true;
 }
 
 
-bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<std::string> validArgs, std::function<bool(std::string)> callback, bool requiresConfirmation)
+bool TEF::Aurora::UserControl::RegisterString(std::string command, std::vector<std::string> validArgs, LaunchAction launchAction, std::function<std::string(std::string)> callback)
 {
 	spdlog::debug("User Control registering string command {}", command);
 
 	std::shared_ptr<Command> pCommand;
 	if (FindCommand(command, pCommand))
 	{
-		std::string existingType = pCommand->GetType();
-		if (existingType != "string")
-		{
-			spdlog::error("You cannot overwrite command type ({}) with a different type. (string)", existingType);
-			return false;
-		}
-
-		if (!validArgs.empty())
-		{
-			std::vector<std::string> existingArgs;
-			pCommand->GetValidArgs(existingArgs);
-			if (existingArgs != validArgs)
-			{
-				spdlog::error("You cannot overwrite command with new string arguments");
-				return false;
-			}
-		}
-
-		spdlog::warn("User Control overwriting command {}", command);
-		CommandStr* pCommandString = (CommandStr*)pCommand.get();
-		pCommandString->m_callback = callback;
-		pCommandString->SetConfirmationRequired(requiresConfirmation);
-
+		spdlog::error("overwriting commands has been disabled");
+		return false;
 	}
-	else
-	{
-		m_allCommands.emplace_back(std::make_shared<CommandStr>(command, callback, validArgs, requiresConfirmation));
-	}
+
+	m_allCommands.emplace_back(std::make_shared<CommandStr>(command, callback, validArgs, launchAction));
 
 	return true;
-}
-
-bool TEF::Aurora::UserControl::RegisterString(std::string command, std::function<bool(std::string)> cb, bool requiresConfirmation)
-{
-	return RegisterString(command, {}, cb);
 }
 
 

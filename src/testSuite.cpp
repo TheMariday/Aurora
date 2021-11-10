@@ -124,16 +124,16 @@ bool TEF::Aurora::TestSuite::UserControlTest()
 	std::atomic hit = false;
 	{
 		hit = false;
-		userControl.RegisterVoid("void test", [&hit]() {hit = true; return true; });
+		userControl.RegisterVoid("void test", [&hit]() {hit = true; return ""; });
 
 		userControl.FetchCommand("void test", command);
-		if (!command->Run()) return false;
+		command->Run();
 		if (!hit) return false;
 	}
 
 	{
 		hit = false;
-		userControl.RegisterString("argument test", { "success","other" }, [&hit](std::string s) {hit = s == "success"; return true; });
+		userControl.RegisterString("argument test", { "success","other" }, [&hit](std::string s) {hit = s == "success"; return ""; });
 
 		userControl.FetchCommand("argument test success", command);
 		command->Run();
@@ -149,9 +149,9 @@ bool TEF::Aurora::TestSuite::MasterControllerTest()
 
 	std::atomic_bool hit = false;
 
-	master.GetUserControl()->RegisterVoid("passed test", [&hit]() {hit = true;  return true; });
+	master.GetUserControl()->RegisterVoid("passed test", [&hit]() {hit = true;  return ""; });
 
-	master.GetUserControl()->RegisterVoid("failed test", [&hit]() {hit = false;  return true; });
+	master.GetUserControl()->RegisterVoid("failed test", [&hit]() {hit = false;  return ""; });
 
 	master.GetNotifier()->AddSpeech("Please say passed test to continue");
 

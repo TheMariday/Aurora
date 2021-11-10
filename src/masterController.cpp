@@ -201,7 +201,7 @@ bool TEF::Aurora::MasterController::StartButtons()
 		return false;
 	};
 
-	m_confirmButton.RegisterCallbackDown([this]() {return RunCallback(m_loadedCommand); });
+	m_confirmButton.RegisterCallbackDown([this]() {return RunLoadedCallback(); });
 
 	m_confirmButton.SetFPS(Properties::GetProperty<float>("buttons", "fps").value_or(100.0f));
 
@@ -245,7 +245,7 @@ bool TEF::Aurora::MasterController::StartSpeech()
 		return false;
 	}
 
-	m_speechRecognition.RegisterCommandCallback([this](std::string command) {return LoadCommand(command); });
+	m_speechRecognition.RegisterCommandCallback([this](std::string command) {LoadCommand(command); });
 
 	m_connectedRunnable.emplace_back(&m_speechRecognition);
 
@@ -287,7 +287,7 @@ bool TEF::Aurora::MasterController::ClearFault()
 
 bool TEF::Aurora::MasterController::Report(Error e)
 {
-	if (e.level == ErrorLevel::Critical)
+	if (e.level == ErrorLevel::Critical && !m_fault)
 	{
 		CriticalFault();
 		m_faultError = e;
@@ -299,33 +299,35 @@ bool TEF::Aurora::MasterController::Report(Error e)
 	return false;
 }
 
-bool TEF::Aurora::MasterController::RunCallback(std::shared_ptr<Command> command)
+bool TEF::Aurora::MasterController::RunLoadedCallback()
 {
-	if (!command)
+	if (!m_loadedCommand)
 	{
 		spdlog::warn("Master Controller cannot run callback as there are no callbacks to run");
-		m_headset.AddSpeech("No callback registered");
+		GetNotifier()->AddSpeech("No callback registered");
 		return false;
 	}
 
-	bool commandSuccess = command->Run();
+	std::string returnedString = m_loadedCommand->Run();
 
-	if (!commandSuccess)
+	GetNotifier()->AddSpeech(returnedString);
+
+	if (m_loadedCommand->GetLaunchAction() != INSTANT_TRIGGER)
 	{
-		std::stringstream ss;
-		ss << command->GetCommandAndArgs() << " failed";
-		m_headset.AddSpeech(ss);
-		spdlog::error(ss.str());
-		return false;
+		UnloadCommand();
 	}
-
-	m_loadedCommand.reset();
 
 	return true;
 }
 
 bool TEF::Aurora::MasterController::LoadCommand(std::string commandStr)
 {
+	if (commandStr.empty())
+	{
+		GetNotifier()->AddSpeech("no voice detected");
+		return false;
+	}
+
 	std::shared_ptr<Command> command;
 	if (!m_userControl.FetchCommand(commandStr, command))
 	{
@@ -333,17 +335,36 @@ bool TEF::Aurora::MasterController::LoadCommand(std::string commandStr)
 		return false;
 	}
 
-	if (command->IsConfirmationRequired())
+	std::stringstream response;
+
+	switch (command->GetLaunchAction())
 	{
-		m_loadedCommand = command;
-		std::stringstream ss;
-		ss << m_loadedCommand->GetCommand() << " " << m_loadedCommand->GetArg() << ", confirm?";
-		m_headset.AddSpeech(ss);
+	case INSTANT:
+	{
+		response << command->Run();
 	}
-	else
+	break;
+	case CONFIRM:
 	{
-		RunCallback(command);
+		response << command->GetCommandAndArgs() << ", confirm?";
+		m_loadedCommand = command;
+	}
+	break;
+	case INSTANT_TRIGGER:
+	{
+		response << command->GetCommandAndArgs() << " ready.";
+		m_loadedCommand = command;
+	}
+	break;
 	}
 
+	m_headset.AddSpeech(response);
+
+	return true;
+}
+
+bool TEF::Aurora::MasterController::UnloadCommand()
+{
+	m_loadedCommand.reset();
 	return true;
 }
