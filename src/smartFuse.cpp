@@ -34,6 +34,7 @@ TEF::Aurora::SmartFuse::SmartFuse()
 
 TEF::Aurora::SmartFuse::~SmartFuse()
 {
+	Stop();
 	StopAll();
 	close(m_serialPort);
 }

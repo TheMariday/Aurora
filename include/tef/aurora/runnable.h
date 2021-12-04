@@ -23,7 +23,7 @@ namespace TEF::Aurora
 		~Runnable();
 		virtual bool MainLoopCallback();
 		bool Report(Error e);
-
+		void Stop();
 		bool IsConnected();
 
 		std::atomic<bool> m_connected = false;

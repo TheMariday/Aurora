@@ -11,10 +11,7 @@ TEF::Aurora::Runnable::Runnable()
 
 TEF::Aurora::Runnable::~Runnable()
 {
-	m_running = false;
-	if (m_mainLoopThread.joinable()) {
-		m_mainLoopThread.join();
-	}
+	Stop();
 }
 
 bool TEF::Aurora::Runnable::MainLoopCallback()
@@ -27,6 +24,14 @@ bool TEF::Aurora::Runnable::Report(Error error)
 	error.log();
 	if (m_errorHandler) m_errorHandler(error);
 	return true;
+}
+
+void TEF::Aurora::Runnable::Stop()
+{
+	m_running = false;
+	if (m_mainLoopThread.joinable()) {
+		m_mainLoopThread.join();
+	}
 }
 
 bool TEF::Aurora::Runnable::IsConnected()

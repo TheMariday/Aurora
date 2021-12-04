@@ -21,7 +21,7 @@ namespace TEF::Aurora {
 
 	protected:
 
-		int TimeSinceStarted(); // returns time difference in milis, returns 0 if not running
+		float SecondsSinceStart(); // returns time difference in seconds, returns 0 if not running
 
 		std::chrono::high_resolution_clock::time_point m_startedAt;
 

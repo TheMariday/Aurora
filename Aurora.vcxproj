@@ -116,7 +116,7 @@
     <ClInclude Include="include\tef\aurora\dacMCP3008.h" />
     <ClInclude Include="include\tef\aurora\effect.h" />
     <ClInclude Include="include\tef\aurora\effects\debugEffect.h" />
-    <ClInclude Include="include\tef\aurora\effects\simpleEffect.h" />
+    <ClInclude Include="include\tef\aurora\effects\rainbowEffect.h" />
     <ClInclude Include="include\tef\aurora\error.h" />
     <ClInclude Include="include\tef\aurora\fadecandyServerComms.h" />
     <ClInclude Include="include\tef\aurora\led.h" />

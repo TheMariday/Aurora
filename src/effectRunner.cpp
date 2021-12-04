@@ -8,6 +8,9 @@ TEF::Aurora::EffectRunner::EffectRunner()
 
 TEF::Aurora::EffectRunner::~EffectRunner()
 {
+	spdlog::info("Effect Runner being destroyed, stopping mainloop");
+	Stop();
+	spdlog::info("Setting all leds to black");
 	Black();
 }
 
@@ -49,6 +52,7 @@ void TEF::Aurora::EffectRunner::Black()
 		led.Black();
 
 	WriteToFC();
+	WriteToFC();
 }
 
 bool TEF::Aurora::EffectRunner::Disable()
@@ -78,7 +82,8 @@ bool TEF::Aurora::EffectRunner::MainLoopCallback()
 	if (m_enabled)
 	{
 		for (auto& effect : m_effects)
-			effect->Render(m_leds);
+			if(effect->IsRunning())
+				effect->Render(m_leds);
 	}
 
 	return WriteToFC();

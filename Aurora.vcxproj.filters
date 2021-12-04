@@ -189,9 +189,6 @@
     <ClInclude Include="include\tef\aurora\effect.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\effects\simpleEffect.h">
-      <Filter>effects</Filter>
-    </ClInclude>
     <ClInclude Include="include\tef\aurora\led.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -224,6 +221,9 @@
     </ClInclude>
     <ClInclude Include="lib\tomlplusplus\toml.hpp">
       <Filter>lib\tomlplusplus</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\effects\rainbowEffect.h">
+      <Filter>effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
