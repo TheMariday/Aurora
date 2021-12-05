@@ -9,6 +9,8 @@
 
 #include "tef/aurora/effects/rainbowEffect.h"
 
+
+
 int main(int argc, char** argv)
 {
 	spdlog::set_level(spdlog::level::debug);
@@ -23,9 +25,26 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
+	unsigned char devChannel = 3;
+
+	{
+		std::stringstream ss;
+		ss << "subsystem_" << static_cast<int>(devChannel);
+		std::optional<int> currentZero = TEF::Aurora::Properties::GetProperty<float>(ss.str(), "currentZero");
+		std::optional<float> currentScale = TEF::Aurora::Properties::GetProperty<float>(ss.str(), "currentScale");
+
+		if (!currentZero.has_value() || !currentScale.has_value())
+		{
+			spdlog::error("Cannot load currentZero or currentScale");
+			return 0;
+		}
+
+		smartFuse.Calibrate(devChannel, currentZero.value(), currentScale.value());
+	}
+
 	smartFuse.SetFPS(2);
 	smartFuse.Run();
-	
+
 	if (!effectRunner.Connect("localhost"))
 	{
 		spdlog::error("failed to connect to effect runner");
@@ -39,38 +58,41 @@ int main(int argc, char** argv)
 	effectRunner.SetFPS(60);
 	effectRunner.Run();
 
-	spdlog::info("everything set up, sleeping");
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-	
-	int current;
-	unsigned char devChannel = 3;
-
-	
-	smartFuse.GetCurrent(devChannel, current);
-	spdlog::info("Current before enabling: {}", current);
-
-
-	spdlog::warn("enabling channel");
-	smartFuse.SetFet(devChannel, true, current);
-	spdlog::info("Current after enabling: {}", current);
-
-	spdlog::warn("starting effect");
-	rainbowEffect->Start();
 	std::this_thread::sleep_for(std::chrono::seconds(1));
-	smartFuse.GetCurrent(devChannel, current);
-	spdlog::info("Current after starting: {}", current);
 
-	std::this_thread::sleep_for(std::chrono::seconds(5));
+	{
+		float current;
 
-	spdlog::warn("stopping effect");
-	rainbowEffect->Stop();
-	std::this_thread::sleep_for(std::chrono::seconds(1));
-	smartFuse.GetCurrent(devChannel, current);
-	spdlog::info("Current after stopping: {}", current);
+		smartFuse.GetCurrent(devChannel, current);
+		spdlog::info("Current closed: {}", current);
 
-	spdlog::warn("disabling channel");
-	smartFuse.SetFet(devChannel, false, current);
-	spdlog::info("Current after disabling: {}", current);
+		smartFuse.SetFet(devChannel, true);
+
+		smartFuse.GetCurrent(devChannel, current);
+		spdlog::info("Current open: {}", current);
+
+		rainbowEffect->Start();
+
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+
+		smartFuse.GetCurrent(devChannel, current);
+		spdlog::info("Current started: {}", current);
+
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+
+		rainbowEffect->Stop();
+
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+
+		smartFuse.GetCurrent(devChannel, current);
+		spdlog::info("Current stopped: {}", current);
+
+		smartFuse.SetFet(devChannel, false);
+
+		smartFuse.GetCurrent(devChannel, current);
+		spdlog::info("Current closed: {}", current);
+
+	}
 
 	/*
 	TEF::Aurora::SmartFuse sf;

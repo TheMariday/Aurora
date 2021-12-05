@@ -108,7 +108,7 @@ bool TEF::Aurora::SmartFuse::Connect(std::string device)
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::SetFet(unsigned char channel, bool enabled, int& current)
+bool TEF::Aurora::SmartFuse::SetFet(unsigned char channel, bool enabled)
 {
 	if (m_serialPort < 0)
 	{
@@ -117,19 +117,28 @@ bool TEF::Aurora::SmartFuse::SetFet(unsigned char channel, bool enabled, int& cu
 	}
 
 	// do not enable any fets if system is disabled
-	if (enabled && !m_enabled)
-		Write((unsigned char)(channel + SERIAL_GET));
-	else
-		Write((unsigned char)(channel + (enabled ? SERIAL_FET_ON : SERIAL_FET_OFF)));
+	if (!m_enabled && enabled)
+	{
+		spdlog::error("Smart Fuse cannot open fet as smart fuse is disabled");
+		return false;
+	}
 
+	Write((unsigned char)(channel + (enabled ? SERIAL_FET_ON : SERIAL_FET_OFF)));
+	m_enabledChannels[channel] = enabled;
 
-	current = Read();
+	int response = Read(); // this returns the post fet opening value, disregarding for now
+
+	if (response == RESP_FAIL)
+	{
+		spdlog::error("Smart Fuse failed to set Fet for channel {}", static_cast<int>(channel));
+		return false;
+	}
 
 	return true;
 }
 
 
-bool TEF::Aurora::SmartFuse::GetCurrent(unsigned char channel, int& current)
+bool TEF::Aurora::SmartFuse::GetCurrentRaw(unsigned char channel, int& current)
 {
 	if (m_serialPort < 0)
 	{
@@ -140,10 +149,36 @@ bool TEF::Aurora::SmartFuse::GetCurrent(unsigned char channel, int& current)
 	Write((unsigned char)(channel + SERIAL_GET));
 
 	current = Read();
+
+	if (current == RESP_FAIL)
+	{
+		spdlog::error("Smart Fuse failed to read current from channel {}", static_cast<int>(channel));
+		return false;
+	}
+
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<int>& currents)
+bool TEF::Aurora::SmartFuse::isCalibrated(unsigned char channel)
+{
+	return m_calibration[channel].calibrated;
+}
+
+bool TEF::Aurora::SmartFuse::GetCurrent(unsigned char channel, float& current)
+{
+	int c;
+	if (!GetCurrentRaw(channel, c))
+	{
+		spdlog::error("SmartFuse cannot get channel current in amps as GetCurrent has failed");
+		return false;
+	}
+
+	current = MeasurementToAmps(channel, c);
+
+	return true;
+}
+
+bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<float>& currents)
 {
 	if (m_serialPort < 0)
 	{
@@ -153,10 +188,15 @@ bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<int>& currents)
 
 	Write(SERIAL_GET_ALL);
 	currents.resize(CHANNELS);
-	for (int& current : currents)
+	for (unsigned char i = 0; i < 8; ++i)
 	{
-		current = Read();
-		if (current == RESP_FAIL)
+		int response = Read();
+
+		if (response != RESP_FAIL)
+		{
+			currents[i] = MeasurementToAmps(i, response);
+		}
+		else
 		{
 			spdlog::error("Smart Fuse failed to read a board current");
 			return false;
@@ -193,24 +233,32 @@ bool TEF::Aurora::SmartFuse::StopAll()
 	return true;
 }
 
+bool TEF::Aurora::SmartFuse::Calibrate(unsigned char channel, int measurementZero, float measurementScale)
+{
+	m_calibration[channel].zero = measurementZero;
+	m_calibration[channel].scale = measurementScale;
+	m_calibration[channel].calibrated = true;
+
+	return true;
+}
+
 bool TEF::Aurora::SmartFuse::CheckConnected()
 {
 	for (unsigned char channel = 0; channel < CHANNELS; channel++)
 	{
-		int current = 0;
+		float current = 0;
 
-		if (m_enabled)
+		if (m_enabledChannels[channel])
 		{
 			GetCurrent(channel, current);
 		}
 		else
 		{
-			SetFet(channel, true, current);
-			int c;
-			SetFet(channel, false, c);
+			SetFet(channel, true);
+			GetCurrent(channel, current);
+			SetFet(channel, false);
 		}
-		bool connected = current > 512; // this is dumb. needs calibration
-
+		bool connected = current > m_minimumChannelAmperage; // 200mah
 
 		if (connected != m_channelConnected[channel])
 		{
@@ -289,8 +337,7 @@ bool TEF::Aurora::SmartFuse::Write(unsigned char flag)
 	return true;
 }
 
-float TEF::Aurora::SmartFuse::MeasurementToAmps(int measurement)
+float TEF::Aurora::SmartFuse::MeasurementToAmps(unsigned char channel, int measurement)
 {
-	//This needs to be calibratable
-	return ((float)measurement - 494.8f) * (25 / 1024); // Which is roughly 20ma per step
+	return static_cast<float>(measurement - m_calibration[channel].zero) * m_calibration[channel].scale;
 }

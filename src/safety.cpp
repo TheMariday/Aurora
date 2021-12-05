@@ -26,8 +26,7 @@ void TEF::Aurora::Safety::BuildCurrentMatrix()
 	effectRunner.SetFPS(60);
 	effectRunner.Run();
 
-	int v;
-	m_smartFuse.SetFet(7, true, v);
+	m_smartFuse.SetFet(7, true);
 
 	int current;
 
@@ -42,14 +41,14 @@ void TEF::Aurora::Safety::BuildCurrentMatrix()
 				m_debugEffect->b = b;
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
-				m_smartFuse.GetCurrent(7, current);
+				m_smartFuse.GetCurrentRaw(7, current);
 				m_currentMatrix.data[r][g][b] = (float)current;
 				spdlog::debug("rgb: {} {} {}", r, g, b);
 			}
 		}
 	}
 
-	m_smartFuse.SetFet(7, false, v);
+	m_smartFuse.SetFet(7, false);
 
 	Properties::SaveProperty<Properties::CurrentMatrix>(m_currentMatrix, m_currentMatrixFilename);
 
