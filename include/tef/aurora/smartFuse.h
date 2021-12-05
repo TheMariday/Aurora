@@ -7,11 +7,13 @@
 
 namespace TEF::Aurora {
 
-	struct Calibration
+	struct Channel
 	{
 		bool calibrated = false;
 		float scale = 0.025586f;
-		int zero = 500;
+		unsigned int zero = 500;
+		bool connected = false;
+		bool fetState = false;
 	};
 
 	class SmartFuse : public Runnable
@@ -21,25 +23,24 @@ namespace TEF::Aurora {
 		~SmartFuse();
 
 		bool Connect(std::string device);
-
 		bool Enable() { m_enabled = true; return true; };
 		bool Disable() { m_enabled = false; return true; };
 
-		bool SetFet(unsigned char channel, bool enabled);
-		bool GetCurrent(unsigned char channel, float& current);
-		bool GetCurrent(std::vector<float>& currents);
-		bool GetCurrentRaw(unsigned char channel, int& current);
+		bool SetFet(unsigned int channel, bool enabled);
+		bool GetCurrent(unsigned int channel, float& current, bool openFet = false);
+		bool GetCurrents(std::vector<float>& currents);
 
-		bool isCalibrated(unsigned char channel);
+		bool isCalibrated(unsigned int channel);
 
 		bool StopAll();
 
-		bool Calibrate(unsigned char channel, int measurementZero, float measurementScale);
+		bool Calibrate(unsigned int channel, unsigned int measurementZero, float measurementScale);
 
 		bool CheckConnected();
 
 	private:
 
+		bool GetCurrentRaw(unsigned int channel, unsigned int& current);
 
 		bool MainLoopCallback() override;
 
@@ -48,7 +49,9 @@ namespace TEF::Aurora {
 		bool Write(unsigned char flag);
 		int Read();
 
-		float MeasurementToAmps(unsigned char channel, int measurement);
+		float MeasurementToAmps(unsigned int channel, unsigned int measurement);
+
+		bool CheckChannel(unsigned int channel);
 
 		bool m_enabled = true;
 
@@ -56,9 +59,9 @@ namespace TEF::Aurora {
 
 		const float m_minimumChannelAmperage = 0.2f; // 200mah / 200 leds / 4 strips
 
-		bool m_channelConnected[8];
-		bool m_enabledChannels[8];
-		Calibration m_calibration[8];
+		std::vector<Channel> m_channels;
+
+		std::mutex m_fuseLock;
 
 	};
 

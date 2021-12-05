@@ -64,19 +64,19 @@ int main(int argc, char** argv)
 		float current;
 
 		smartFuse.GetCurrent(devChannel, current);
-		spdlog::info("Current closed: {}", current);
+		spdlog::info("Current closed: {0:.3f}A", current);
 
 		smartFuse.SetFet(devChannel, true);
 
 		smartFuse.GetCurrent(devChannel, current);
-		spdlog::info("Current open: {}", current);
+		spdlog::info("Current open: {0:.3f}A", current);
 
 		rainbowEffect->Start();
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 
 		smartFuse.GetCurrent(devChannel, current);
-		spdlog::info("Current started: {}", current);
+		spdlog::info("Current started: {0:.3f}A", current);
 
 		std::this_thread::sleep_for(std::chrono::seconds(5));
 
@@ -85,12 +85,12 @@ int main(int argc, char** argv)
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 
 		smartFuse.GetCurrent(devChannel, current);
-		spdlog::info("Current stopped: {}", current);
+		spdlog::info("Current stopped: {0:.3f}A", current);
 
 		smartFuse.SetFet(devChannel, false);
 
 		smartFuse.GetCurrent(devChannel, current);
-		spdlog::info("Current closed: {}", current);
+		spdlog::info("Current closed: {0:.3f}A", current);
 
 	}
 

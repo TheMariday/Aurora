@@ -26,10 +26,8 @@
 
 TEF::Aurora::SmartFuse::SmartFuse()
 {
-	for (bool& v : m_enabledChannels)
-		v = false;
-	for (bool& v : m_channelConnected)
-		v = false;
+	//set the number of channels
+	m_channels.resize(8);
 }
 
 TEF::Aurora::SmartFuse::~SmartFuse()
@@ -41,11 +39,12 @@ TEF::Aurora::SmartFuse::~SmartFuse()
 
 bool TEF::Aurora::SmartFuse::Connect(std::string device)
 {
+	std::scoped_lock lock(m_fuseLock);
 	m_serialPort = open(device.c_str(), O_RDWR);
 
 	// Check for errors
 	if (m_serialPort < 0) {
-		spdlog::error("Smart Fuse failed to connect to hardware");
+		spdlog::error("Smart Fuse failed to open serial port {:s}", device);
 		return false;
 	}
 
@@ -56,7 +55,7 @@ bool TEF::Aurora::SmartFuse::Connect(std::string device)
 	// must have been initialized with a call to tcgetattr() overwise behaviour
 	// is undefined
 	if (tcgetattr(m_serialPort, &tty) != 0) {
-		spdlog::error("Smart Fuse failed to get termios settings");
+		spdlog::error("Smart Fuse failed to get termios settings for port {:s}", device);
 		return false;
 	}
 
@@ -83,7 +82,7 @@ bool TEF::Aurora::SmartFuse::Connect(std::string device)
 
 	// Save tty settings, also checking for error
 	if (tcsetattr(m_serialPort, TCSANOW, &tty) != 0) {
-		spdlog::error("Smart Fuse failed to set termios settings");
+		spdlog::error("Smart Fuse failed to set termios settings for port {:s}", device);
 		return false;
 	}
 
@@ -91,102 +90,145 @@ bool TEF::Aurora::SmartFuse::Connect(std::string device)
 
 	if (tcflush(m_serialPort, TCIOFLUSH) != 0)
 	{
-		spdlog::error("Smart Fuse failed to flush stream after connecting");
+		spdlog::error("Smart Fuse failed to flush stream after connecting for port {:s}", device);
 		return false;
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
+	m_connected = true;
+
 	if (!Ping())
 	{
-		spdlog::error("Smart Fuse connected but failed ping check");
+		spdlog::error("Smart Fuse connected but failed to ping check on port {:s}", device);
+		m_connected = false;
 		return false;
 	}
-
-	m_connected = true;
 
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::SetFet(unsigned char channel, bool enabled)
+bool TEF::Aurora::SmartFuse::SetFet(unsigned int channel, bool fetState)
 {
-	if (m_serialPort < 0)
+	std::scoped_lock lock(m_fuseLock);
+
+	if (!CheckChannel(channel))
 	{
-		spdlog::error("Smart Fuse cannot set fet as smart fuse is not connected");
+		spdlog::error("Smart Fuse channel {} cannot set fet as channel isn't avaliable");
 		return false;
 	}
 
 	// do not enable any fets if system is disabled
-	if (!m_enabled && enabled)
+	if (!m_enabled && fetState)
 	{
-		spdlog::error("Smart Fuse cannot open fet as smart fuse is disabled");
+		spdlog::error("Smart Fuse channel {} cannot set fet as smart fuse is disabled", channel);
 		return false;
 	}
 
-	Write((unsigned char)(channel + (enabled ? SERIAL_FET_ON : SERIAL_FET_OFF)));
-	m_enabledChannels[channel] = enabled;
+	if (!Write((unsigned char)(channel + (fetState ? SERIAL_FET_ON : SERIAL_FET_OFF))))
+	{
+		spdlog::error("Smart Fuse channel {} failed to set fet state", channel);
+		return false;
+	}
 
 	int response = Read(); // this returns the post fet opening value, disregarding for now
 
 	if (response == RESP_FAIL)
 	{
-		spdlog::error("Smart Fuse failed to set Fet for channel {}", static_cast<int>(channel));
+		spdlog::error("Smart Fuse channel {} hardware failed to set fet", channel);
 		return false;
 	}
+
+	m_channels[channel].fetState = fetState;
 
 	return true;
 }
 
 
-bool TEF::Aurora::SmartFuse::GetCurrentRaw(unsigned char channel, int& current)
+bool TEF::Aurora::SmartFuse::GetCurrentRaw(unsigned int channel, unsigned int& current)
 {
-	if (m_serialPort < 0)
+	std::scoped_lock lock(m_fuseLock);
+
+	if (!CheckChannel(channel))
 	{
-		spdlog::error("Smart Fuse cannot get the current as smart fuse is not connected");
+		spdlog::error("Smart Fuse channel {} failed to get current", channel);
 		return false;
 	}
 
-	Write((unsigned char)(channel + SERIAL_GET));
+	if (!Write((unsigned char)(channel + SERIAL_GET)))
+	{
+		spdlog::error("Smart Fuse channel {} failed to write to the hardware requesting channel current", channel);
+		return false;
+	}
 
 	current = Read();
 
 	if (current == RESP_FAIL)
 	{
-		spdlog::error("Smart Fuse failed to read current from channel {}", static_cast<int>(channel));
+		spdlog::error("Smart Fuse channel {} failed to get the raw current", channel);
 		return false;
 	}
 
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::isCalibrated(unsigned char channel)
+bool TEF::Aurora::SmartFuse::isCalibrated(unsigned int channel)
 {
-	return m_calibration[channel].calibrated;
+	return m_channels[channel].calibrated;
 }
 
-bool TEF::Aurora::SmartFuse::GetCurrent(unsigned char channel, float& current)
+bool TEF::Aurora::SmartFuse::GetCurrent(unsigned int channel, float& current, bool openFet)
 {
-	int c;
-	if (!GetCurrentRaw(channel, c))
+	if (!CheckChannel(channel))
 	{
-		spdlog::error("SmartFuse cannot get channel current in amps as GetCurrent has failed");
+		spdlog::error("Smart Fuse channel {} failed to get current", channel);
 		return false;
 	}
 
-	current = MeasurementToAmps(channel, c);
+	// do we need to open / close the fet?
+	bool forceFetOpen = openFet && ! m_channels[channel].fetState;
+
+	if (forceFetOpen)
+	{
+		if (!SetFet(channel, true))
+		{
+			spdlog::error("Smart Fuse channel {} failed to get current as the fet cannot be opened", channel);
+			return false;
+		};
+	}
+
+	unsigned int currentRaw;
+
+	if (!GetCurrentRaw(channel, currentRaw))
+	{
+		spdlog::error("Smart Fuse channel {} failed to get current after fet had been opened", channel);
+		return false;
+	};
+
+	current = MeasurementToAmps(channel, currentRaw);
+
+	if (forceFetOpen)
+	{
+		if (!SetFet(channel, false))
+		{
+			spdlog::error("Smart Fuse channel {} failed to get current as the fet cannot be opened", channel);
+			return false;
+		};
+	}
 
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<float>& currents)
+bool TEF::Aurora::SmartFuse::GetCurrents(std::vector<float>& currents)
 {
-	if (m_serialPort < 0)
-	{
-		spdlog::error("Smart Fuse cannot get the current as smart fuse is not connected");
-		return false;
-	}
+	std::scoped_lock lock(m_fuseLock);
 
-	Write(SERIAL_GET_ALL);
+	if (!Write(SERIAL_GET_ALL))
+	{
+		spdlog::error("Smart Fuse failed to get all currents");
+		return false;
+	};
+
 	currents.resize(CHANNELS);
 	for (unsigned char i = 0; i < 8; ++i)
 	{
@@ -209,6 +251,8 @@ bool TEF::Aurora::SmartFuse::GetCurrent(std::vector<float>& currents)
 
 bool TEF::Aurora::SmartFuse::StopAll()
 {
+	std::scoped_lock lock(m_fuseLock);
+
 	if (!IsConnected())
 	{
 		spdlog::error("Smart Fuse cannot stop all fuses as hardware is not connected");
@@ -227,44 +271,52 @@ bool TEF::Aurora::SmartFuse::StopAll()
 		return false;
 	}
 
-	for (bool& v : m_enabledChannels)
-		v = false;
+	for (Channel& c : m_channels)
+		c.fetState = false;
 
 	return true;
 }
 
-bool TEF::Aurora::SmartFuse::Calibrate(unsigned char channel, int measurementZero, float measurementScale)
+bool TEF::Aurora::SmartFuse::Calibrate(unsigned int channel, unsigned int measurementZero, float measurementScale)
 {
-	m_calibration[channel].zero = measurementZero;
-	m_calibration[channel].scale = measurementScale;
-	m_calibration[channel].calibrated = true;
+	if (channel >= m_channels.size())
+	{
+		spdlog::error("Smart Fuse channel {} cannot set calibration as it is outside of expected range (0-{})", channel, m_channels.size());
+		return false;
+	}
+
+	m_channels[channel].zero = measurementZero;
+	m_channels[channel].scale = measurementScale;
+	m_channels[channel].calibrated = true;
 
 	return true;
 }
 
 bool TEF::Aurora::SmartFuse::CheckConnected()
 {
-	for (unsigned char channel = 0; channel < CHANNELS; channel++)
+	for (unsigned int channel = 0; channel < m_channels.size(); channel++)
 	{
 		float current = 0;
 
-		if (m_enabledChannels[channel])
-		{
-			GetCurrent(channel, current);
-		}
-		else
-		{
-			SetFet(channel, true);
-			GetCurrent(channel, current);
-			SetFet(channel, false);
-		}
-		bool connected = current > m_minimumChannelAmperage; // 200mah
+		// if the channel isn't calibrated, don't check it
+		if (!m_channels[channel].calibrated)
+			continue;
 
-		if (connected != m_channelConnected[channel])
+		if (!GetCurrent(channel, current, true))
 		{
-			m_channelConnected[channel] = connected;
+			spdlog::error("Smart Fuse channel {} failed to get current whilst checking connected", channel);
+			return false;
+		}
+
+		bool isConnected = current > m_minimumChannelAmperage; // 200mah
+
+		if (isConnected != m_channels[channel].connected)
+		{
+			spdlog::info("Smart Fuse channel {0} has detected a channel current change of {1:.8f}A", channel, (current - m_minimumChannelAmperage));
+			m_channels[channel].connected = isConnected;
+
 			//there must be a difference
-			if (connected == true)
+			if (isConnected == true)
 			{
 				std::stringstream ss;
 				ss << "power channel " << channel << " has connected";
@@ -272,7 +324,7 @@ bool TEF::Aurora::SmartFuse::CheckConnected()
 				Report(e);
 			}
 
-			if (connected == false)
+			if (isConnected == false)
 			{
 				std::stringstream ss;
 				ss << "power channel " << channel << " has disconnected";
@@ -287,10 +339,10 @@ bool TEF::Aurora::SmartFuse::CheckConnected()
 
 int TEF::Aurora::SmartFuse::Read()
 {
-	if (m_serialPort < 0)
+	if (!m_connected)
 	{
 		spdlog::error("Smart Fuse cannot be read as smart fuse is not connected");
-		return 0;
+		return RESP_FAIL;
 	}
 
 	char read_buf[2];
@@ -299,7 +351,7 @@ int TEF::Aurora::SmartFuse::Read()
 	if (n != 2)
 	{
 		spdlog::error("Smart Fuse failed to read the full 2 bytes needed");
-		return 0;
+		return RESP_FAIL;
 	}
 
 	return read_buf[1] << 8 | read_buf[0];
@@ -313,13 +365,17 @@ bool TEF::Aurora::SmartFuse::MainLoopCallback()
 
 bool TEF::Aurora::SmartFuse::Ping()
 {
-	Write(SERIAL_PING);
+	if (!Write(SERIAL_PING))
+	{
+		spdlog::error("Smart Fuse failed to send ping");
+		return false;
+	}
 	return Read() == RESP_SUCCESS;
 }
 
 bool TEF::Aurora::SmartFuse::Write(unsigned char flag)
 {
-	if (m_serialPort < 0)
+	if (!m_connected)
 	{
 		spdlog::error("Smart Fuse cannot be written to as hardware is not connected");
 		return false;
@@ -337,7 +393,30 @@ bool TEF::Aurora::SmartFuse::Write(unsigned char flag)
 	return true;
 }
 
-float TEF::Aurora::SmartFuse::MeasurementToAmps(unsigned char channel, int measurement)
+float TEF::Aurora::SmartFuse::MeasurementToAmps(unsigned int channel, unsigned int measurement)
 {
-	return static_cast<float>(measurement - m_calibration[channel].zero) * m_calibration[channel].scale;
+	if (!CheckChannel(channel))
+	{
+		spdlog::error("Smart Fuse channel {} cannot convert measurement", channel);
+		return 0.0f;
+	}
+
+	return (static_cast<float>(measurement) - static_cast<float>(m_channels[channel].zero)) * m_channels[channel].scale;
+}
+
+bool TEF::Aurora::SmartFuse::CheckChannel(unsigned int channel)
+{
+	if (!m_connected)
+	{
+		spdlog::error("Smart Fuse is not connected", channel);
+		return false;
+	}
+
+	if (channel >= m_channels.size())
+	{
+		spdlog::error("Smart Fuse failed to access channel {} as it is outside of expected range (0-{})", channel, m_channels.size());
+		return false;
+	}
+
+	return true;
 }
