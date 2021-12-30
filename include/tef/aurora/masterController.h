@@ -8,6 +8,7 @@
 #include "tef/aurora/effectRunner.h"
 #include "tef/aurora/error.h"
 #include "tef/aurora/smartFuse.h"
+#include "tef/aurora/cli.h"
 
 namespace TEF::Aurora {
 
@@ -25,6 +26,7 @@ namespace TEF::Aurora {
 		bool StartFuse();
 		bool StartButtons();
 		bool StartSpeech();
+		bool StartCLI();  
 
 		Sound* GetNotifier();
 
@@ -38,7 +40,7 @@ namespace TEF::Aurora {
 
 		void SetupVoiceCommands();
 
-		bool HasQuit() { return m_quit; };
+		void Spin();
 
 	private:
 
@@ -62,8 +64,8 @@ namespace TEF::Aurora {
 		DacMCP3008 m_dac;
 		EffectRunner m_effectRunner;
 		SmartFuse m_smartFuse;
+		CLI m_cli;
 
 		std::atomic_bool m_quit = false;
 	};
 }
-

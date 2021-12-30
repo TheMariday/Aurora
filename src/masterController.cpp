@@ -16,19 +16,23 @@ TEF::Aurora::MasterController::~MasterController()
 
 bool TEF::Aurora::MasterController::Start()
 {
+	// Setup all our lovely voice commands
+	SetupVoiceCommands();
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("headset", "enabled").value_or(false))
 	{
 		if (!StartHeadset()) return false;
+		m_headset.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
+
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("tail", "enabled").value_or(false))
 	{
 		if (!StartTail()) return false;
+		m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
+
 	}
 
-	m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
-	m_headset.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
 	std::this_thread::sleep_for(std::chrono::seconds(3));
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("buttons", "enabled").value_or(false))
@@ -51,6 +55,8 @@ bool TEF::Aurora::MasterController::Start()
 		if (!StartSpeech()) return false;
 	}
 
+	StartCLI();
+
 	for (Runnable* runnable : m_connectedRunnable)
 	{
 		runnable->RegisterErrorHandler([this](Error e) {Report(e); });
@@ -60,6 +66,7 @@ bool TEF::Aurora::MasterController::Start()
 	m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_welcome.wav");
 	m_headset.PlayAudio("/home/pi/media/cyclops/AI_welcome.wav");
 	std::this_thread::sleep_for(std::chrono::seconds(3));
+
 
 	spdlog::info("Master controller started successfully");
 
@@ -232,9 +239,6 @@ bool TEF::Aurora::MasterController::StartSpeech()
 	// output raw speech recognition snippet if we need to
 	m_speechRecognition.SetRecordFile("/home/pi/speech_debug.dat");
 
-	// Setup all our lovely voice commands
-	SetupVoiceCommands();
-
 	// Set JSGF here. Last step!
 
 	std::string jsgfFilepath = "/home/pi/test.gram";
@@ -250,6 +254,14 @@ bool TEF::Aurora::MasterController::StartSpeech()
 	m_connectedRunnable.emplace_back(&m_speechRecognition);
 
 	spdlog::info("Master Controller started speech recognition system successfully");
+	return true;
+}
+
+bool TEF::Aurora::MasterController::StartCLI()
+{
+	m_cli.RegisterCommandCallback([this](std::string command) {LoadCommand(command); });
+	m_cli.RegisterConfirm([this]() {return RunLoadedCallback(); });
+	m_connectedRunnable.emplace_back(&m_cli);
 	return true;
 }
 
@@ -367,4 +379,12 @@ bool TEF::Aurora::MasterController::UnloadCommand()
 {
 	m_loadedCommand.reset();
 	return true;
+}
+
+void TEF::Aurora::MasterController::Spin()
+{
+	while (!m_quit)
+	{
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
 }

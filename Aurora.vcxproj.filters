@@ -82,6 +82,9 @@
     <ClCompile Include="src\MasterControllerCommands.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\cli.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\masterController.h">
@@ -218,6 +221,9 @@
     </ClInclude>
     <ClInclude Include="include\tef\aurora\effects\rainbowEffect.h">
       <Filter>effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tef\aurora\cli.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

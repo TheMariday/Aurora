@@ -95,6 +95,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\batteryMonitor.cpp" />
     <ClCompile Include="src\button.cpp" />
+    <ClCompile Include="src\cli.cpp" />
     <ClCompile Include="src\dacMCP3008.cpp" />
     <ClCompile Include="src\effect.cpp" />
     <ClCompile Include="src\error.cpp" />
@@ -111,6 +112,7 @@
   <ItemGroup>
     <ClInclude Include="include\tef\aurora\batteryMonitor.h" />
     <ClInclude Include="include\tef\aurora\button.h" />
+    <ClInclude Include="include\tef\aurora\cli.h" />
     <ClInclude Include="include\tef\aurora\cmd.h" />
     <ClInclude Include="include\tef\aurora\dacMCP3008.h" />
     <ClInclude Include="include\tef\aurora\effect.h" />

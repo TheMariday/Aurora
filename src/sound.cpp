@@ -140,6 +140,11 @@ bool TEF::Aurora::Sound::MainLoopCallback()
 
 bool TEF::Aurora::Sound::PlayAudio(std::string filename, bool block)
 {
+	if (!IsConnected())
+	{
+		return true;
+	}
+
 	std::string command = AudioToCommand(filename);
 
 	if (block)
