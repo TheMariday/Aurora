@@ -1,4 +1,5 @@
 #include "tef/aurora/masterController.h"
+#include "tef/aurora/effects/rainbowEffect.h"
 
 void TEF::Aurora::MasterController::SetupVoiceCommands()
 {
@@ -114,6 +115,32 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 		{
 			m_quit = true;
 			return "";
+		});
+
+
+	m_userControl.RegisterVoid("start rainbow",  CONFIRM, [this]()
+		{
+			std::shared_ptr<TEF::Aurora::Effect> rainbowEffect = std::make_shared<TEF::Aurora::Effects::RainbowEffect>();
+
+			m_effectRunner.AddEffect("rainbow", rainbowEffect);
+
+			rainbowEffect->Start();
+
+			return "rainbow effect started";
+		});
+
+	m_userControl.RegisterVoid("stop rainbow", CONFIRM, [this]()
+		{
+			std::shared_ptr<TEF::Aurora::Effect> rainbowEffect;
+
+			if(!m_effectRunner.GetEffect("rainbow", rainbowEffect))
+				return "failed to find rainbow effect, has it been added?";
+
+			rainbowEffect->Stop();
+
+			m_effectRunner.RemoveEffect("rainbow");
+
+			return "rainbow effect stopped";
 		});
 
 }

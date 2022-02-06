@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <map>
 #include <fadecandy/opc_client.h>
 
 #include "tef/aurora/runnable.h"
@@ -23,8 +23,9 @@ namespace TEF::Aurora {
 		bool Disable();
 		bool StopAll();
 
-		bool AddEffect(std::shared_ptr<Effect> effect);
-
+		bool AddEffect(std::string uid, std::shared_ptr<Effect> effect, int order = 100);
+		bool GetEffect(std::string uid, std::shared_ptr<Effect>& effect);
+		bool RemoveEffect(std::string uid);
 
 	private:
 		bool MainLoopCallback() override;
@@ -34,7 +35,9 @@ namespace TEF::Aurora {
 
 	private:
 		std::vector<LED> m_leds;
-		std::vector<std::shared_ptr<Effect>> m_effects;
+
+		// This allows us to store a kind of ordered map
+		std::map<int, std::map<std::string, std::shared_ptr<Effect>>> m_effects;
 
 		OPCClient m_opc;
 		std::vector<uint8_t> m_frameBuffer;

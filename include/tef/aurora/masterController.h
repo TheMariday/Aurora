@@ -20,6 +20,7 @@ namespace TEF::Aurora {
 
 		bool Start();
 
+		bool StartEffectController();
 		bool StartHeadset();
 		bool StartTail();
 		bool StartBattery();

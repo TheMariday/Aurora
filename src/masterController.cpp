@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "tef/aurora/properties.h"
+#include "tef/aurora/effects/rainbowEffect.h"
 
 
 TEF::Aurora::MasterController::MasterController()
@@ -55,6 +56,12 @@ bool TEF::Aurora::MasterController::Start()
 		if (!StartSpeech()) return false;
 	}
 
+	if (TEF::Aurora::Properties::GetProperty<bool>("fadecandy", "enabled").value_or(false))
+	{
+		if (!StartEffectController()) return false;
+	}
+
+
 	StartCLI();
 
 	for (Runnable* runnable : m_connectedRunnable)
@@ -71,6 +78,22 @@ bool TEF::Aurora::MasterController::Start()
 	spdlog::info("Master controller started successfully");
 
 	return true;
+}
+
+bool TEF::Aurora::MasterController::StartEffectController()
+{
+
+	if (!m_effectRunner.Connect("localhost"))
+	{
+		spdlog::error("failed to connect to effect runner");
+		return false;
+	}
+
+	m_effectRunner.SetFPS(60);
+	m_connectedRunnable.emplace_back(&m_effectRunner);
+
+	return true;
+
 }
 
 bool TEF::Aurora::MasterController::StartHeadset()

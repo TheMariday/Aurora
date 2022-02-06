@@ -48,7 +48,7 @@ void fuseTest()
 
 	auto rainbowEffect = std::make_shared<TEF::Aurora::Effects::RainbowEffect>();
 
-	effectRunner.AddEffect(rainbowEffect);
+	effectRunner.AddEffect("test", rainbowEffect);
 
 	effectRunner.SetFPS(60);
 	effectRunner.Run();

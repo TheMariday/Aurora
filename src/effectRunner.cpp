@@ -58,32 +58,73 @@ void TEF::Aurora::EffectRunner::Black()
 bool TEF::Aurora::EffectRunner::Disable()
 {
 	m_enabled = false;
+	StopAll();
+	Black();
 	return true;
 }
 
 bool TEF::Aurora::EffectRunner::StopAll()
 {
-	for (auto& effect : m_effects)
-		effect->Stop();
+	for (auto const& [order, uidToEffect] : m_effects)
+		for (auto const& [uid, effect] : uidToEffect)
+			effect->Stop();
+
 	return true;
 }
 
-bool TEF::Aurora::EffectRunner::AddEffect(std::shared_ptr<Effect> effect)
+bool TEF::Aurora::EffectRunner::AddEffect(std::string uid, std::shared_ptr<Effect> effect, int order)
 {
-	m_effects.push_back(effect);
+	if (m_effects[order].find(uid) != m_effects[order].end()) {
+		spdlog::warn("Effect Runner has tried to register an effect over an existing one");
+	}
+
+	m_effects[order][uid] = effect;
+
 	return true;
 }
+
+bool TEF::Aurora::EffectRunner::GetEffect(std::string uid, std::shared_ptr<Effect>& effect)
+{
+	for (auto const& [order, uidToEffect] : m_effects)
+	{
+		if (uidToEffect.find(uid) != uidToEffect.end())
+		{
+			effect = uidToEffect.at(uid);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool TEF::Aurora::EffectRunner::RemoveEffect(std::string uid)
+{
+	int effectsRemoved = 0;
+	for (auto& [order, uidToEffect] : m_effects)
+	{
+		effectsRemoved += uidToEffect.erase(uid);
+	}
+
+	return effectsRemoved;
+}
+
 
 bool TEF::Aurora::EffectRunner::MainLoopCallback()
 {
 	for (LED& led : m_leds)
 		led.Black();
 
+	// This takes advantage of the fact that maps are ordered by key by default
 	if (m_enabled)
 	{
-		for (auto& effect : m_effects)
-			if(effect->IsRunning())
-				effect->Render(m_leds);
+		for (auto const& [order, uidToEffect] : m_effects)
+		{
+			for (auto const& [uid, effect] : uidToEffect)
+			{
+				if (effect->IsRunning())
+					effect->Render(m_leds);
+			}
+		}
 	}
 
 	return WriteToFC();
