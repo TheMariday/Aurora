@@ -118,7 +118,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 		});
 
 
-	m_userControl.RegisterVoid("start rainbow",  CONFIRM, [this]()
+	m_userControl.RegisterVoid("start rainbow", CONFIRM, [this]()
 		{
 			std::shared_ptr<TEF::Aurora::Effect> rainbowEffect = std::make_shared<TEF::Aurora::Effects::RainbowEffect>();
 
@@ -133,7 +133,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 		{
 			std::shared_ptr<TEF::Aurora::Effect> rainbowEffect;
 
-			if(!m_effectRunner.GetEffect("rainbow", rainbowEffect))
+			if (!m_effectRunner.GetEffect("rainbow", rainbowEffect))
 				return "failed to find rainbow effect, has it been added?";
 
 			rainbowEffect->Stop();
@@ -143,4 +143,12 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "rainbow effect stopped";
 		});
 
+	m_userControl.RegisterBool("fuse safety", CONFIRM, [this](bool enabled)
+		{
+			// temporary adition to enable all channels until i think up something better
+			for (unsigned int channel = 1; channel <= 5; ++channel)
+				m_smartFuse.SetFet(channel, !enabled);
+
+			return enabled ? "fuse safety enabled" : "fuse safety disabled";
+		});
 }

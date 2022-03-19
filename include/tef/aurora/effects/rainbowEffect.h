@@ -24,8 +24,8 @@ namespace TEF::Aurora::Effects
 		}
 
 		std::atomic_int m_brightness = 10;
-		std::atomic_int m_rainbow_width = 64;
-		std::atomic_int m_rainbow_speed = 2; // seconds per cycle
+		std::atomic_int m_rainbow_width = 512*5;
+		std::atomic_int m_rainbow_speed = 5; // seconds per cycle
 	};
 
 };

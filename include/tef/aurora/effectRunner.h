@@ -44,7 +44,7 @@ namespace TEF::Aurora {
 
 		bool m_enabled = true;
 
-		const int m_ledCount = 512; // this needs changing
+		const int m_ledCount = 512*5; // this needs changing
 	};
 
 };

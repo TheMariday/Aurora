@@ -111,7 +111,7 @@ bool TEF::Aurora::SmartFuse::Connect(std::string device)
 bool TEF::Aurora::SmartFuse::SetFet(unsigned int channel, bool fetState)
 {
 	std::scoped_lock lock(m_fuseLock);
-
+	
 	if (!CheckChannel(channel))
 	{
 		spdlog::error("Smart Fuse channel {} cannot set fet as channel isn't avaliable");
@@ -294,6 +294,8 @@ bool TEF::Aurora::SmartFuse::Calibrate(unsigned int channel, unsigned int measur
 
 bool TEF::Aurora::SmartFuse::CheckConnected()
 {
+	Ping();
+
 	for (unsigned int channel = 0; channel < m_channels.size(); channel++)
 	{
 		float current = 0;

@@ -95,16 +95,9 @@ int main(int argc, char** argv)
 {
 	spdlog::set_level(spdlog::level::debug);
 
-	if (argc == 2 && std::strcmp(argv[1], "test"))
-	{
-		fuseTest();
-	}
-	else
-	{
-		TEF::Aurora::MasterController mc;
-		mc.Start();
-		mc.Spin();
-	}
+	TEF::Aurora::MasterController mc;
+	mc.Start();
+	mc.Spin();
 
 	return 1;
 }
