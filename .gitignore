@@ -8,7 +8,7 @@ obj/
 .idea
 
 # LED sequence images
-scripts/LEDMapper/seqences/
+scripts/LEDMapper/sequences/*.png
 
 # Prerequisites
 *.d
