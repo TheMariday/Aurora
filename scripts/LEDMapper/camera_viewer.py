@@ -1,5 +1,8 @@
 import cv2
 
+
+scale = 0.5
+
 if __name__ == '__main__':
     cam = cv2.VideoCapture(0)
 
@@ -16,7 +19,16 @@ if __name__ == '__main__':
     while True:
         ret_val, img = cam.read()
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        gray_small = cv2.resize(gray, (0, 0), fx=0.3, fy=0.3)
+
+        gray_small = cv2.resize(gray, (0, 0), fx=scale, fy=scale)
+
+        #wroooong
+        mid_col = int((gray_small.shape[0]*scale)/2)
+        mid_row = int((gray_small.shape[1]*scale)/2)
+
+        cv2.line(gray_small, (0, mid_row), (gray_small.shape[1], mid_row), 255, 2)
+        cv2.line(gray_small, (mid_col, 0), (mid_col, gray_small.shape[0]), 255, 2)
+
         cv2.imshow('my webcam', gray_small)
         key = cv2.waitKey(1) & 0xFF
 
