@@ -22,12 +22,7 @@ if __name__ == '__main__':
 
         gray_small = cv2.resize(gray, (0, 0), fx=scale, fy=scale)
 
-        #wroooong
-        mid_col = int((gray_small.shape[0]*scale)/2)
-        mid_row = int((gray_small.shape[1]*scale)/2)
-
-        cv2.line(gray_small, (0, mid_row), (gray_small.shape[1], mid_row), 255, 2)
-        cv2.line(gray_small, (mid_col, 0), (mid_col, gray_small.shape[0]), 255, 2)
+        cv2.drawMarker(gray_small, (int(gray_small.shape[1]/2), int(gray_small.shape[0]/2)), 255, cv2.MARKER_CROSS, gray_small.shape[1])
 
         cv2.imshow('my webcam', gray_small)
         key = cv2.waitKey(1) & 0xFF
