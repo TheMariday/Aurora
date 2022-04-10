@@ -5,7 +5,8 @@ from queue import Queue
 import time
 
 _sentinel = object()
-LED_COUNT = 64
+LED_COUNT = 512 + 64
+led_offset = 2560
 
 
 def show_webcam(cam, output_queue):
@@ -26,7 +27,7 @@ def show_webcam(cam, output_queue):
         ret_val, img = cam.read()
         #cv2.imshow('webcam raw', img)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        gray = cv2.blur(gray, (21, 21))
+        #gray = cv2.blur(gray, (21, 21))
 
         (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(gray)
         queue_data = (maxVal, maxLoc)
@@ -42,7 +43,7 @@ def show_webcam(cam, output_queue):
     cv2.destroyAllWindows()
 
 def set_led(c, led_index, brightness):
-    pixels = [(0, 0, 0)] * LED_COUNT
+    pixels = [(0, 0, 0)] * (LED_COUNT + led_offset)
     pixels[int(led_index)] = (brightness, brightness, brightness)
     c.put_pixels(pixels)
     c.put_pixels(pixels)
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     led_brightness = 0
     background_brightness = 0
 
-    client = opc.Client('localhost:7890')
+    client = opc.Client('raspberrypi:7890')
 
     set_led(client, 1, 255)
 
@@ -163,9 +164,10 @@ if __name__ == '__main__':
 
     csv_file = open(filename, 'w')
 
+
     try:
         start = time.time()
-        for led_index in range(0, LED_COUNT):
+        for led_index in range(led_offset, led_offset+LED_COUNT):
             set_led(client, led_index, led_value)
             time.sleep(latency_raw*2)
             q.queue.clear()
