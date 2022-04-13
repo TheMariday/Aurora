@@ -42,6 +42,7 @@ def show_webcam(cam, output_queue):
     output_queue.put(_sentinel)
     cv2.destroyAllWindows()
 
+
 def set_led(c, led_index, brightness):
     pixels = [(0, 0, 0)] * (LED_COUNT + led_offset)
     pixels[int(led_index)] = (brightness, brightness, brightness)

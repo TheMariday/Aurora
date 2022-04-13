@@ -36,7 +36,6 @@ class Camera:
     def get_rotation(self):
         return np.degrees(self.angle.x), np.degrees(self.angle.y), np.degrees(self.angle.z)
 
-
     def load_file(self, filename, detect_limit=200):
         file = open(filename, "r")
         self.LEDs = {}
@@ -77,11 +76,12 @@ class LED:
 
 class LED_Points:
 
-    def __init__(self):
+    def __init__(self, offset=0):
         self.data = {}
+        self.offset = offset
 
     def add(self, led_id, position):
-        self.data[led_id] = LED(position)
+        self.data[led_id+self.offset] = LED(position)
 
     def write(self, filename):
         f = open(filename, 'w')
@@ -101,10 +101,13 @@ class LED_Points:
                     self.data[led_id + 1] = LED(midpoint, "interpolated")
                     interpolated_count += 1
 
+        return interpolated_count
+
 
 angle_offset = 0 #-30.3
-angles = list(range(0, 360, 45))
+#distance = 1100 * 1.25
 distance = 1510
+#led_count = 6*8*64 + 64
 led_count = 5*8*64
 
 mtx = np.array([[1.15639183e+03, 0.00000000e+00, 9.39991762e+02],
@@ -114,23 +117,33 @@ dst = np.array([[0.09447224, - 0.23710961,  0.00037585, - 0.00044418,  0.1098414
 
 
 cameras = []
-for angle in angles:
-    filename = "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\calibrations\\calibration_20220407-%i.csv" % angle
+for i in range(0, 8):
+
+    #filename = "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\calibrations\\head 2\\calibration_%i.csv" % i
+    filename = "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\calibrations\\body\\calibration_%i.csv" % i
+    #angle = i*22.5
+    angle = i*45
     c = Camera(np.radians(angle+angle_offset), distance, mtx, dst)
     c.load_file(filename)
     cameras.append(c)
 
-worst_rmse = 1607811
-lowest_rmse = 1607811
+
+
+worst_rmse = 100000000000000000
+lowest_rmse = 100000000000000000
 
 for i in range(500):
 
+    #led_points = LED_Points(-5*8*64)
     led_points = LED_Points()
 
     for c in cameras:
-        c.set_jitter(0.001 * (1 - (i / 500.0)))
+        if i > 0:
+            c.set_jitter(0.001 * (1 - (i / 500.0)))
+        else:
+            c.set_jitter(0)
 
-    total_rmse = 0
+    total_rmse = []
 
     for led_id in range(led_count):
 
@@ -152,31 +165,28 @@ for i in range(500):
             intersection_points.append(intersection_a)
             intersection_points.append(intersection_b)
 
-
         midpoint = mathutils.Vector((0, 0, 0))
         for p in intersection_points:
             midpoint += p
         midpoint /= len(intersection_points)
 
-        rmse = 0
         for point in intersection_points:
             distance_to_midpoint = (point - midpoint).magnitude
-            rmse += (distance_to_midpoint) ** 2
+            total_rmse.append(distance_to_midpoint ** 2)
 
         #print("led %i rmse: %f" % (led_id, rmse))
-        total_rmse += rmse
         led_points.add(led_id, midpoint)
 
-
-    if total_rmse < lowest_rmse:
-        lowest_rmse = total_rmse
+    total_rmse_val = sum(total_rmse)/len(total_rmse)
+    if total_rmse_val < lowest_rmse:
+        lowest_rmse = total_rmse_val
         for c in cameras:
             c.apply_jitter()
 
         led_points.interpolate()
-        led_points.write("blenderPoints_optimised.txt")
+        led_points.write("bodyPoints.txt")
 
-    str = "%f, %f, " % (total_rmse, lowest_rmse)
+    str = "%f, %f, " % (total_rmse_val, lowest_rmse)
     for c in cameras:
         str += "%f,%f,%f," % (np.degrees(c.angle.x), np.degrees(c.angle.y), np.degrees(c.angle.z))
         str += "%f,%f,%f," % (c.position.x, c.position.y, c.position.z)
