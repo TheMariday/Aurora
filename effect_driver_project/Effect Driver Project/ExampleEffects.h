@@ -1,18 +1,6 @@
 #pragma once
 #include "Effect.h"
-#include "hsv2rgb.h"
-
-RGB HSV2RGB_Rainbow(HSV hsv)
-{
-	CHSV chsv;
-	chsv.hue = hsv.h * 255;
-	chsv.sat = hsv.s * 255;
-	chsv.val = hsv.v * 255;
-	CRGB crgb;
-	hsv2rgb_rainbow(chsv, crgb);
-	RGB rgb = { crgb.r, crgb.g, crgb.b };
-	return rgb;
-}
+#include "LED.h"
 
 
 class SolidColour : public Effect

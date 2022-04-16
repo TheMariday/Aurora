@@ -41,5 +41,14 @@
     <ClInclude Include="hsv2rgb.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="BasicEffects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LED.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

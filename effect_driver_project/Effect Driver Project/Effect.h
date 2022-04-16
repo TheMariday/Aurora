@@ -21,14 +21,16 @@ enum class EffectState
 class Effect
 {
 public:
-	Effect(timestamp t);
+	Effect(timestamp t = std::chrono::system_clock::now());
 	~Effect();
 
 	void Update(Harness& harness, timestamp t);
 
-	virtual void Render(Harness& harness, timestamp t) = 0;
+	virtual void Render(Harness& harness, timestamp t) {};
 
 	void AddDriver(std::function<void(timestamp t)> a);
+
+	void AddSubEffect(Effect e);
 
 	void Stop();
 
@@ -41,4 +43,6 @@ private:
 	timestamp m_startTime;
 
 	EffectState m_state = EffectState::READY;
+
+	std::vector<Effect> m_subEffects;
 };

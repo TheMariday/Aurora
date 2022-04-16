@@ -77,7 +77,7 @@ bool Cycle(T* pValue, timestamp now, T from, T to, timestamp start, duration per
 	{
 	case(CycleType::SINE):
 	{
-		v = from + (to - from) * static_cast<T>(std::sin(t * 3.14159 * 2) / 2 + 0.5f);
+		v = from + static_cast<T>((to - from) * (std::sin(t * 3.14159 * 2) / 2 + 0.5f));
 	}
 	break;
 	case(CycleType::RANDOM):

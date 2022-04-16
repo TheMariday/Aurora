@@ -95,3 +95,11 @@ std::vector<LED*> Harness::GetMap(std::string mapName)
 {
 	return m_maps[mapName];
 }
+
+void Harness::Black()
+{
+	for (LED& led : m_leds)
+	{
+		led.rgb = { 0, 0, 0 };
+	}
+}

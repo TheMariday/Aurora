@@ -150,10 +150,13 @@
     <ClCompile Include="LedHarness.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BasicEffects.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="ExampleEffects.h" />
     <ClInclude Include="hsv2rgb.h" />
+    <ClInclude Include="LED.h" />
     <ClInclude Include="LedHarness.h" />
+    <ClInclude Include="Mask.h" />
     <ClInclude Include="Metronome.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

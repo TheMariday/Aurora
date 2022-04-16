@@ -22,6 +22,8 @@ void Effect::Update(Harness& harness, timestamp t)
 	if (m_state != EffectState::RUNNING)
 		return;
 
+	for (Effect& effect : m_subEffects)
+		effect.Update(harness, t);
 
 	for (const Driver& driver : m_drivers)
 		driver(t);
@@ -32,6 +34,11 @@ void Effect::Update(Harness& harness, timestamp t)
 void Effect::AddDriver(std::function<void(timestamp t)> a)
 {
 	m_drivers.push_back(a);
+}
+
+void Effect::AddSubEffect(Effect e)
+{
+	m_subEffects.push_back(e);
 }
 
 void Effect::Stop()

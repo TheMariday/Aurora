@@ -55,17 +55,17 @@ struct CRGB
 	uint8_t b;
 };
 
-uint8_t scale8(uint8_t i, uint8_t scale)
+inline uint8_t scale8(uint8_t i, uint8_t scale)
 {
 	return i * (static_cast<float>(scale) / 256.0f);
 }
 
-uint8_t scale8_video_LEAVING_R1_DIRTY(uint8_t i, uint8_t scale)
+inline uint8_t scale8_video_LEAVING_R1_DIRTY(uint8_t i, uint8_t scale)
 {
 	return scale8(i, scale);
 }
 
-uint8_t scale8_video(uint8_t i, uint8_t scale)
+inline uint8_t scale8_video(uint8_t i, uint8_t scale)
 {
 	return (((int)i * (int)scale) >> 8) + ((i && scale) ? 1 : 0);
 }
@@ -91,7 +91,7 @@ uint8_t scale8_video(uint8_t i, uint8_t scale)
 #define K170 170
 #define K85  85
 
-void hsv2rgb_rainbow(const CHSV& hsv, CRGB& rgb)
+inline void hsv2rgb_rainbow(const CHSV& hsv, CRGB& rgb)
 {
 	// Yellow has a higher inherent brightness than
 	// any other color; 'pure' yellow is perceived to
