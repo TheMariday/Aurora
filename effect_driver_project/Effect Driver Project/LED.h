@@ -77,15 +77,15 @@ struct Loc
 
 inline int Distance(const Loc& a, const Loc& b)
 {
-	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2));
+	return static_cast<int>(sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2)));
 }
 
-inline RGB HSV2RGB(HSV& hsv)
+inline RGB HSV2RGB(HSV hsv)
 {
 	CHSV chsv;
-	chsv.hue = hsv.h * 255;
-	chsv.sat = hsv.s * 255;
-	chsv.val = hsv.v * 255;
+	chsv.hue = static_cast<uint8_t>(hsv.h * 255);
+	chsv.sat = static_cast<uint8_t>(hsv.s * 255);
+	chsv.val = static_cast<uint8_t>(hsv.v * 255);
 	CRGB crgb;
 	hsv2rgb_rainbow(chsv, crgb);
 	RGB rgb = { crgb.r, crgb.g, crgb.b };
@@ -98,7 +98,5 @@ struct LED
 
 	int index;
 
-	RGB rgb;
-
-	void SetHSV(HSV hsv) { rgb = HSV2RGB(hsv); }
+	HSV hsv;
 };

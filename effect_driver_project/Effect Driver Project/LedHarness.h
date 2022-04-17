@@ -20,8 +20,8 @@ public:
 	void Black()
 	{
 		for (LED& led : leds)
-			led.rgb = { 0,0,0 };
-		
+			led.hsv = {};
+
 	}
 
 private:

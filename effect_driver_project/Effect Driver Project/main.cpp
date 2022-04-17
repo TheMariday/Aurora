@@ -3,11 +3,8 @@
 #include <cmath>
 #include "BasicEffects.h"
 #include "Metronome.h"
-
-#define timestamp std::chrono::system_clock::time_point
-#define duration std::chrono::milliseconds
-#define duration_cast std::chrono::duration_cast<duration>
-
+#include "Texture.h"
+#include "utils.h"
 
 Loc GetRandomLoc(Harness* harness, bool backOnly = false)
 {
@@ -49,7 +46,7 @@ int main()
 
 	//effects.push_back(std::make_shared<Ripple>(&pose_left_hand, metronome.Beat(0), metronome.Beats(4), pose_left_hand.GetMarker("marker_left_hand"), HSV( 1.0f, 0.0f, 1.0f ), 4000, 100, false));
 
-	effects.push_back(std::make_shared<Orb>(&pose_t, metronome.Beat(0), metronome.Beats(4), pose_t.GetMarker("marker_left_hand"), pose_t.GetMarker("marker_right_hand"), HSV(1.0f, 1.0f, 1.0f), 300));
+	//effects.push_back(std::make_shared<Orb>(&pose_t, metronome.Beat(0), metronome.Beats(4), pose_t.GetMarker("marker_left_hand"), pose_t.GetMarker("marker_right_hand"), HSV(1.0f, 1.0f, 1.0f), 300));
 	/*
 	effects.push_back(std::make_shared<Ripple>(GetRandomLoc(led_harness, true), metronome.Beat(4),	metronome.Beats(1), 0.64f));
 	effects.push_back(std::make_shared<Ripple>(GetRandomLoc(led_harness, true), metronome.Beat(5),	metronome.Beats(1), 0.64f));
@@ -68,6 +65,8 @@ int main()
 		{
 			e->Update(frame_time);
 		}
+
+		Rainbow(&pose_t, pose_t.GetGroup("main"), { 0,0,0 }, y_axis);
 
 		if (pose_default.RenderToScreen(false, 0) == 27)
 			break;

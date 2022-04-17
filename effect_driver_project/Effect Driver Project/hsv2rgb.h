@@ -57,7 +57,7 @@ struct CRGB
 
 inline uint8_t scale8(uint8_t i, uint8_t scale)
 {
-	return i * (static_cast<float>(scale) / 256.0f);
+	return static_cast<uint8_t>(i * (static_cast<float>(scale) / 256.0f));
 }
 
 inline uint8_t scale8_video_LEAVING_R1_DIRTY(uint8_t i, uint8_t scale)
@@ -83,7 +83,6 @@ inline uint8_t scale8_video(uint8_t i, uint8_t scale)
 // This macro does its best to convince the compiler that
 // the variable is used in this location, to help control
 // code motion and de-duplication that would result in a slowdown.
-#define FORCE_REFERENCE(var)  asm volatile( "" : : "r" (var) )
 #define FORCE_REFERENCE(var)
 
 #define K255 255

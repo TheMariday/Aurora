@@ -5,13 +5,8 @@
 #include <functional>
 #include <vector>
 #include "LedHarness.h"
+#include "utils.h"
 
-#define timestamp std::chrono::system_clock::time_point
-#define duration std::chrono::milliseconds
-#define Duration_cast std::chrono::duration_cast<duration>
-#define Driver std::function<void(timestamp t)>
-#define MaxTimestamp std::chrono::time_point<std::chrono::system_clock>::max
-#define Now std::chrono::system_clock::now
 
 enum class EffectState
 {

@@ -76,16 +76,17 @@ std::vector<LED*> Harness::GetGroup(std::string groupName)
 
 int Harness::RenderToScreen(bool wait, float time)
 {
-	float scale = 0.3;
-	cv::Mat image = cv::Mat::zeros(2400 * scale, 3500 * scale, CV_8UC3);
+	float scale = 0.3f;
+	cv::Mat image = cv::Mat::zeros(static_cast<int>(2400 * scale), static_cast<int>(3500 * scale), CV_8UC3);
 	image.setTo(cv::Scalar(30, 30, 30));
 
 	for (LED* led : GetGroup("main"))
 	{
-		int u, v;
+		float u, v;
 
 		Loc loc = GetLoc(led);
-		cv::Vec3b col = cv::Vec3b(led->rgb.b, led->rgb.g, led->rgb.r);
+		RGB rgb = HSV2RGB(led->hsv);
+		cv::Vec3b col = cv::Vec3b(rgb.b, rgb.g, rgb.r);
 
 		u = (-loc.z * scale) + image.rows / 2;
 
@@ -94,14 +95,14 @@ int Harness::RenderToScreen(bool wait, float time)
 		if (loc.y > 0)
 			v = (loc.x + 2700) * scale;
 
-		cv::rectangle(image, cv::Rect(v, u, 2, 2), col);
+		cv::rectangle(image, cv::Rect(static_cast<int>(v), static_cast<int>(u), 2, 2), col);
 
 		v = (-loc.y + 200) * scale;
 
 		if (loc.x > 0)
 			v = (loc.y + 1800) * scale;
 
-		cv::rectangle(image, cv::Rect(v, u, 2, 2), col);
+		cv::rectangle(image, cv::Rect(static_cast<int>(v), static_cast<int>(u), 2, 2), col);
 	}
 
 	std::stringstream ss;
@@ -111,6 +112,4 @@ int Harness::RenderToScreen(bool wait, float time)
 
 	imshow("Suit view", image);
 	return cv::waitKey(wait ? 0 : 30);
-
-
 }

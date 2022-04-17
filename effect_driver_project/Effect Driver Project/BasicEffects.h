@@ -2,6 +2,7 @@
 #include "Effect.h"
 #include "Mask.h"
 #include "Metronome.h"
+#include "Easer.h"
 
 class LocalisedFire : public Effect
 {
@@ -20,10 +21,9 @@ public:
 
 	void Render(Harness* harness, timestamp t) override
 	{
-		RGB rgb = HSV2RGB(hsv);
 		for (LED* pLED : OrbMask(harness, harness->GetGroup("main"), m_center, m_diameter))
 		{
-			pLED->rgb = rgb;
+			pLED->hsv = hsv;
 		}
 	}
 
@@ -51,10 +51,9 @@ public:
 
 	void Render(Harness* harness, timestamp t) override
 	{
-		RGB rgb = HSV2RGB(m_hsv);
 		for (LED* pLED : OrbMask(harness, harness->GetGroup("main"), m_center, m_diameter))
 		{
-			pLED->rgb = rgb;
+			pLED->hsv = m_hsv;
 		}
 	}
 
@@ -85,10 +84,9 @@ public:
 
 	void Render(Harness* harness, timestamp t) override
 	{
-		RGB rgb = HSV2RGB(m_hsv);
 
 		for (LED* pLED : RingMask(harness, harness->GetGroup("main"), m_center, m_diameter, m_ring_width))
-			pLED->rgb = rgb;
+			pLED->hsv = m_hsv;
 	}
 
 	Loc m_center;
@@ -96,5 +94,11 @@ public:
 	int m_ring_width = 100;
 	HSV m_hsv = { 1.0f, 1.0f, 1.0f };
 
+private:
+};
+
+class Rainbow
+{
+public:
 private:
 };

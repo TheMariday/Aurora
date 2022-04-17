@@ -35,9 +35,6 @@
     <ClInclude Include="Effect.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExampleEffects.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="hsv2rgb.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -49,6 +46,15 @@
     </ClInclude>
     <ClInclude Include="LED.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Easer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
