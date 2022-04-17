@@ -21,15 +21,15 @@ Loc GetRandomLoc(Harness* harness, bool backOnly = false)
 int main()
 {
 	LedBuffer buffer;
-	Harness pose_default =		Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions.csv");
-	Harness pose_left_hand =	Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions_left_hand.csv");
-	Harness pose_t =			Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions_t_pose.csv");
+	Harness pose_default = Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions.csv");
+	Harness pose_left_hand = Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions_left_hand.csv");
+	Harness pose_t = Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions_t_pose.csv");
 
 	pose_default.RenderToScreen(); // this will wait for user to press a key
 
 	timestamp now = std::chrono::system_clock::now();
 
-	Metronome metronome(now, 88);
+	Metronome metronome(now, 88.02171202, -4);
 
 	Loc leftEye = pose_default.GetMarker("eye_left");
 
@@ -42,7 +42,7 @@ int main()
 		});
 	*/
 
-	std::vector<std::shared_ptr<Effect>> effects; 
+	std::vector<std::shared_ptr<Effect>> effects;
 
 	//effects.push_back(std::make_shared<Ripple>(&pose_left_hand, metronome.Beat(0), metronome.Beats(4), pose_left_hand.GetMarker("marker_left_hand"), HSV( 1.0f, 0.0f, 1.0f ), 4000, 100, false));
 
@@ -58,17 +58,36 @@ int main()
 	effects.push_back(std::make_shared<Ripple>(GetRandomLoc(led_harness, true), metronome.Beat(9),	metronome.Beats(1), 0.64f));
 	effects.push_back(std::make_shared<Ripple>(GetRandomLoc(led_harness, true), metronome.Beat(10),	metronome.Beats(1), 0.64f));
 	*/
+
+	//std::shared_ptr<RainbowSpin> a = std::make_shared<RainbowSpin>(&pose_t, pose_t.GetMarker("marker_chest"), metronome.Beat(1), metronome.Beats(5), y_axis, 5);
+	//a.mask()
+	//effects.push_back(a);
+
+	for (int i = 4; i < 144; ++i)
+	{
+		HSV col = { 1.0f, 1.0f, 1.0f };
+
+		if (i % 4 == 0)
+			col.h = 0.66f;
+
+		if(i%2==0)
+			effects.push_back(std::make_shared<Solid>(&pose_default, metronome.Beat(i), metronome.Beats(1), col));
+	}
+	
+
 	while (true)
 	{
 		timestamp frame_time = std::chrono::system_clock::now();
 		for (std::shared_ptr<Effect> e : effects)
-		{
 			e->Update(frame_time);
-		}
 
-		Rainbow(&pose_t, pose_t.GetGroup("main"), { 0,0,0 }, y_axis);
 
-		if (pose_default.RenderToScreen(false, 0) == 27)
+		// remove dead effects
+		effects.erase(std::remove_if(effects.begin(), effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), effects.end());
+
+
+		int beat = metronome.GetBeat(frame_time);
+		if (pose_default.RenderToScreen(false, beat) == 27)
 			break;
 
 		buffer.Black();

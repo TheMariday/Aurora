@@ -41,7 +41,7 @@ public:
 
 	std::vector<LED*> GetGroup(std::string groupName);
 
-	int RenderToScreen(bool wait = true, float time = 0.0f);
+	int RenderToScreen(bool wait = true, int beat = 0);
 
 private:
 	std::map<std::string, std::vector<LED*>> m_group;

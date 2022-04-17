@@ -3,6 +3,77 @@
 #include "Mask.h"
 #include "Metronome.h"
 #include "Easer.h"
+#include "Texture.h"
+
+
+class Twinkle : public Effect
+{
+public:
+	Twinkle(Harness* harness, timestamp start, duration dur, HSV hsv, float prob, std::string group = "main") : Effect(harness, start, dur)
+	{
+		m_hsv = hsv;
+		m_group = group;
+		m_prob = prob;
+	}
+
+	void Render(timestamp t) override
+	{
+		int intProb = static_cast<int>(m_prob * RAND_MAX);
+
+		for (LED* pLED : GetHarness()->GetGroup(m_group))
+			if(rand() < m_prob)
+				pLED->hsv = m_hsv;
+		Stop();
+	}
+private:
+	HSV m_hsv;
+	std::string m_group;
+	float m_prob;
+};
+
+class Flash : public Effect
+{
+public:
+	Flash(Harness* harness, timestamp start, HSV hsv, int beat = -1, std::string group = "main") : Effect(harness, start)
+	{
+		m_hsv = hsv;
+		m_group = group;
+		m_beat = beat;
+	}
+
+	void Render(timestamp t) override
+	{
+		if (m_beat >= 0)
+			std::cout << "beat: " << m_beat << std::endl;
+
+		for (LED* pLED : GetHarness()->GetGroup(m_group))
+			pLED->hsv = m_hsv;
+		Stop();
+	}
+private:
+	HSV m_hsv;
+	std::string m_group;
+	int m_beat;
+};
+
+class Solid : public Effect
+{
+public:
+	Solid(Harness* harness, timestamp start, duration dur, HSV hsv, std::string group = "main") : Effect(harness, start, dur)
+	{
+		m_hsv = hsv;
+		m_group = group;
+	}
+
+	void Render(timestamp t) override
+	{
+		for (LED* pLED : GetHarness()->GetGroup(m_group))
+			pLED->hsv = m_hsv;
+	}
+private:
+	HSV m_hsv;
+	std::string m_group;
+};
 
 class LocalisedFire : public Effect
 {
@@ -19,9 +90,9 @@ public:
 			});
 	};
 
-	void Render(Harness* harness, timestamp t) override
+	void Render(timestamp t) override
 	{
-		for (LED* pLED : OrbMask(harness, harness->GetGroup("main"), m_center, m_diameter))
+		for (LED* pLED : OrbMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_diameter))
 		{
 			pLED->hsv = hsv;
 		}
@@ -49,9 +120,9 @@ public:
 			});
 	};
 
-	void Render(Harness* harness, timestamp t) override
+	void Render(timestamp t) override
 	{
-		for (LED* pLED : OrbMask(harness, harness->GetGroup("main"), m_center, m_diameter))
+		for (LED* pLED : OrbMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_diameter))
 		{
 			pLED->hsv = m_hsv;
 		}
@@ -76,16 +147,16 @@ public:
 			[this, start, dur, maxSize, fade](timestamp t) {
 				Ease<int>(&m_diameter, t, 0, maxSize, start, dur, EaseType::LINEAR);
 				Ease<int>(&m_diameter, t, -m_ring_width, maxSize - m_ring_width, start, dur, EaseType::LINEAR);
-				if(fade)
+				if (fade)
 					Ease<float>(&this->m_hsv.v, t, 1, 0, start, dur, EaseType::LINEAR);
 
 			});
 	}
 
-	void Render(Harness* harness, timestamp t) override
+	void Render(timestamp t) override
 	{
 
-		for (LED* pLED : RingMask(harness, harness->GetGroup("main"), m_center, m_diameter, m_ring_width))
+		for (LED* pLED : RingMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_diameter, m_ring_width))
 			pLED->hsv = m_hsv;
 	}
 
@@ -97,8 +168,52 @@ public:
 private:
 };
 
-class Rainbow
+class RainbowSpin : public Effect
 {
 public:
+	RainbowSpin(Harness* harness, Loc center, timestamp start, duration dur, axis ax, float cycles = 1.0f) : Effect(harness, start, dur)
+	{
+		m_center = center;
+		m_axis = ax;
+		AddDriver([this, start, dur, cycles](timestamp t) {
+			Ease<float>(&this->m_offset, t, 0.0f, cycles, start, dur);
+			});
+	}
+
+	void Render(timestamp t) override
+	{
+		Rainbow(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_offset, m_axis);
+	}
+
 private:
+	float m_offset = 0.0f;
+	Loc m_center;
+	axis m_axis;
+};
+
+class RainbowBallSpin : public Effect
+{
+public:
+	RainbowBallSpin(Harness* harness, Loc center, timestamp start, duration dur, axis ax, float cycles = 1.0f, int ballDiameter = 300) : Effect(harness, start, dur)
+	{
+		m_center = center;
+		m_axis = ax;
+		m_ballDiameter = ballDiameter;
+
+		AddDriver([this, start, dur, cycles](timestamp t) {
+			Ease<float>(&this->m_offset, t, 0.0f, cycles, start, dur);
+			});
+	}
+
+	void Render(timestamp t) override
+	{
+		std::vector<LED*> leds = OrbMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_ballDiameter);
+		Rainbow(GetHarness(), leds, m_center, m_offset, m_axis);
+	}
+
+private:
+	float m_offset = 0.0f;
+	Loc m_center;
+	axis m_axis;
+	int m_ballDiameter = 0;
 };

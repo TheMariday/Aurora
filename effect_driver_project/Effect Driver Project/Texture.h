@@ -4,14 +4,15 @@
 #include <vector>
 #include "utils.h"
 #include "LED.h"
+#include <cmath>
 
-void Rainbow(Harness* h, std::vector<LED*> leds, Loc center, axis ax = x_axis, bool flip=false)
+void Rainbow(Harness* h, std::vector<LED*> leds, Loc center, float offset = 0.0f, axis ax = x_axis, bool flip = false)
 {
 	for (LED* led : leds)
 	{
 		Loc loc = h->GetLoc(led);
 
-		double radAngle;
+		double radAngle = 0;
 
 		switch (ax)
 		{
@@ -26,7 +27,7 @@ void Rainbow(Harness* h, std::vector<LED*> leds, Loc center, axis ax = x_axis, b
 			break;
 		}
 
-		double normAngle = radAngle / (M_PI * 2);
+		double normAngle = fmod(static_cast<float>(radAngle / (M_PI * 2)) + offset, 1.0f);
 		if (flip)
 			normAngle = 1 - normAngle;
 

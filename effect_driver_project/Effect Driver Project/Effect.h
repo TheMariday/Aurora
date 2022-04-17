@@ -26,7 +26,7 @@ public:
 
 	void Update(timestamp t);
 
-	virtual void Render(Harness* harness, timestamp t) {};
+	virtual void Render(timestamp t) {};
 
 	void AddDriver(std::function<void(timestamp t)> a);
 
@@ -35,6 +35,10 @@ public:
 	void Stop();
 
 	timestamp GetStartTime();
+
+	bool HasStopped();
+
+	Harness* GetHarness() { return m_harness; };
 
 private:
 

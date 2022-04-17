@@ -55,6 +55,10 @@ Loc Harness::GetLoc(LED* led)
 
 Loc Harness::GetMarker(std::string groupName)
 {
+
+	if (groupName == "center")
+		return { 0,0,0 };
+
 	std::vector<LED*> leds = GetGroup(groupName);
 	if (leds.size() == 0)
 	{
@@ -74,7 +78,7 @@ std::vector<LED*> Harness::GetGroup(std::string groupName)
 }
 
 
-int Harness::RenderToScreen(bool wait, float time)
+int Harness::RenderToScreen(bool wait, int beat)
 {
 	float scale = 0.3f;
 	cv::Mat image = cv::Mat::zeros(static_cast<int>(2400 * scale), static_cast<int>(3500 * scale), CV_8UC3);
@@ -106,7 +110,7 @@ int Harness::RenderToScreen(bool wait, float time)
 	}
 
 	std::stringstream ss;
-	ss << "frame: " << m_frame << " time: " << time;
+	ss << "frame: " << m_frame << " beat: " << beat;
 	cv::putText(image, ss.str(), cv::Point(10, 30), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0));
 	m_frame += 1;
 

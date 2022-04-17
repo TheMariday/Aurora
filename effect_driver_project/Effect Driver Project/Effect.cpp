@@ -35,7 +35,7 @@ void Effect::Update(timestamp t)
 	for (const Driver& driver : m_drivers)
 		driver(t);
 
-	Render(m_harness, t);
+	Render(t);
 }
 
 void Effect::AddDriver(std::function<void(timestamp t)> a)
@@ -51,6 +51,11 @@ void Effect::AddSubEffect(Effect e)
 void Effect::Stop()
 {
 	m_state = EffectState::STOPPED;
+}
+
+bool Effect::HasStopped()
+{
+	return m_state == EffectState::STOPPED;
 }
 
 timestamp Effect::GetStartTime()
