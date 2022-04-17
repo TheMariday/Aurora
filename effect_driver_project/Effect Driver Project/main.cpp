@@ -47,7 +47,9 @@ int main()
 
 	std::vector<std::shared_ptr<Effect>> effects; 
 
-	effects.push_back(std::make_shared<Ripple>(&pose_left_hand, metronome.Beat(0), metronome.Beats(4), pose_left_hand.GetMarker("marker_left_hand"), HSV( 1.0f, 0.0f, 1.0f ), 4000, 100, false));
+	//effects.push_back(std::make_shared<Ripple>(&pose_left_hand, metronome.Beat(0), metronome.Beats(4), pose_left_hand.GetMarker("marker_left_hand"), HSV( 1.0f, 0.0f, 1.0f ), 4000, 100, false));
+
+	effects.push_back(std::make_shared<Orb>(&pose_t, metronome.Beat(0), metronome.Beats(4), pose_t.GetMarker("marker_left_hand"), pose_t.GetMarker("marker_right_hand"), HSV(1.0f, 1.0f, 1.0f), 300));
 	/*
 	effects.push_back(std::make_shared<Ripple>(GetRandomLoc(led_harness, true), metronome.Beat(4),	metronome.Beats(1), 0.64f));
 	effects.push_back(std::make_shared<Ripple>(GetRandomLoc(led_harness, true), metronome.Beat(5),	metronome.Beats(1), 0.64f));

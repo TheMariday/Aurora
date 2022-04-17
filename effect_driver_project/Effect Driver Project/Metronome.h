@@ -122,7 +122,7 @@ bool Ease(T* pValue, timestamp now, T from, T to, timestamp start, timestamp end
 template <class T>
 bool Ease(T* pValue, timestamp now, T from, T to, timestamp start, duration d, EaseType easeType = EaseType::LINEAR, MixType mixType = MixType::NORMAL, bool extend = true)
 {
-	T v = 0;
+	T v;
 
 	if (now < start + d && now > start)
 	{

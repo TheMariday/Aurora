@@ -25,7 +25,9 @@ struct RGB
 
 struct HSV
 {
+	HSV() = default;
 	HSV(float a, float b, float c) : h(a), s(b), v(c) {};
+
 	float h = 0;
 	float s = 0;
 	float v = 0;
@@ -33,9 +35,15 @@ struct HSV
 
 struct Loc
 {
+
 	Loc operator+(const Loc& b) const
 	{
 		return { x + b.x, y + b.y, z + b.z };
+	}
+
+	Loc operator-(const Loc& b) const
+	{
+		return { x - b.x, y - b.y, z - b.z };
 	}
 
 	Loc& operator+=(const Loc& b) {
@@ -57,6 +65,11 @@ struct Loc
 		return { static_cast<int>(x / b), static_cast<int>(y / b), static_cast<int>(z / b) };
 	}
 
+	Loc operator*(const float& b) const
+	{
+		return { static_cast<int>(x * b), static_cast<int>(y * b), static_cast<int>(z * b) };
+	}
+
 	int x = 0;
 	int y = 0;
 	int z = 0;
@@ -67,7 +80,7 @@ inline int Distance(const Loc& a, const Loc& b)
 	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2));
 }
 
-inline RGB HSV2RGB(HSV hsv)
+inline RGB HSV2RGB(HSV& hsv)
 {
 	CHSV chsv;
 	chsv.hue = hsv.h * 255;

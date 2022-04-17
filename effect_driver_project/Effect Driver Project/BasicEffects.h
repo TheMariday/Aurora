@@ -33,6 +33,37 @@ public:
 };
 
 
+class Orb : public Effect
+{
+public:
+	Orb(Harness* harness, timestamp start, duration dur, Loc startLoc, Loc endLoc, HSV color, int diameter, bool fade = false) : Effect(harness, start, dur)
+	{
+		m_diameter = diameter;
+		m_hsv = color;
+
+		AddDriver(
+			[this, diameter, startLoc, endLoc, start, dur](timestamp t) {
+				Ease<int>(&m_center.x, t, startLoc.x, endLoc.x, start, dur);
+				Ease<int>(&m_center.y, t, startLoc.y, endLoc.y, start, dur);
+				Ease<int>(&m_center.z, t, startLoc.z, endLoc.z, start, dur);
+			});
+	};
+
+	void Render(Harness* harness, timestamp t) override
+	{
+		RGB rgb = HSV2RGB(m_hsv);
+		for (LED* pLED : OrbMask(harness, harness->GetGroup("main"), m_center, m_diameter))
+		{
+			pLED->rgb = rgb;
+		}
+	}
+
+	HSV m_hsv;
+	Loc m_center;
+	int m_diameter;
+};
+
+
 class Ripple : public Effect
 {
 public:
