@@ -8,10 +8,10 @@ class SolidColour : public Effect
 public:
 	SolidColour(timestamp t) : Effect(t) {};
 
-	void Render(Harness& harness, timestamp t) override
+	void Render(Harness* harness, timestamp t) override
 	{
 		RGB rgb = HSV2RGB_Rainbow(hsv);
-		for (LED* pLED : harness.GetMap("eyes"))
+		for (LED* pLED : harness->GetMap("eyes"))
 		{
 			pLED->rgb = rgb;
 		}

@@ -6,67 +6,64 @@
 class LocalisedFire : public Effect
 {
 public:
-	LocalisedFire(Loc center, int diameter = 120, int diameterNoise = 50, float hue = 0) : Effect()
+	LocalisedFire(Harness* harness, Loc center, int diameter = 120, int diameterNoise = 50, float hue = 0) : Effect(harness)
 	{
-		orbMask.center = center;
+		m_center = center;
+		m_diameter = diameter;
 
 		AddDriver(
 			[this, diameter, diameterNoise, hue](timestamp t) {
-				Cycle<int>(&this->orbMask.diameter, t, diameter, diameter + diameterNoise, this->GetStartTime(), std::chrono::milliseconds(1), CycleType::RANDOM);
+				Cycle<int>(&this->m_diameter, t, diameter, diameter + diameterNoise, this->GetStartTime(), std::chrono::milliseconds(1), CycleType::RANDOM);
 				Cycle<float>(&this->hsv.h, t, hue, hue + 0.1f, this->GetStartTime(), std::chrono::milliseconds(1), CycleType::RANDOM);
 			});
 	};
 
-	void Render(Harness& harness, timestamp t) override
+	void Render(Harness* harness, timestamp t) override
 	{
 		RGB rgb = HSV2RGB(hsv);
-		for (LED* pLED : orbMask.GetMask(harness.GetMap()))
+		for (LED* pLED : OrbMask(harness, harness->GetGroup("main"), m_center, m_diameter))
 		{
 			pLED->rgb = rgb;
 		}
 	}
 
-	OrbMask orbMask;
 	HSV hsv = { 1.0f, 1.0f, 1.0f };
+	Loc m_center;
+	int m_diameter;
 };
 
 
 class Ripple : public Effect
 {
 public:
-	Ripple(Loc center, timestamp start, duration end, float hue) : Effect()
+	Ripple(Harness* harness, timestamp start, duration dur, Loc center, HSV color, int maxSize, int ringWidth, bool fade) : Effect(harness, start, dur)
 	{
-		outerOrb.center = center;
-		innerOrb.center = center;
-		hsv.h = hue;
+		m_center = center;
+		m_hsv = color;
+		m_ring_width = ringWidth;
 
 		AddDriver(
-			[this, start, end, hue](timestamp t) {
-				Ease<int>(&this->outerOrb.diameter, t, 0, this->size, start, end, EaseType::LINEAR);
-				Ease<int>(&this->innerOrb.diameter, t, -ring_width, this->size - ring_width, start, end, EaseType::LINEAR);
-				Ease<float>(&this->brightness, t, 1, 0, start, end, EaseType::LINEAR);
-				if(t > start + end) Stop();
-			});
-	};
+			[this, start, dur, maxSize, fade](timestamp t) {
+				Ease<int>(&m_diameter, t, 0, maxSize, start, dur, EaseType::LINEAR);
+				Ease<int>(&m_diameter, t, -m_ring_width, maxSize - m_ring_width, start, dur, EaseType::LINEAR);
+				if(fade)
+					Ease<float>(&this->m_hsv.v, t, 1, 0, start, dur, EaseType::LINEAR);
 
-	void Render(Harness& harness, timestamp t) override
-	{
-		RGB rgb = HSV2RGB(hsv);
-		std::vector<LED*> innerMask = innerOrb.GetMask(harness.GetMap());
-		for (LED* pLED : outerOrb.GetMask(harness.GetMap()))
-		{
-			bool inRing = std::find(innerMask.begin(), innerMask.end(), pLED) == innerMask.end();
-			
-			if(inRing)
-				pLED->rgb = rgb * brightness;
-		}
+			});
 	}
 
-	int diameter = 0;
-	int ring_width = 100;
-	int size = 1000;
-	float brightness = 1.0f;
-	OrbMask outerOrb;
-	OrbMask innerOrb;
-	HSV hsv = { 1.0f, 1.0f, 1.0f };
+	void Render(Harness* harness, timestamp t) override
+	{
+		RGB rgb = HSV2RGB(m_hsv);
+
+		for (LED* pLED : RingMask(harness, harness->GetGroup("main"), m_center, m_diameter, m_ring_width))
+			pLED->rgb = rgb;
+	}
+
+	Loc m_center;
+	int m_diameter = 0;
+	int m_ring_width = 100;
+	HSV m_hsv = { 1.0f, 1.0f, 1.0f };
+
+private:
 };

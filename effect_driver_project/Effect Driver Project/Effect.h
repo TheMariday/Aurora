@@ -10,6 +10,8 @@
 #define duration std::chrono::milliseconds
 #define Duration_cast std::chrono::duration_cast<duration>
 #define Driver std::function<void(timestamp t)>
+#define MaxTimestamp std::chrono::time_point<std::chrono::system_clock>::max
+#define Now std::chrono::system_clock::now
 
 enum class EffectState
 {
@@ -21,12 +23,15 @@ enum class EffectState
 class Effect
 {
 public:
-	Effect(timestamp t = std::chrono::system_clock::now());
+	Effect(Harness* harness, timestamp start = Now(), timestamp end = MaxTimestamp());
+
+	Effect(Harness* harness, timestamp start, duration dur);
+
 	~Effect();
 
-	void Update(Harness& harness, timestamp t);
+	void Update(timestamp t);
 
-	virtual void Render(Harness& harness, timestamp t) {};
+	virtual void Render(Harness* harness, timestamp t) {};
 
 	void AddDriver(std::function<void(timestamp t)> a);
 
@@ -38,9 +43,11 @@ public:
 
 private:
 
-	std::vector<Driver> m_drivers;
-
 	timestamp m_startTime;
+	timestamp m_endTime;
+	Harness* m_harness;
+
+	std::vector<Driver> m_drivers;
 
 	EffectState m_state = EffectState::READY;
 

@@ -8,18 +8,9 @@
 #include <sstream>
 
 
-Harness::Harness(int max_leds)
+Harness::Harness(LedBuffer* ledBuffer, std::string calibrationFile) : m_led_buffer(ledBuffer)
 {
-	m_leds.resize(max_leds);
-}
-
-Harness::~Harness()
-{
-}
-
-void Harness::LoadCalibration(std::string filename)
-{
-	std::ifstream file(filename);
+	std::ifstream file(calibrationFile);
 	if (!file.is_open()) return;
 
 	std::string line, word;
@@ -33,18 +24,55 @@ void Harness::LoadCalibration(std::string filename)
 			row.push_back(word);
 
 		int index = std::stoi(row[0]);
-		m_leds.at(index).loc.x = std::stoi(row[1]); // this is essentially capping the resolution to 1mm but for the sake of int math speed I'm going to do it
-		m_leds.at(index).loc.y = std::stoi(row[2]);
-		m_leds.at(index).loc.z = std::stoi(row[3]);
+		Loc loc = { std::stoi(row[1]) , std::stoi(row[2]) , std::stoi(row[3]) };
+
+		LED* pLED = m_led_buffer->GetLed(index);
+		m_loc[pLED] = loc;
 
 		for (int i = 4; i < row.size(); ++i)
-			m_maps[row[i]].push_back(&m_leds.at(index));
-
+		{
+			std::string groupName = row[i];
+			m_group[groupName].push_back(pLED);
+		}
 	}
 
 	file.close();
-
 }
+
+Harness::~Harness()
+{
+}
+
+Loc Harness::GetLoc(LED* led)
+{
+	if (m_loc.find(led) == m_loc.end())
+	{
+		std::cout << "cannot find led location" << std::endl;
+	}
+	
+	return m_loc.at(led);
+}
+
+Loc Harness::GetMarker(std::string groupName)
+{
+	std::vector<LED*> leds = GetGroup(groupName);
+	if (leds.size() == 0)
+	{
+		std::cout << "GetMarker found zero markers with name " << groupName << std::endl;
+	}
+	return GetLoc(leds.at(0));
+}
+
+std::vector<LED*> Harness::GetGroup(std::string groupName)
+{
+	if (m_group.find(groupName) == m_group.end())
+	{
+		std::cout << "GetGroup found zero groups with name " << groupName << std::endl;
+	}
+	
+	return m_group.at(groupName);
+}
+
 
 int Harness::RenderToScreen(bool wait, float time)
 {
@@ -52,25 +80,26 @@ int Harness::RenderToScreen(bool wait, float time)
 	cv::Mat image = cv::Mat::zeros(2400 * scale, 3500 * scale, CV_8UC3);
 	image.setTo(cv::Scalar(30, 30, 30));
 
-	for (const LED& led : m_leds)
+	for (LED* led : GetGroup("main"))
 	{
 		int u, v;
 
-		u = (-led.loc.z * scale) + image.rows / 2;
+		Loc loc = GetLoc(led);
+		cv::Vec3b col = cv::Vec3b(led->rgb.b, led->rgb.g, led->rgb.r);
 
+		u = (-loc.z * scale) + image.rows / 2;
 
-		v = (led.loc.x + 1000) * scale;
+		v = (loc.x + 1000) * scale;
 
-		if (led.loc.y > 0)
-			v = (led.loc.x + 2700) * scale;
-		cv::Vec3b col = cv::Vec3b(led.rgb.b, led.rgb.g, led.rgb.r);
+		if (loc.y > 0)
+			v = (loc.x + 2700) * scale;
 
 		cv::rectangle(image, cv::Rect(v, u, 2, 2), col);
 
-		v = (-led.loc.y + 200) * scale;
+		v = (-loc.y + 200) * scale;
 
-		if (led.loc.x > 0)
-			v = (led.loc.y + 1800) * scale;
+		if (loc.x > 0)
+			v = (loc.y + 1800) * scale;
 
 		cv::rectangle(image, cv::Rect(v, u, 2, 2), col);
 	}
@@ -84,22 +113,4 @@ int Harness::RenderToScreen(bool wait, float time)
 	return cv::waitKey(wait ? 0 : 30);
 
 
-}
-
-LED* Harness::GetLed(int index)
-{
-	return nullptr;
-}
-
-std::vector<LED*> Harness::GetMap(std::string mapName)
-{
-	return m_maps[mapName];
-}
-
-void Harness::Black()
-{
-	for (LED& led : m_leds)
-	{
-		led.rgb = { 0, 0, 0 };
-	}
 }

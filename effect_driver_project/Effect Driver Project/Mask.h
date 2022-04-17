@@ -1,29 +1,33 @@
 #pragma once
 #include "Effect.h"
 
-class Mask
+std::vector<LED*> OrbMask(Harness* harness, std::vector<LED*> leds, Loc center, int diameter, bool inner = true)
 {
+	std::vector<LED*> masked;
 
-	virtual std::vector<LED*> GetMask(std::vector<LED*> leds, bool invert = false) = 0;
-};
+	if (diameter < 0) return masked;
 
-struct OrbMask : public Mask
-{
-	std::vector<LED*> GetMask(std::vector<LED*> leds, bool invert = false)
+	for (LED* led : leds)
 	{
-		std::vector<LED*> masked;
+		Loc loc = harness->GetLoc(led);
 
-		if (diameter < 0) return masked;
-
-		for (LED* led : leds)
+		int distance = Distance(loc, center);
+		if (inner)
 		{
-			int distance = Distance(led->loc, center);
 			if (distance < diameter / 2)
 				masked.emplace_back(led);
 		}
-		return masked;
+		else
+		{
+			if (distance > diameter / 2)
+				masked.emplace_back(led);
+		}
 	}
+	return masked;
+}
 
-	Loc center;
-	int diameter;
-};
+std::vector<LED*> RingMask(Harness* harness, std::vector<LED*> leds, Loc center, int diameter, int ringWidth)
+{
+	std::vector<LED*> ringMask = OrbMask(harness, leds, center, diameter);
+	return OrbMask(harness, ringMask, center, diameter - ringWidth, false);
+}

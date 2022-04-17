@@ -19,12 +19,13 @@ struct RGB
 
 	RGB operator* (float f)
 	{
-		return { static_cast<int>(static_cast<float>(r) * f), static_cast<int>(static_cast<float>(g) * f), static_cast<int>(static_cast<float>(b) * f )};
+		return { static_cast<int>(static_cast<float>(r) * f), static_cast<int>(static_cast<float>(g) * f), static_cast<int>(static_cast<float>(b) * f) };
 	}
 };
 
 struct HSV
 {
+	HSV(float a, float b, float c) : h(a), s(b), v(c) {};
 	float h = 0;
 	float s = 0;
 	float v = 0;
@@ -32,6 +33,30 @@ struct HSV
 
 struct Loc
 {
+	Loc operator+(const Loc& b) const
+	{
+		return { x + b.x, y + b.y, z + b.z };
+	}
+
+	Loc& operator+=(const Loc& b) {
+		x += b.x;
+		y += b.y;
+		z += b.z;
+		return *this;
+	}
+
+	Loc& operator/=(const int& b) {
+		x /= b;
+		y /= b;
+		z /= b;
+		return *this;
+	}
+
+	Loc operator/(const float& b) const
+	{
+		return { static_cast<int>(x / b), static_cast<int>(y / b), static_cast<int>(z / b) };
+	}
+
 	int x = 0;
 	int y = 0;
 	int z = 0;
@@ -56,8 +81,11 @@ inline RGB HSV2RGB(HSV hsv)
 
 struct LED
 {
-	RGB rgb;
-	Loc loc;
+	LED(int i) { index = i; };
 
-	bool mapped = false;
+	int index;
+
+	RGB rgb;
+
+	void SetHSV(HSV hsv) { rgb = HSV2RGB(hsv); }
 };
