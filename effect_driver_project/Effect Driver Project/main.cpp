@@ -41,23 +41,24 @@ int main()
 
 	std::vector<std::shared_ptr<Effect>> effects;
 
+
 	{
 		//	0	
 		{
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(0), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
-			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(1), tap.Beats(3), GetRandomLoc(&pose_t, true), RED));
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(1), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(2), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
-			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(2.5), tap.Beats(3), GetRandomLoc(&pose_t, true), RED));
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(2.5), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(3), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
-			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(3.5), tap.Beats(3), GetRandomLoc(&pose_t, true), RED));
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(3.5), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 		}
 
 		//	4	like a small boat
 		{
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(4), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
-			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(5), tap.Beats(3), GetRandomLoc(&pose_t, true), RED));
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(5), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(6), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
-			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(7), tap.Beats(3), GetRandomLoc(&pose_t, true), RED));
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(7), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 
 			{ // blue hand orb
 				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(6), tap.Beat(13));
@@ -75,6 +76,155 @@ int main()
 				effects.push_back(orbEffect);
 			}
 
+		}
+		//	8 on the oc-
+		{
+
+		}
+		//	12	-an, sending big wav-
+		{
+		}
+		// 16 -es into mot-
+		{
+		}
+		// 20 -ion, like how a single
+		{
+		}
+		// 24 word can make a heart o-
+		{
+			auto heartEffect = std::make_shared<Effect>(&pose_default, tap.Beat(24), tap.Beat(32));
+			auto heartMask = std::make_shared<GroupMask>(&pose_default, "heart");
+			heartMask->AddDriver([heartMask, &tap](timestamp t) {
+				Ease<float>(&heartMask->m_intensity, t, 0.0f, 1.0f, tap.Beat(24), tap.Beat(28), EaseType::BEIZIER);
+				Ease<float>(&heartMask->m_intensity, t, 1.0f, 0.0f, tap.Beat(28), tap.Beat(32), EaseType::BEIZIER);
+				}
+			);
+			heartEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, RED));
+			heartEffect->SetMask(heartMask);
+
+			effects.push_back(heartEffect);
+		}
+		// 28 pen, I might only have
+		{
+		}
+
+		//		
+		//		
+		//		I might only have 
+		//	32	one match
+		//		
+		//		that I can
+		//		make an ex-
+		//	36	-plosion
+		//		
+		//		
+		//		and all the
+		//	40	things i
+		//		didn't
+		//		say
+		//		were wrecking
+		//	44	balls
+		//		inside my
+		//		brain
+		//		I will
+		//	48	scream
+		//		em out
+		//		loud tonight
+		//		can you
+		//	52	hear
+		//		my voice
+		//		this time
+		//		this is my
+		//	56	fight
+		//		song
+		//		
+		//		take back my
+		//	60	life
+		//		song
+		//		
+		//		prove I'm all
+		//	64	right
+		//		song
+		//		
+		//		
+		//	68	
+		//		
+		//		
+		//		my powers
+		//	72	turned
+		//		on
+		//		starting
+		//		 now I'll
+		//	76	be
+		//		strong
+		//		
+		//		I'll play my
+		//	80	fight
+		//		song
+		//		
+		//		and I
+		//	84	don't really
+		//		care
+		//		if no body 
+		//		else be-
+		//	88	-lieves
+		//		
+		//		
+		//		cause
+		//	92	I've
+		//		still got a lot
+		//		of fight
+		//		this is my
+		//	96	fight
+		//		song
+		//		
+		//		take back my
+		//	100	life
+		//		song
+		//		
+		//		prove I'm all
+		//	104	right
+		//		song
+		//		
+		//		
+		//	108	12345
+		//		
+		//		
+		//		my powers
+		//	112	turned
+		//		on
+		//		starting right
+		//		now I'll
+		//	116	be
+		//		strong
+		//		
+		//		I'll play my
+		//	120	fight
+		//		song
+		//		
+		//		and I
+		//	124	don't really
+		//		care if
+		//		if
+		//		nobody else
+		//	128	believes
+		//		
+		//		
+		//		cause
+		//	132	I've still
+		//		
+		//		got a lotta
+		//		fight left in
+		//	136	me
+		//		
+		//		
+		//		
+		//	140	no I've still
+		//		got a lotta
+		//		fight left
+		//		in
+		//	144	me
+		{
 		}
 	}
 

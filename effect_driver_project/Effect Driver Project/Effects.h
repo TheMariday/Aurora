@@ -88,15 +88,15 @@ private:
 class Ripple : public Effect
 {
 public:
-	Ripple(Harness* harness, timestamp start, duration dur, Loc center, HSV color, int maxSize = 1000, int ringWidth = 100, bool fade = true) :
+	Ripple(Harness* harness, timestamp start, duration dur, Loc center, HSV color, int maxSize = 500, int ringWidth = 50, bool fade = true) :
 		Effect(harness, start, start + dur)
 	{
 		auto ringMask = std::make_shared<RingMask>(harness, center, 0, ringWidth);
 
 		ringMask->AddDriver([ringMask, maxSize, start, dur, fade](timestamp t) {
-			Ease<int>(&ringMask->m_diameter, t, 0, maxSize, start, dur);
+			Ease<int>(&ringMask->m_diameter, t, 0, maxSize, start, dur, EaseType::LINEAR);
 			if (fade)
-				Ease<float>(&ringMask->m_intensity, t, 1.0f, 0.0f, start, dur, EaseType::LINEAR);
+				Ease<float>(&ringMask->m_intensity, t, 1.0f, 0.0f, start, dur, EaseType::BEIZIER);
 			});
 
 		SetMask(ringMask);

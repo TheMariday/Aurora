@@ -1,6 +1,20 @@
 #pragma once
 #include "Mask.h"
 
+class GroupMask : public Mask
+{
+public:
+	GroupMask(Harness* harness, std::string group) : Mask(harness), m_group(group) {}
+
+	float GetAlpha(LED* pLED) override
+	{
+		return (GetHarness()->InGroup(m_group, pLED)) ? 1.0f : 0.0f;
+	}
+
+	std::string m_group;
+};
+
+
 class GlowMask : public Mask
 {
 public:
@@ -23,6 +37,27 @@ public:
 private:
 	Loc m_center;
 	int m_maxDistance;
+};
+
+class BandMask : public Mask
+{
+public:
+	BandMask(Harness* harness, Loc center, axis ax, int width) : Mask(harness), m_center(center), m_axis(ax), m_width(width)
+	{
+	}
+
+	float GetAlpha(LED* pLED)
+	{
+		Loc loc = GetHarness()->GetLoc(pLED);
+
+		int distance = abs(loc[m_axis] - m_center[m_axis]);
+
+		return (distance < m_width / 2) ? 1.0f : 0.0f;
+	}
+
+	Loc m_center;
+	axis m_axis;
+	int m_width;
 };
 
 

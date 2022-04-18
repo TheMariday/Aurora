@@ -77,6 +77,16 @@ std::vector<LED*> Harness::GetGroup(std::string groupName)
 	return m_group.at(groupName);
 }
 
+bool Harness::InGroup(std::string groupName, LED* pLED)
+{
+	if (m_group.find(groupName) == m_group.end())
+	{
+		std::cout << "GetGroup found zero groups with name " << groupName << std::endl;
+	}
+
+	return std::find(m_group.at(groupName).begin(), m_group.at(groupName).end(), pLED) != m_group.at(groupName).end();
+}
+
 
 int Harness::RenderToScreen(bool wait, int beat)
 {
