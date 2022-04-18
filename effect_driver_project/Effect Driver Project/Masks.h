@@ -42,20 +42,22 @@ private:
 class BandMask : public Mask
 {
 public:
-	BandMask(Harness* harness, Loc center, axis ax, int width) : Mask(harness), m_center(center), m_axis(ax), m_width(width)
+	BandMask(Harness* harness, int center, axis ax, int width) : Mask(harness), m_center(center), m_axis(ax), m_width(width)
 	{
 	}
 
-	float GetAlpha(LED* pLED)
+	float GetAlpha(LED* pLED) override
 	{
 		Loc loc = GetHarness()->GetLoc(pLED);
 
-		int distance = abs(loc[m_axis] - m_center[m_axis]);
-
-		return (distance < m_width / 2) ? 1.0f : 0.0f;
+		int distance = abs(loc[m_axis] - m_center);
+		float a = (distance < m_width / 2) ? 1.0f : 0.0f;
+		if (a != 1.0f)
+			int b;
+		return a;
 	}
 
-	Loc m_center;
+	int m_center;
 	axis m_axis;
 	int m_width;
 };

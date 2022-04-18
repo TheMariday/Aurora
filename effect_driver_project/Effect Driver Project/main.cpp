@@ -41,6 +41,8 @@ int main()
 
 	std::vector<std::shared_ptr<Effect>> effects;
 
+	auto blueTexture = std::make_shared<SolidTexture>(&pose_t, BLUE);
+
 
 	{
 		//	0	
@@ -62,7 +64,6 @@ int main()
 
 			{ // blue hand orb
 				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(6), tap.Beat(13));
-				auto blueTexture = std::make_shared<SolidTexture>(&pose_t, BLUE);
 				auto orbMask = std::make_shared<OrbMask>(&pose_t, pose_t.GetMarker("marker_right_hand"), 300);
 
 				orbMask->AddDriver([orbMask, &tap](timestamp t) {
@@ -83,6 +84,23 @@ int main()
 		}
 		//	12	-an, sending big wav-
 		{
+
+			{
+				auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(14), tap.Beat(16));
+				auto handwashMask = std::make_shared<BandMask>(&pose_t, 0, x_axis, 100);
+				Loc hand = pose_t.GetMarker("marker_right_hand");
+				handwashMask->AddDriver([handwashMask, hand, &tap](timestamp t) {
+					Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap.Beat(14), tap.Beat(16));
+					}
+				);
+
+				handWash->SetTexture(blueTexture);
+				handWash->SetMask(std::make_shared<GroupMask>(&pose_t, "right_arm"));
+				handWash->SetMask(handwashMask);
+
+				effects.push_back(handWash);
+			}
+
 		}
 		// 16 -es into mot-
 		{
@@ -232,9 +250,19 @@ int main()
 	{
 		timestamp frame_time = std::chrono::system_clock::now();
 
+		auto start = std::chrono::high_resolution_clock::now();
+
+
 		for (auto e : effects)
 			e->Update(frame_time);
 
+
+		auto stop = std::chrono::high_resolution_clock::now();
+
+		duration dur = duration_cast(stop - start);
+		int milliseconds = dur.count();
+
+		std::cout << "fps: " << ((milliseconds==0)?-1:(1000/ milliseconds)) << std::endl;
 
 		// remove dead effects
 		effects.erase(std::remove_if(effects.begin(), effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), effects.end());

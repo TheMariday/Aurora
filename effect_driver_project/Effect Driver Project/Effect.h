@@ -20,8 +20,8 @@ enum class EffectState
 class Effect : public Drivable
 {
 public:
-	Effect(Harness* harness, timestamp startTime, timestamp endTime) : 
-		m_harness(harness), m_pMask(std::make_shared<Mask>(harness)), 
+	Effect(Harness* harness, timestamp startTime, timestamp endTime) :
+		m_harness(harness),
 		m_pTexture(std::make_shared<Texture>(harness)), m_startTime(startTime), m_endTime(endTime)
 	{
 	}
@@ -41,7 +41,10 @@ public:
 			return;
 
 		UpdateDrivers(t);
-		m_pMask->UpdateDrivers(t);
+
+		for (std::shared_ptr<Mask> m : m_masks)
+			m->UpdateDrivers(t);
+
 		m_pTexture->UpdateDrivers(t);
 
 		PreRender(t);
@@ -56,16 +59,25 @@ public:
 
 	virtual void Render(timestamp t)
 	{
-		std::vector<std::pair<LED*, float>> leds = m_pMask->GetLEDs();
+		std::vector<LED*> leds = GetHarness()->GetGroup("main");
 
-		for (std::pair<LED*, float> ledAlpha : leds)
+		for (LED* led : leds)
 		{
-			LED* led = ledAlpha.first;
-			float alpha = ledAlpha.second;
-
-			HSV hsv = m_pTexture->TextureLed(led);
-
-			led->hsv = MixHSV(hsv, led->hsv, alpha);
+			float alpha = 1;
+			for (std::shared_ptr<Mask> mask : m_masks)
+			{
+				float maskAlpha = mask->GetModifiedAlpha(led);
+				switch (mask->m_maskMix)
+				{
+				case(MaskMix::ADD):
+					alpha += maskAlpha;
+					break;
+				case(MaskMix::MULTIPLY):
+					alpha *= maskAlpha;
+					break;
+				}
+			}
+			led->hsv = MixHSV(m_pTexture->TextureLed(led), led->hsv, alpha);
 		}
 	}
 
@@ -75,8 +87,10 @@ public:
 	}
 
 	void SetTexture(std::shared_ptr<Texture> pTexture) { m_pTexture = pTexture; };
-	void SetMask(std::shared_ptr<Mask> pMask) { m_pMask = pMask; };
-	std::shared_ptr<Mask> GetMask() { return m_pMask; };
+	void SetMask(std::shared_ptr<Mask> pMask) {
+		m_masks.push_back(pMask);
+	};
+	std::shared_ptr<Mask> GetMask(int index = 0) { return m_masks.at(index); };
 	std::shared_ptr<Texture> GetTexture() { return m_pTexture; };
 
 	void Stop() { m_state = EffectState::STOPPED; };
@@ -87,7 +101,7 @@ public:
 private:
 
 	Harness* m_harness;
-	std::shared_ptr<Mask> m_pMask;
+	std::vector<std::shared_ptr<Mask>> m_masks;
 	std::shared_ptr<Texture> m_pTexture;
 
 	timestamp m_startTime;

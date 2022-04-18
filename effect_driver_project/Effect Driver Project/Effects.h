@@ -8,36 +8,6 @@
 #include "Masks.h"
 #include "Textures.h"
 
-struct Boost : public Effect
-{
-	Boost(Harness* harness, timestamp start, timestamp end, Metronome* metronome) : Effect(harness, start, end)
-	{
-		m_metronome = metronome;
-		m_lastBeat = m_metronome->GetBeat(start) - 1;
-	}
-
-	void Render(timestamp t)
-	{
-		int new_beat = m_metronome->GetBeat(t) - 1;
-
-		if (new_beat == m_lastBeat)
-		{
-			for (std::pair<LED*, float> ledAlpha : GetMask()->GetLEDs())
-			{
-				LED* led = ledAlpha.first;
-				float alpha = ledAlpha.second;
-				led->hsv.v *= (1.0f - m_boost * alpha);
-			}
-		}
-
-		m_lastBeat = new_beat;
-	}
-
-	float m_boost = 0.1f;
-	int m_lastBeat;
-	Metronome* m_metronome;
-};
-
 class Twinkle : public Texture
 {
 public:

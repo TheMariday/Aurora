@@ -2,6 +2,12 @@
 #include "Effect.h"
 #include "Drivable.h"
 
+enum class MaskMix
+{
+	ADD,
+	MULTIPLY,
+	CONSTANT
+};
 
 class Mask : public Drivable
 {
@@ -10,18 +16,13 @@ public:
 	{
 	}
 
-	std::vector<std::pair<LED*, float>> GetLEDs()
+	float GetModifiedAlpha(LED* led)
 	{
-		std::vector<std::pair<LED*, float>> leds_out;
-		for (LED* led : GetHarness()->GetGroup("main"))
-		{
-			float alpha = GetAlpha(led);
-			if (invert) alpha = 1.0f - alpha;
-			alpha *= m_intensity;
-			if (alpha)
-				leds_out.push_back(std::make_pair(led, alpha));
-		}
-		return leds_out;
+		float alpha = GetAlpha(led);
+		if (invert) alpha = 1.0f - alpha;
+		alpha *= m_intensity;
+
+		return alpha;
 	}
 
 	virtual float GetAlpha(LED* led)
@@ -29,12 +30,13 @@ public:
 		return 1.0f;
 	}
 
-	Harness* GetHarness() 
+	Harness* GetHarness()
 	{
 		return m_harness;
 	}
 
 	float m_intensity = 1.0f;
+	MaskMix m_maskMix = MaskMix::MULTIPLY;
 
 private:
 	Harness* m_harness;

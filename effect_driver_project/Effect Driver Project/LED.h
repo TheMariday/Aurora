@@ -89,6 +89,10 @@ inline HSV MixHSV(HSV a, HSV b, float alpha)
 
 struct Loc
 {
+	Loc() : x(0), y(0), z(0) {};
+	Loc(int a, int b, int c) : x(a), y(b), z(c) {};
+
+
 	int& operator[](int index)
 	{
 		switch (index) {
