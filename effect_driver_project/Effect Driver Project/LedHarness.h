@@ -43,6 +43,10 @@ public:
 
 	int RenderToScreen(bool wait = true, int beat = 0);
 
+	std::map<std::string, std::vector<LED*>> GetGroups() { return m_group; };
+
+	void CopyGroups(Harness* otherHarness);
+
 private:
 	std::map<std::string, std::vector<LED*>> m_group;
 	std::map<LED*, Loc> m_loc;

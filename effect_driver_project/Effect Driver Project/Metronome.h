@@ -28,7 +28,7 @@ public:
 
 	int GetBeat(timestamp t)
 	{
-		return static_cast<int>((t - m_start).count() / (10000000 * (60.0f / m_bpm))) + m_offset;
+		return static_cast<int>((t - m_start).count() / (10000000 * (60.0f / m_bpm))) - m_offset;
 	}
 
 private:

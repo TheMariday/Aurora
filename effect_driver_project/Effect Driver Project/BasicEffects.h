@@ -9,10 +9,9 @@
 class Twinkle : public Effect
 {
 public:
-	Twinkle(Harness* harness, timestamp start, duration dur, HSV hsv, float prob, std::string group = "main") : Effect(harness, start, dur)
+	Twinkle(Harness* harness, timestamp start, duration dur, HSV hsv, float prob) : Effect(harness, start, dur)
 	{
 		m_hsv = hsv;
-		m_group = group;
 		m_prob = prob;
 	}
 
@@ -20,24 +19,22 @@ public:
 	{
 		int intProb = static_cast<int>(m_prob * RAND_MAX);
 
-		for (LED* pLED : GetHarness()->GetGroup(m_group))
+		for (LED* pLED : GetLeds())
 			if(rand() < m_prob)
 				pLED->hsv = m_hsv;
 		Stop();
 	}
 private:
 	HSV m_hsv;
-	std::string m_group;
 	float m_prob;
 };
 
 class Flash : public Effect
 {
 public:
-	Flash(Harness* harness, timestamp start, HSV hsv, int beat = -1, std::string group = "main") : Effect(harness, start)
+	Flash(Harness* harness, timestamp start, HSV hsv, int beat = -1) : Effect(harness, start)
 	{
 		m_hsv = hsv;
-		m_group = group;
 		m_beat = beat;
 	}
 
@@ -46,33 +43,30 @@ public:
 		if (m_beat >= 0)
 			std::cout << "beat: " << m_beat << std::endl;
 
-		for (LED* pLED : GetHarness()->GetGroup(m_group))
+		for (LED* pLED : GetLeds())
 			pLED->hsv = m_hsv;
 		Stop();
 	}
 private:
 	HSV m_hsv;
-	std::string m_group;
 	int m_beat;
 };
 
-class Solid : public Effect
+struct Solid : public Effect
 {
-public:
-	Solid(Harness* harness, timestamp start, duration dur, HSV hsv, std::string group = "main") : Effect(harness, start, dur)
+	Solid(Harness* harness, timestamp start, duration dur, HSV hsv = {1.0f, 1.0, 1.0f}) : Effect(harness, start, dur)
 	{
 		m_hsv = hsv;
-		m_group = group;
 	}
 
 	void Render(timestamp t) override
 	{
-		for (LED* pLED : GetHarness()->GetGroup(m_group))
+		for (LED* pLED : GetLeds())
 			pLED->hsv = m_hsv;
 	}
-private:
+
 	HSV m_hsv;
-	std::string m_group;
+
 };
 
 class LocalisedFire : public Effect
@@ -92,7 +86,7 @@ public:
 
 	void Render(timestamp t) override
 	{
-		for (LED* pLED : OrbMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_diameter))
+		for (LED* pLED : OrbMask(GetHarness(), GetLeds(), m_center, m_diameter))
 		{
 			pLED->hsv = hsv;
 		}
@@ -122,7 +116,7 @@ public:
 
 	void Render(timestamp t) override
 	{
-		for (LED* pLED : OrbMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_diameter))
+		for (LED* pLED : OrbMask(GetHarness(), GetLeds(), m_center, m_diameter))
 		{
 			pLED->hsv = m_hsv;
 		}
@@ -156,7 +150,7 @@ public:
 	void Render(timestamp t) override
 	{
 
-		for (LED* pLED : RingMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_diameter, m_ring_width))
+		for (LED* pLED : RingMask(GetHarness(), GetLeds(), m_center, m_diameter, m_ring_width))
 			pLED->hsv = m_hsv;
 	}
 
@@ -182,7 +176,7 @@ public:
 
 	void Render(timestamp t) override
 	{
-		Rainbow(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_offset, m_axis);
+		Rainbow(GetHarness(), GetLeds(), m_center, m_offset, m_axis);
 	}
 
 private:
@@ -207,7 +201,7 @@ public:
 
 	void Render(timestamp t) override
 	{
-		std::vector<LED*> leds = OrbMask(GetHarness(), GetHarness()->GetGroup("main"), m_center, m_ballDiameter);
+		std::vector<LED*> leds = OrbMask(GetHarness(), GetLeds(), m_center, m_ballDiameter);
 		Rainbow(GetHarness(), leds, m_center, m_offset, m_axis);
 	}
 

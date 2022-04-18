@@ -97,14 +97,14 @@ bool Constant(T* pValue, timestamp now, T value, timestamp start, duration d, Mi
 }
 
 template <class T>
-bool Ease(T* pValue, timestamp now, T from, T to, timestamp start, timestamp end, EaseType easeType = EaseType::LINEAR, MixType mixType = MixType::NORMAL, bool extend = true)
+bool Ease(T* pValue, timestamp now, T from, T to, timestamp start, timestamp end, EaseType easeType = EaseType::LINEAR, MixType mixType = MixType::NORMAL, bool extend = false)
 {
 	duration d = duration_cast(end - start);
 	return Ease(pValue, now, from, to, start, d, easeType, mixType, extend);
 }
 
 template <class T>
-bool Ease(T* pValue, timestamp now, T from, T to, timestamp start, duration d, EaseType easeType = EaseType::LINEAR, MixType mixType = MixType::NORMAL, bool extend = true)
+bool Ease(T* pValue, timestamp now, T from, T to, timestamp start, duration d, EaseType easeType = EaseType::LINEAR, MixType mixType = MixType::NORMAL, bool extend = false)
 {
 	T v;
 

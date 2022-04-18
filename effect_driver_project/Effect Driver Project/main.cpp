@@ -24,12 +24,15 @@ int main()
 	Harness pose_default = Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions.csv");
 	Harness pose_left_hand = Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions_left_hand.csv");
 	Harness pose_t = Harness(&buffer, "D:\\Users\\Sam\\GIT\\Aurora\\scripts\\LEDMapper\\led_positions_t_pose.csv");
+	
+	pose_left_hand.CopyGroups(&pose_default);
+	pose_t.CopyGroups(&pose_default);
 
 	pose_default.RenderToScreen(); // this will wait for user to press a key
 
 	timestamp now = std::chrono::system_clock::now();
 
-	Metronome metronome(now, 88.02171202, -4);
+	Metronome metronome(now, 88.02171202f, 4);
 
 	Loc leftEye = pose_default.GetMarker("eye_left");
 
@@ -63,16 +66,13 @@ int main()
 	//a.mask()
 	//effects.push_back(a);
 
-	for (int i = 4; i < 144; ++i)
-	{
-		HSV col = { 1.0f, 1.0f, 1.0f };
-
-		if (i % 4 == 0)
-			col.h = 0.66f;
-
-		if(i%2==0)
-			effects.push_back(std::make_shared<Solid>(&pose_default, metronome.Beat(i), metronome.Beats(1), col));
-	}
+	auto pSolid = std::make_shared<Solid>(&pose_default, metronome.Beat(0), metronome.Beats(4));
+	pSolid->SetMask([&pose_default]() {return pose_default.GetGroup("heart"); });
+	pSolid->AddDriver([pSolid, &metronome](timestamp t) {
+		Ease<float>(&pSolid->m_hsv.v, t, 0.0f, 1.0f, metronome.Beat(0), metronome.Beat(2), EaseType::BEIZIER);
+		Ease<float>(&pSolid->m_hsv.v, t, 1.0f, 0.0f, metronome.Beat(2), metronome.Beat(4), EaseType::BEIZIER);
+		});
+	effects.push_back(pSolid);
 	
 
 	while (true)

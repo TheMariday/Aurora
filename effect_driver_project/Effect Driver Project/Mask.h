@@ -1,6 +1,9 @@
 #pragma once
 #include "Effect.h"
 
+
+
+
 std::vector<LED*> OrbMask(Harness* harness, std::vector<LED*> leds, Loc center, int diameter, bool inner = true)
 {
 	std::vector<LED*> masked;

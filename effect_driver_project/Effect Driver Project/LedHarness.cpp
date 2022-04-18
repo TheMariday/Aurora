@@ -117,3 +117,20 @@ int Harness::RenderToScreen(bool wait, int beat)
 	imshow("Suit view", image);
 	return cv::waitKey(wait ? 0 : 30);
 }
+
+void Harness::CopyGroups(Harness* otherHarness)
+{
+
+	for (auto const& group : otherHarness->GetGroups())
+	{
+		std::string groupName = group.first;
+		std::vector<LED*> leds = group.second;
+
+		if (m_group.find(groupName) == m_group.end()) // if group is not in local groups
+		{
+			//add it
+			m_group[groupName] = leds;
+		}
+	}
+
+}

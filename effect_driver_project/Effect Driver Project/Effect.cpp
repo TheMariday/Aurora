@@ -58,6 +58,16 @@ bool Effect::HasStopped()
 	return m_state == EffectState::STOPPED;
 }
 
+std::vector<LED*> Effect::GetLeds()
+{
+	std::vector<LED*> leds;
+	if (m_mask)
+		leds = m_mask();
+	else
+		leds = m_harness->GetGroup("main");
+	return leds;
+}
+
 timestamp Effect::GetStartTime()
 {
 	return m_startTime;

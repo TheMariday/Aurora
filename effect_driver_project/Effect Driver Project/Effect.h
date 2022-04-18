@@ -38,7 +38,11 @@ public:
 
 	bool HasStopped();
 
-	Harness* GetHarness() { return m_harness; };
+	Harness* GetHarness() { return m_harness; }
+
+	std::vector<LED*> GetLeds();
+
+	void SetMask(mask m) { m_mask = m; }
 
 private:
 
@@ -47,6 +51,8 @@ private:
 	Harness* m_harness;
 
 	std::vector<Driver> m_drivers;
+
+	mask m_mask;
 
 	EffectState m_state = EffectState::READY;
 
