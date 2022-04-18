@@ -3,7 +3,10 @@ obj/
 # Visual Studio
 .vs/
 *.user
-effect_driver_project/Effect Driver Project/x64/
+*.tlog
+*.pdb
+*.iobj
+*.idb
 
 #Pycharm
 .idea

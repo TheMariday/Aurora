@@ -99,14 +99,14 @@ int Harness::RenderToScreen(bool wait, int beat)
 		if (loc.y > 0)
 			v = (loc.x + 2700) * scale;
 
-		cv::rectangle(image, cv::Rect(static_cast<int>(v), static_cast<int>(u), 2, 2), col);
+		cv::rectangle(image, cv::Rect(static_cast<int>(v) - 1, static_cast<int>(u)-1, 3, 3), col);
 
 		v = (-loc.y + 200) * scale;
 
 		if (loc.x > 0)
 			v = (loc.y + 1800) * scale;
 
-		cv::rectangle(image, cv::Rect(static_cast<int>(v), static_cast<int>(u), 2, 2), col);
+		cv::rectangle(image, cv::Rect(static_cast<int>(v) - 1, static_cast<int>(u) - 1, 3, 3), col);
 	}
 
 	std::stringstream ss;

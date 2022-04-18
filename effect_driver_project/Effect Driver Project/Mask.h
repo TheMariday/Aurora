@@ -1,36 +1,42 @@
 #pragma once
 #include "Effect.h"
+#include "Drivable.h"
 
 
-
-
-std::vector<LED*> OrbMask(Harness* harness, std::vector<LED*> leds, Loc center, int diameter, bool inner = true)
+class Mask : public Drivable
 {
-	std::vector<LED*> masked;
-
-	if (diameter < 0) return masked;
-
-	for (LED* led : leds)
+public:
+	Mask(Harness* harness) : m_harness(harness)
 	{
-		Loc loc = harness->GetLoc(led);
-
-		int distance = Distance(loc, center);
-		if (inner)
-		{
-			if (distance < diameter / 2)
-				masked.emplace_back(led);
-		}
-		else
-		{
-			if (distance > diameter / 2)
-				masked.emplace_back(led);
-		}
 	}
-	return masked;
-}
 
-std::vector<LED*> RingMask(Harness* harness, std::vector<LED*> leds, Loc center, int diameter, int ringWidth)
-{
-	std::vector<LED*> ringMask = OrbMask(harness, leds, center, diameter);
-	return OrbMask(harness, ringMask, center, diameter - ringWidth, false);
-}
+	std::vector<std::pair<LED*, float>> GetLEDs()
+	{
+		std::vector<std::pair<LED*, float>> leds_out;
+		for (LED* led : GetHarness()->GetGroup("main"))
+		{
+			float alpha = GetAlpha(led);
+			if (invert) alpha = 1.0f - alpha;
+			alpha *= m_intensity;
+			if (alpha)
+				leds_out.push_back(std::make_pair(led, alpha));
+		}
+		return leds_out;
+	}
+
+	virtual float GetAlpha(LED* led)
+	{
+		return 1.0f;
+	}
+
+	Harness* GetHarness() 
+	{
+		return m_harness;
+	}
+
+	float m_intensity = 1.0f;
+
+private:
+	Harness* m_harness;
+	bool invert = false;
+};

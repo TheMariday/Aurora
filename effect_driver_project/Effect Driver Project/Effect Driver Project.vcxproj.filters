@@ -21,9 +21,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Effect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LedHarness.h">
@@ -37,9 +34,6 @@
     </ClInclude>
     <ClInclude Include="hsv2rgb.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicEffects.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mask.h">
       <Filter>Header Files</Filter>
@@ -55,6 +49,21 @@
     </ClInclude>
     <ClInclude Include="utils.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Drivable.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Masks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Textures.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colors.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

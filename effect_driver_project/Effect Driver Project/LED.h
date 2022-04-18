@@ -1,5 +1,14 @@
 #pragma once
 #include "hsv2rgb.h"
+//#include "utils.h"
+
+template <class T>
+T limits(T v, T v1, T v2)
+{
+	v = std::min(v, (v1 < v2) ? v2 : v1);
+	v = std::max(v, (v1 < v2) ? v1 : v2);
+	return v;
+}
 
 struct RGB
 {
@@ -28,13 +37,39 @@ struct HSV
 	HSV() = default;
 	HSV(float a, float b, float c) : h(a), s(b), v(c) {};
 
+	HSV operator*(const float& b) const
+	{
+		return { h * b, s * b,v * b };
+	}
+
+	HSV operator+(const HSV& b) const
+	{
+		return { h + b.h, s + b.s, v + b.v };
+	}
+
 	float h = 0;
 	float s = 0;
 	float v = 0;
 };
 
+inline HSV MixHSV(HSV a, HSV b, float alpha)
+{
+	if (alpha >= 1.0f) return a;
+	if (alpha <= 0.0f) return b;
+	return  b * (1.0f - alpha) + a * alpha;
+}
+
 struct Loc
 {
+	int& operator[](int index)
+	{
+		switch (index) {
+		case 0: return x;
+		case 1: return y;
+		case 2: return z;
+		default: return z;
+		}
+	}
 
 	Loc operator+(const Loc& b) const
 	{
@@ -82,6 +117,9 @@ inline int Distance(const Loc& a, const Loc& b)
 
 inline RGB HSV2RGB(HSV hsv)
 {
+	hsv.s = limits<float>(hsv.s, 0.0f, 1.0f);
+	hsv.v = limits<float>(hsv.v, 0.0f, 1.0f);
+
 	CHSV chsv;
 	chsv.hue = static_cast<uint8_t>(hsv.h * 255);
 	chsv.sat = static_cast<uint8_t>(hsv.s * 255);
