@@ -52,11 +52,39 @@ struct HSV
 	float v = 0;
 };
 
+// this is hot garbage. do not touch
 inline HSV MixHSV(HSV a, HSV b, float alpha)
 {
+
 	if (alpha >= 1.0f) return a;
 	if (alpha <= 0.0f) return b;
-	return  b * (1.0f - alpha) + a * alpha;
+
+	if (a.h - b.h > 0.5f) a.h -= 1.0f;
+
+	HSV hsv;
+	hsv.v = (alpha * a.v + (1 - alpha) * b.v);
+	hsv.s = (alpha * a.s + (1 - alpha) * b.s);
+
+	float aImportance = (a.s * a.v) * alpha;
+	float bImportance = (b.s * b.v) * (1 - alpha);
+
+	float denom = (aImportance + bImportance);
+
+	// doesn't matter
+	if (denom == 0)
+	{
+		hsv.h = 1.0f;
+	}
+	else
+	{
+		float ratio = aImportance / denom;
+		hsv.h = a.h * ratio + b.h * (1 - ratio);
+	}
+
+	hsv.h = fmodf(hsv.h, 1.0f);
+
+	return  hsv;
+
 }
 
 struct Loc
