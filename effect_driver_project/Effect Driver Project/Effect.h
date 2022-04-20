@@ -20,10 +20,10 @@ enum class EffectState
 class Effect : public Drivable
 {
 public:
-	Effect(Harness* harness, timestamp startTime, timestamp endTime) :
-		m_harness(harness),
-		m_pTexture(std::make_shared<Texture>(harness)), m_startTime(startTime), m_endTime(endTime)
+	Effect(Harness* harness, timestamp startTime, timestamp endTime, std::shared_ptr<Texture> texture = nullptr) :
+		m_harness(harness), m_startTime(startTime), m_endTime(endTime)
 	{
+		m_pTexture = texture ? texture : std::make_shared<Texture>(harness);
 	}
 
 	void Update(timestamp t)

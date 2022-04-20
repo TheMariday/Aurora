@@ -8,53 +8,6 @@
 #include "Masks.h"
 #include "Textures.h"
 
-class Twinkle : public Texture
-{
-public:
-	Twinkle(Harness* harness, timestamp start, timestamp end, HSV hsv, float prob) : Texture(harness), m_hsv(hsv), m_prob(prob)
-	{
-	}
-
-	HSV TextureLed(LED* pLED)
-	{
-		int intProb = static_cast<int>(m_prob * RAND_MAX);
-
-		if (rand() < m_prob)
-			pLED->hsv = m_hsv;
-	}
-
-private:
-	HSV m_hsv;
-	float m_prob;
-};
-
-class WipeMask : public Mask
-{
-public:
-	WipeMask(Harness* harness, axis ax, int axis_pos, bool greater = true) :
-		Mask(harness), m_axis(ax), m_axis_pos(axis_pos), m_greater(greater)
-	{
-
-	}
-
-	float GetAlpha(LED* pLED) override
-	{
-		int p = GetHarness()->GetLoc(pLED)[m_axis];
-
-		if (m_greater ? p > m_axis_pos : p < m_axis_pos)
-			return 1.0f;
-		else
-			return 0.0f;
-	}
-
-private:
-	axis m_axis;
-	int m_axis_pos;
-	bool m_greater;
-
-};
-
-
 class Ripple : public Effect
 {
 public:
@@ -93,4 +46,34 @@ public:
 	}
 
 private:
+};
+
+class BoostEffect : public Effect
+{
+public:
+	BoostEffect(Harness* harness, timestamp start, timestamp end, Metronome* tap) :
+		Effect(harness, start, end), m_tap(tap)
+	{
+	};
+
+	void Render(timestamp t) override
+	{
+		int beat = m_tap->GetBeat(t) / 2;
+		if (beat != m_lastBeat)
+		{
+			std::vector<LED*> leds = GetHarness()->GetGroup("main");
+			for (LED* led : leds)
+			{
+				led->hsv.s *= (1 - m_intensity);
+			}
+			m_lastBeat = beat;
+
+		}
+
+	}
+private:
+	int m_lastBeat = -1;
+	Metronome* m_tap;
+	float m_intensity = 0.3f;
+
 };

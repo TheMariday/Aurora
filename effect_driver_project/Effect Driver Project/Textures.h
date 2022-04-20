@@ -41,7 +41,7 @@ public:
 		if (m_flip)
 			normAngle = 1 - normAngle;
 
-		led->hsv = { static_cast<float>(normAngle), 1.0f, 1.0f };
+		return { static_cast<float>(normAngle), 1.0f, 1.0f };
 	}
 
 	Loc m_center;
@@ -49,3 +49,4 @@ public:
 	axis m_axis;
 	bool m_flip = false;
 };
+

@@ -54,13 +54,15 @@ int main()
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(3), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(3.5), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 		}
-
-		//	4	like a small boat
+		// 4
 		{
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(4), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(5), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(6), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(7), tap.Beats(3), GetRandomLoc(&pose_t, true), BLUE));
+		}
+		//	8	like a small boat
+		{
 
 			{ // blue hand orb
 				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(6), tap.Beat(13));
@@ -78,19 +80,31 @@ int main()
 			}
 
 		}
-		//	8 on the oc-
+		//	12 on the oc-
 		{
+			auto twinkle = std::make_shared<Effect>(&pose_default, tap.Beat(11), tap.Beat(15));
+			auto twinkleMask = std::make_shared<RandomMask>(&pose_default, 0.0f);
+			twinkleMask->AddDriver([twinkleMask, &tap](timestamp t)
+				{
+					Ease<float>(&twinkleMask->m_prob, t, 0.0f, 0.1f, tap.Beat(11), tap.Beat(13));
+					Ease<float>(&twinkleMask->m_prob, t, 0.1f, 0.0f, tap.Beat(13), tap.Beat(15));
+				}
+			);
+			twinkle->SetMask(twinkleMask);
+			twinkle->SetMask(std::make_shared<GroupMask>(&pose_default, "right_arm"));
+			twinkle->SetTexture(blueTexture);
 
+			effects.push_back(twinkle);
 		}
-		//	12	-an, sending big wav-
+		//	16	-an, sending big wav-
 		{
 
 			{
-				auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(14), tap.Beat(16));
+				auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(15), tap.Beat(17));
 				auto handwashMask = std::make_shared<BandMask>(&pose_t, 0, x_axis, 100);
 				Loc hand = pose_t.GetMarker("marker_right_hand");
 				handwashMask->AddDriver([handwashMask, hand, &tap](timestamp t) {
-					Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap.Beat(14), tap.Beat(16));
+					Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap.Beat(15), tap.Beat(17));
 					}
 				);
 
@@ -101,20 +115,68 @@ int main()
 				effects.push_back(handWash);
 			}
 
+			{
+				auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(15), tap.Beat(17));
+				auto handwashMask = std::make_shared<BandMask>(&pose_t, 0, x_axis, 100);
+				Loc hand = pose_t.GetMarker("marker_left_hand");
+				handwashMask->AddDriver([handwashMask, hand, &tap](timestamp t) {
+					Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap.Beat(15), tap.Beat(17));
+					}
+				);
+
+				handWash->SetTexture(blueTexture);
+				handWash->SetMask(std::make_shared<GroupMask>(&pose_t, "left_arm"));
+				handWash->SetMask(handwashMask);
+
+				effects.push_back(handWash);
+			}
+
 		}
-		// 16 -es into mot-
+		// 20 -es into mot-
 		{
+
+			{
+				auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(19), tap.Beat(22));
+				auto handwashMask = std::make_shared<BandMask>(&pose_t, 0, x_axis, 100);
+				Loc rightHand = pose_t.GetMarker("marker_right_hand");
+				Loc leftHand = pose_t.GetMarker("marker_left_hand");
+				handwashMask->AddDriver([handwashMask, rightHand, leftHand, &tap](timestamp t) {
+					Ease<int>(&handwashMask->m_center, t, rightHand.x, leftHand.x, tap.Beat(19), tap.Beat(22));
+					}
+				);
+
+				handWash->SetTexture(blueTexture);
+				handWash->SetMask(std::make_shared<GroupMask>(&pose_t, "arms"));
+				handWash->SetMask(handwashMask);
+
+				effects.push_back(handWash);
+			}
+
 		}
-		// 20 -ion, like how a single
+		// 24 -ion, like how a single
 		{
+			{ // white hand orb
+				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(22), tap.Beat(30));
+				auto orbMask = std::make_shared<OrbMask>(&pose_t, pose_t.GetMarker("marker_right_hand"), 300);
+
+				orbMask->AddDriver([orbMask, &tap](timestamp t) {
+					Ease<float>(&orbMask->m_intensity, t, 0.0f, 1.0f, tap.Beat(22), tap.Beat(24));
+					Ease<float>(&orbMask->m_intensity, t, 1.0f, 0.0f, tap.Beat(24), tap.Beat(30));
+					});
+
+				orbEffect->SetMask(orbMask);
+				orbEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, WHITE));
+
+				effects.push_back(orbEffect);
+			}
 		}
-		// 24 word can make a heart o-
+		// 28 word can make a heart o-
 		{
-			auto heartEffect = std::make_shared<Effect>(&pose_default, tap.Beat(24), tap.Beat(32));
+			auto heartEffect = std::make_shared<Effect>(&pose_default, tap.Beat(26), tap.Beat(32));
 			auto heartMask = std::make_shared<GroupMask>(&pose_default, "heart");
 			heartMask->AddDriver([heartMask, &tap](timestamp t) {
-				Ease<float>(&heartMask->m_intensity, t, 0.0f, 1.0f, tap.Beat(24), tap.Beat(28), EaseType::BEIZIER);
-				Ease<float>(&heartMask->m_intensity, t, 1.0f, 0.0f, tap.Beat(28), tap.Beat(32), EaseType::BEIZIER);
+				Ease<float>(&heartMask->m_intensity, t, 0.0f, 1.0f, tap.Beat(26), tap.Beat(30));
+				Ease<float>(&heartMask->m_intensity, t, 1.0f, 0.0f, tap.Beat(30), tap.Beat(34));
 				}
 			);
 			heartEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, RED));
@@ -122,15 +184,32 @@ int main()
 
 			effects.push_back(heartEffect);
 		}
-		// 28 pen, I might only have
+		// 30 pen, I might only have
 		{
 		}
 
-		//		
-		//		
-		//		I might only have 
-		//	32	one match
-		//		
+		//	34	one match
+		{
+			{ // fire hand orb
+				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(32), tap.Beat(40));
+				Loc rh = pose_t.GetMarker("marker_right_hand");
+				Loc lh = pose_t.GetMarker("marker_left_hand");
+				auto orbMask = std::make_shared<OrbMask>(&pose_t, rh, 300);
+
+				orbEffect->SetMask(orbMask);
+				auto fireTex = std::make_shared<SolidTexture>(&pose_default, RED);
+				fireTex->AddDriver([fireTex, &tap](timestamp t) {
+					Cycle<float>(&fireTex->m_hsv.h, t, 0.0f, 0.15f, tap.Beat(32), tap.Beats(0), CycleType::RANDOM);
+					});
+				orbEffect->SetTexture(fireTex);
+
+				effects.push_back(orbEffect);
+
+				orbMask->AddDriver([orbMask, &rh, &lh, &tap](timestamp t) {
+					Ease<int>(&orbMask->m_center.x, t, rh.x, lh.x, tap.Beat(35.5), tap.Beat(36));
+					});
+			}
+		}
 		//		that I can
 		//		make an ex-
 		//	36	-plosion
@@ -244,6 +323,8 @@ int main()
 		//	144	me
 		{
 		}
+
+		effects.push_back(std::make_shared<BoostEffect>(&pose_default, tap.Beat(0), tap.Beat(144), &tap));
 	}
 
 	while (true)
@@ -262,7 +343,7 @@ int main()
 		duration dur = duration_cast(stop - start);
 		int milliseconds = dur.count();
 
-		std::cout << "fps: " << ((milliseconds==0)?-1:(1000/ milliseconds)) << std::endl;
+		std::cout << "fps: " << ((milliseconds == 0) ? -1 : (1000 / milliseconds)) << std::endl;
 
 		// remove dead effects
 		effects.erase(std::remove_if(effects.begin(), effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), effects.end());

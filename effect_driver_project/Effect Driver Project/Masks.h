@@ -118,3 +118,46 @@ public:
 	int m_ringWidth;
 };
 
+
+class WipeMask : public Mask
+{
+public:
+	WipeMask(Harness* harness, axis ax, int axis_pos, bool greater = true) :
+		Mask(harness), m_axis(ax), m_axis_pos(axis_pos), m_greater(greater)
+	{
+
+	}
+
+	float GetAlpha(LED* pLED) override
+	{
+		int p = GetHarness()->GetLoc(pLED)[m_axis];
+
+		if (m_greater ? p > m_axis_pos : p < m_axis_pos)
+			return 1.0f;
+		else
+			return 0.0f;
+	}
+
+private:
+	axis m_axis;
+	int m_axis_pos;
+	bool m_greater;
+
+};
+
+class RandomMask : public Mask
+{
+public:
+	RandomMask(Harness* harness, float prob) : Mask(harness), m_prob(prob)
+	{
+	}
+
+	float GetAlpha(LED* pLED) override
+	{
+		int intProb = static_cast<int>(m_prob * 100);
+		int prob = rand() % 100; // 0 - 99
+		return (prob < intProb) ? 1.0f : 0.0f;
+	}
+
+	float m_prob;
+};
