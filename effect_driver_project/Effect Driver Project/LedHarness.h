@@ -24,8 +24,6 @@ public:
 
 	}
 
-private:
-
 	std::vector<LED> leds;
 };
 

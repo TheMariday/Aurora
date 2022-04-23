@@ -49,7 +49,7 @@ Loc Harness::GetLoc(LED* led)
 	{
 		std::cout << "cannot find led location" << std::endl;
 	}
-	
+
 	return m_loc.at(led);
 }
 
@@ -73,7 +73,7 @@ std::vector<LED*> Harness::GetGroup(std::string groupName)
 	{
 		std::cout << "GetGroup found zero groups with name " << groupName << std::endl;
 	}
-	
+
 	return m_group.at(groupName);
 }
 
@@ -107,9 +107,9 @@ int Harness::RenderToScreen(bool wait, int beat)
 		v = (loc.x + 1000) * scale;
 
 		if (loc.y > 0)
-			v = (loc.x + 2700) * scale;
+			v = (-loc.x + 2700) * scale;
 
-		cv::rectangle(image, cv::Rect(static_cast<int>(v) - 1, static_cast<int>(u)-1, 3, 3), col);
+		cv::rectangle(image, cv::Rect(static_cast<int>(v) - 1, static_cast<int>(u) - 1, 3, 3), col);
 
 		v = (-loc.y + 200) * scale;
 

@@ -11,13 +11,13 @@
 class Ripple : public Effect
 {
 public:
-	Ripple(Harness* harness, timestamp start, duration dur, Loc center, HSV color, int maxSize = 500, int ringWidth = 50, bool fade = true) :
+	Ripple(Harness* harness, timestamp start, duration dur, Loc center, HSV color, int maxSize = 200, int ringWidth = 50, bool fade = true) :
 		Effect(harness, start, start + dur)
 	{
 		auto ringMask = std::make_shared<RingMask>(harness, center, 0, ringWidth);
 
-		ringMask->AddDriver([ringMask, maxSize, start, dur, fade](timestamp t) {
-			Ease<int>(&ringMask->m_diameter, t, 0, maxSize, start, dur, EaseType::LINEAR);
+		ringMask->AddDriver([ringMask, maxSize, start, dur, fade, ringWidth](timestamp t) {
+			Ease<int>(&ringMask->m_diameter, t, ringWidth, maxSize, start, dur, EaseType::LINEAR);
 			if (fade)
 				Ease<float>(&ringMask->m_intensity, t, 1.0f, 0.0f, start, dur, EaseType::BEIZIER);
 			});
@@ -48,13 +48,30 @@ public:
 private:
 };
 
+class BlackoutEffect : public Effect
+{
+public:
+	BlackoutEffect(Harness* harness, timestamp start, duration dur) : Effect(harness, start, start + dur)
+	{
+	}
+
+	void Render(timestamp t) override
+	{
+		std::vector<LED*> leds = GetHarness()->GetGroup("main");
+		for (LED* led : leds)
+		{
+			led->hsv.v = 0;
+		}
+	}
+};
+
 class BoostEffect : public Effect
 {
 public:
 	BoostEffect(Harness* harness, timestamp start, timestamp end, Metronome* tap) :
 		Effect(harness, start, end), m_tap(tap)
 	{
-	};
+	}
 
 	void Render(timestamp t) override
 	{
@@ -74,6 +91,6 @@ public:
 private:
 	int m_lastBeat = -1;
 	Metronome* m_tap;
-	float m_intensity = 0.3f;
+	float m_intensity = 0.4f;
 
 };

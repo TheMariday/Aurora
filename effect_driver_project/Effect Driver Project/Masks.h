@@ -18,7 +18,7 @@ public:
 class GlowMask : public Mask
 {
 public:
-	GlowMask(Harness* harness, Loc center, int maxDistance) : Mask(harness)
+	GlowMask(Harness* harness, Loc center, int maxDistance = 1000) : Mask(harness)
 	{
 		m_center = center;
 		m_maxDistance = maxDistance;
@@ -29,12 +29,11 @@ public:
 		int distance = Distance(m_center, GetHarness()->GetLoc(led));
 
 		if (distance < m_maxDistance)
-			return static_cast<float>(distance) / m_maxDistance;
+			return 1.0f - (static_cast<float>(distance) / static_cast<float>(m_maxDistance));
 		else
-			return 0;
+			return 0.0f;
 	}
 
-private:
 	Loc m_center;
 	int m_maxDistance;
 };
@@ -52,8 +51,6 @@ public:
 
 		int distance = abs(loc[m_axis] - m_center);
 		float a = (distance < m_width / 2) ? 1.0f : 0.0f;
-		if (a != 1.0f)
-			int b;
 		return a;
 	}
 
@@ -67,7 +64,7 @@ class OrbMask : public Mask
 {
 public:
 
-	OrbMask(Harness* harness, Loc center, int diameter, bool inner = true) :
+	OrbMask(Harness* harness, Loc center, int diameter = 300, bool inner = true) :
 		Mask(harness), m_diameter(diameter), m_center(center)
 	{
 	}
@@ -148,7 +145,7 @@ private:
 class RandomMask : public Mask
 {
 public:
-	RandomMask(Harness* harness, float prob) : Mask(harness), m_prob(prob)
+	RandomMask(Harness* harness, float prob = 0.5f) : Mask(harness), m_prob(prob)
 	{
 	}
 
@@ -161,3 +158,43 @@ public:
 
 	float m_prob;
 };
+
+class RadialMask : public Mask
+{
+public:
+	RadialMask(Harness* harness, int bands = 5, Loc center = { 0,0,0 }, axis ax = z_axis, bool flip = false) :
+		Mask(harness), m_center(center), m_axis(ax), m_flip(flip), m_bands(bands) {}
+
+	float GetAlpha(LED* pLED) override
+	{
+		Loc loc = GetHarness()->GetLoc(pLED);
+
+		double radAngle = 0;
+
+		switch (m_axis)
+		{
+		case x_axis:
+			radAngle = atan2(loc.y - m_center.y, loc.z - m_center.z);
+			break;
+		case y_axis:
+			radAngle = atan2(loc.z - m_center.z, loc.x - m_center.x);
+			break;
+		case z_axis:
+			radAngle = atan2(loc.y - m_center.y, loc.x - m_center.x);
+			break;
+		}
+
+		double normAngle = fmod(static_cast<float>((radAngle * m_bands) / (M_PI * 2)) + m_offset, 1.0f);
+		if (m_flip)
+			normAngle = 1 - normAngle;
+
+		return static_cast<float>(normAngle);
+	}
+
+	Loc m_center;
+	float m_offset;
+	axis m_axis;
+	bool m_flip = false;
+	int m_bands;
+};
+

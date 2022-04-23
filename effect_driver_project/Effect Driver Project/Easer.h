@@ -144,3 +144,13 @@ bool Ease(T* pValue, timestamp now, T from, T to, timestamp start, duration d, E
 
 	return true;
 }
+
+// forgive me father for this is hot garbage
+
+bool LocEase(Loc* pValue, timestamp now, Loc from, Loc to, timestamp start, timestamp end, EaseType easeType = EaseType::LINEAR, MixType mixType = MixType::NORMAL, bool extend = false)
+{
+	Ease<int>(&pValue->x, now, from.x, to.x, start, end, easeType, mixType, extend);
+	Ease<int>(&pValue->y, now, from.y, to.y, start, end, easeType, mixType, extend);
+	Ease<int>(&pValue->z, now, from.z, to.z, start, end, easeType, mixType, extend);
+	return true;
+}

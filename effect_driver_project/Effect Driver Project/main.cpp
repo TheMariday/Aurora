@@ -43,6 +43,10 @@ int main()
 
 	auto blueTexture = std::make_shared<SolidTexture>(&pose_t, BLUE);
 
+	auto fireTexture = std::make_shared<SolidTexture>(&pose_default, RED);
+	fireTexture->AddDriver([fireTexture, &tap](timestamp t) {
+		Cycle<float>(&fireTexture->m_hsv.h, t, 0.0f, 0.15f, tap.Beat(0), tap.Beats(0), CycleType::RANDOM);
+		});
 
 	{
 		//	0	
@@ -141,7 +145,7 @@ int main()
 				Loc rightHand = pose_t.GetMarker("marker_right_hand");
 				Loc leftHand = pose_t.GetMarker("marker_left_hand");
 				handwashMask->AddDriver([handwashMask, rightHand, leftHand, &tap](timestamp t) {
-					Ease<int>(&handwashMask->m_center, t, rightHand.x, leftHand.x, tap.Beat(19), tap.Beat(22));
+					Ease<int>(&handwashMask->m_center, t, rightHand.x, leftHand.x, tap.Beat(19), tap.Beat(22), EaseType::BEIZIER);
 					}
 				);
 
@@ -156,7 +160,7 @@ int main()
 		// 24 -ion, like how a single
 		{
 			{ // white hand orb
-				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(22), tap.Beat(30));
+				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(24), tap.Beat(30));
 				auto orbMask = std::make_shared<OrbMask>(&pose_t, pose_t.GetMarker("marker_right_hand"), 300);
 
 				orbMask->AddDriver([orbMask, &tap](timestamp t) {
@@ -172,10 +176,10 @@ int main()
 		}
 		// 28 word can make a heart o-
 		{
-			auto heartEffect = std::make_shared<Effect>(&pose_default, tap.Beat(26), tap.Beat(32));
+			auto heartEffect = std::make_shared<Effect>(&pose_default, tap.Beat(28), tap.Beat(32));
 			auto heartMask = std::make_shared<GroupMask>(&pose_default, "heart");
 			heartMask->AddDriver([heartMask, &tap](timestamp t) {
-				Ease<float>(&heartMask->m_intensity, t, 0.0f, 1.0f, tap.Beat(26), tap.Beat(30));
+				Ease<float>(&heartMask->m_intensity, t, 0.0f, 1.0f, tap.Beat(28), tap.Beat(30));
 				Ease<float>(&heartMask->m_intensity, t, 1.0f, 0.0f, tap.Beat(30), tap.Beat(34));
 				}
 			);
@@ -188,7 +192,7 @@ int main()
 		{
 		}
 
-		//	34	one match
+		//	34	one match that i can make an explosion
 		{
 			{ // fire hand orb
 				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(32), tap.Beat(40));
@@ -197,11 +201,7 @@ int main()
 				auto orbMask = std::make_shared<OrbMask>(&pose_t, rh, 300);
 
 				orbEffect->SetMask(orbMask);
-				auto fireTex = std::make_shared<SolidTexture>(&pose_default, RED);
-				fireTex->AddDriver([fireTex, &tap](timestamp t) {
-					Cycle<float>(&fireTex->m_hsv.h, t, 0.0f, 0.15f, tap.Beat(32), tap.Beats(0), CycleType::RANDOM);
-					});
-				orbEffect->SetTexture(fireTex);
+				orbEffect->SetTexture(fireTexture);
 
 				effects.push_back(orbEffect);
 
@@ -210,19 +210,75 @@ int main()
 					});
 			}
 		}
-		//		that I can
-		//		make an ex-
-		//	36	-plosion
-		//		
-		//		
-		//		and all the
-		//	40	things i
-		//		didn't
-		//		say
-		//		were wrecking
-		//	44	balls
+
+		//	36	-plosion and all the
+
+		{
+			auto fireballEffect = std::make_shared<Effect>(&pose_t, tap.Beat(36), tap.Beat(40));
+			auto fadeMask = std::make_shared< GlowMask>(&pose_t, pose_t.GetMarker("marker_left_hand"), 1000);
+
+			fadeMask->AddDriver([fadeMask, &tap](timestamp t) {
+				Ease<int>(&fadeMask->m_maxDistance, t, 1000, 0, tap.Beat(37), tap.Beat(39));
+				}
+			);
+
+			fireballEffect->SetMask(fadeMask);
+
+			fireballEffect->SetTexture(fireTexture);
+
+			effects.push_back(fireballEffect);
+		}
+
+		{ // fire hand orb
+			auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(40.5), tap.Beat(41));
+			orbEffect->SetMask(std::make_shared<OrbMask>(&pose_t, pose_t.GetMarker("marker_right_hand"), 300));
+			orbEffect->SetTexture(fireTexture);
+			effects.push_back(orbEffect);
+		}
+
+		//	40	things i didn't say
+
+		{
+			Loc leftHip = { 97, -12, -261 };
+			Loc rightHip = { -97, -12, -261 };
+			Loc leftFoot = pose_t.GetMarker("marker_left_foot");
+			Loc rightFoot = pose_t.GetMarker("marker_right_foot");
+
+			{ // fire hand orb left
+				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(40), tap.Beat(40.5));
+				orbEffect->SetTexture(fireTexture);
+
+				auto orbMask = std::make_shared<OrbMask>(&pose_t, leftHip, 300);
+
+				orbMask->AddDriver([orbMask, &leftHip, &leftFoot, &tap](timestamp t) {
+					LocEase(&orbMask->m_center, t, leftHip, leftFoot, tap.Beat(40), tap.Beat(40.5));
+					});
+
+				orbEffect->SetMask(orbMask);
+
+				effects.push_back(orbEffect);
+			}
+
+			{ // fire hand orb right
+				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(41), tap.Beat(41.5));
+				orbEffect->SetTexture(fireTexture);
+
+				auto orbMask = std::make_shared<OrbMask>(&pose_t, leftHip, 300);
+
+				orbMask->AddDriver([orbMask, &rightHip, &rightFoot, &tap](timestamp t) {
+					LocEase(&orbMask->m_center, t, rightHip, rightFoot, tap.Beat(41), tap.Beat(41.5));
+					});
+
+				orbEffect->SetMask(orbMask);
+
+				effects.push_back(orbEffect);
+			}
+		}
+
+		//	42 ish	were wrecking balls
 		//		inside my
 		//		brain
+
 		//		I will
 		//	48	scream
 		//		em out
@@ -232,95 +288,384 @@ int main()
 		//		my voice
 		//		this time
 		//		this is my
-		//	56	fight
-		//		song
-		//		
-		//		take back my
-		//	60	life
-		//		song
-		//		
-		//		prove I'm all
-		//	64	right
-		//		song
-		//		
-		//		
-		//	68	
-		//		
-		//		
-		//		my powers
-		//	72	turned
-		//		on
-		//		starting
-		//		 now I'll
-		//	76	be
-		//		strong
-		//		
-		//		I'll play my
-		//	80	fight
-		//		song
-		//		
-		//		and I
-		//	84	don't really
-		//		care
-		//		if no body 
-		//		else be-
-		//	88	-lieves
-		//		
-		//		
-		//		cause
-		//	92	I've
-		//		still got a lot
-		//		of fight
-		//		this is my
-		//	96	fight
-		//		song
-		//		
-		//		take back my
-		//	100	life
-		//		song
-		//		
-		//		prove I'm all
-		//	104	right
-		//		song
-		//		
-		//		
-		//	108	12345
-		//		
-		//		
-		//		my powers
-		//	112	turned
-		//		on
-		//		starting right
-		//		now I'll
-		//	116	be
-		//		strong
-		//		
-		//		I'll play my
-		//	120	fight
-		//		song
-		//		
-		//		and I
-		//	124	don't really
-		//		care if
-		//		if
-		//		nobody else
-		//	128	believes
-		//		
-		//		
-		//		cause
-		//	132	I've still
-		//		
-		//		got a lotta
-		//		fight left in
-		//	136	me
-		//		
-		//		
-		//		
-		//	140	no I've still
-		//		got a lotta
-		//		fight left
-		//		in
-		//	144	me
+		{
+			Loc rh = pose_t.GetMarker("marker_right_hand");
+			Loc lh = pose_t.GetMarker("marker_left_hand");
+
+			{ // white left hand orb
+				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(42), tap.Beat(54));
+				orbEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, WHITE));
+				auto orbMask = std::make_shared<OrbMask>(&pose_t, lh);
+				orbMask->AddDriver([orbMask, &tap](timestamp t) {
+					Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap.Beat(42), tap.Beat(52));
+					Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap.Beat(52), tap.Beat(54));
+					});
+				orbEffect->SetMask(orbMask);
+				effects.push_back(orbEffect);
+			}
+
+			{ // white right hand orb
+				auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(43), tap.Beat(54));
+				orbEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, WHITE));
+				auto orbMask = std::make_shared<OrbMask>(&pose_t, rh);
+				orbMask->AddDriver([orbMask, &tap](timestamp t) {
+					Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap.Beat(43), tap.Beat(52));
+					Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap.Beat(52), tap.Beat(54));
+					});
+				orbEffect->SetMask(orbMask);
+				effects.push_back(orbEffect);
+			}
+
+			// distortion time!
+			{
+				auto distortEffect = std::make_shared<Effect>(&pose_default, tap.Beat(42), tap.Beat(52));
+				auto blackTexture = std::make_shared<SolidTexture>(&pose_default, BLACK);
+				distortEffect->SetTexture(blackTexture);
+
+				auto randomMask = std::make_shared<RandomMask>(&pose_default);
+				randomMask->AddDriver([randomMask, &tap](timestamp t) {
+					Ease<float>(&randomMask->m_prob, t, 0.0f, 0.5f, tap.Beat(42), tap.Beat(52));
+					}
+				);
+				distortEffect->SetMask(randomMask);
+
+				effects.push_back(distortEffect);
+			}
+		}
+		//glowing eyes bit, to be replaced with actual eyes
+		{
+			auto eyeGlowEffect = std::make_shared<Effect>(&pose_default, tap.Beat(52), tap.Beat(56));
+			eyeGlowEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, WHITE));
+			eyeGlowEffect->SetMask(std::make_shared<GroupMask>(&pose_default, "eyes"));
+			effects.push_back(eyeGlowEffect);
+		}
+
+		//56 punch fight
+		{
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(56), tap.Beats(1), pose_t.GetMarker("marker_right_hand"), BLUE, 2000, 100, false));
+		}
+
+		//56.5 punch song
+		{
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(56.5), tap.Beats(1), pose_t.GetMarker("marker_left_hand"), BLUE, 2000, 100, false));
+
+		}
+
+		//57 wipe back
+		{
+			auto leftArmFill = std::make_shared<Effect>(&pose_t, tap.Beat(57), tap.Beat(57.5));
+
+			leftArmFill->SetTexture(std::make_shared<SolidTexture>(&pose_t, BLUE));
+
+			leftArmFill->SetMask(std::make_shared<GroupMask>(&pose_t, "left_arm"));
+
+			effects.push_back(leftArmFill);
+
+		}
+
+		//58 take
+		//59 back my
+
+		//60 life
+		{
+			auto rightArmFill = std::make_shared<Effect>(&pose_t, tap.Beat(60), tap.Beat(61));
+			rightArmFill->SetTexture(std::make_shared<SolidTexture>(&pose_t, BLUE));
+			rightArmFill->SetMask(std::make_shared<GroupMask>(&pose_t, "right_arm"));
+			effects.push_back(rightArmFill);
+
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(60), tap.Beats(4), pose_t.GetMarker("marker_right_hand"), WHITE, 2000, 100, true));
+		}
+		//60.5 left
+		{
+			auto leftArmFill = std::make_shared<Effect>(&pose_t, tap.Beat(60.5), tap.Beat(61));
+			leftArmFill->SetTexture(std::make_shared<SolidTexture>(&pose_t, BLUE));
+			leftArmFill->SetMask(std::make_shared<GroupMask>(&pose_t, "left_arm"));
+			effects.push_back(leftArmFill);
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(60.5), tap.Beats(4), pose_t.GetMarker("marker_left_hand"), WHITE, 2000, 100, true));
+		}
+		//61 song
+		{}
+		// 62 prove
+
+		// 63 im all
+
+		//64 right strike
+
+		{
+			auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(64), tap.Beat(65));
+			auto handwashMask = std::make_shared<BandMask>(&pose_t, 0, x_axis, 100);
+			Loc hand = pose_t.GetMarker("marker_right_hand");
+			handwashMask->AddDriver([handwashMask, hand, &tap](timestamp t) {
+				Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap.Beat(64), tap.Beat(65));
+				}
+			);
+			handWash->SetTexture(blueTexture);
+			handWash->SetMask(handwashMask);
+
+			effects.push_back(handWash);
+		}
+
+		//64.5 left strike 
+
+		{
+			auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(64.5), tap.Beat(65.5));
+			auto handwashMask = std::make_shared<BandMask>(&pose_t, 0, x_axis, 100);
+			Loc hand = pose_t.GetMarker("marker_left_hand");
+			handwashMask->AddDriver([handwashMask, hand, &tap](timestamp t) {
+				Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap.Beat(64.5), tap.Beat(65.5));
+				}
+			);
+			handWash->SetTexture(blueTexture);
+			handWash->SetMask(handwashMask);
+
+			effects.push_back(handWash);
+		}
+
+		//65 wipe sooooo
+		{
+			auto radialBlueSpin = std::make_shared<Effect>(&pose_t, tap.Beat(65), tap.Beat(70));
+			auto radialMask = std::make_shared<RadialMask>(&pose_t);
+			radialBlueSpin->SetTexture(std::make_shared<SolidTexture>(&pose_t, BLUE));
+
+			radialMask->AddDriver([radialMask, &tap](timestamp t) {
+				Ease<float>(&radialMask->m_offset, t, 0.0f, 10.0f, tap.Beat(65), tap.Beat(70));
+				});
+
+			radialBlueSpin->SetMask(radialMask);
+			effects.push_back(radialBlueSpin);
+		}
+		//68 end wipe ng
+
+		//70 my 
+		// 71 powers 
+
+		// 72 turned #
+		{
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(72), tap.Beats(1), pose_t.GetMarker("marker_right_hand"), BLUE, 1500, 200, true));
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(72), tap.Beats(1), pose_t.GetMarker("marker_left_hand"), BLUE, 1500, 200, true));
+		}
+
+
+		// 73 on st
+
+		{
+			auto chestGlowEffect = std::make_shared<Effect>(&pose_t, tap.Beat(73), tap.Beat(76));
+			auto fadeMask = std::make_shared< GlowMask>(&pose_t, pose_t.GetMarker("center"), 1000);
+
+			fadeMask->AddDriver([fadeMask, &tap](timestamp t) {
+				Ease<int>(&fadeMask->m_maxDistance, t, 1000, 0, tap.Beat(73), tap.Beat(76));
+				}
+			);
+
+			chestGlowEffect->SetMask(fadeMask);
+
+			chestGlowEffect->SetTexture(std::make_shared<SolidTexture>(&pose_t, BLUE));
+
+			effects.push_back(chestGlowEffect);
+		}
+
+		// 74 arting right
+
+		// 75 now ill
+
+		// 76 be 
+		{
+			auto rightArmFill = std::make_shared<Effect>(&pose_t, tap.Beat(76), tap.Beat(78));
+			rightArmFill->SetTexture(std::make_shared<SolidTexture>(&pose_t, WHITE));
+			rightArmFill->SetMask(std::make_shared<GroupMask>(&pose_t, "right_arm"));
+			effects.push_back(rightArmFill);
+		}
+
+		// 77 strong
+
+		{
+			auto leftArmFill = std::make_shared<Effect>(&pose_t, tap.Beat(77), tap.Beat(78));
+			leftArmFill->SetTexture(std::make_shared<SolidTexture>(&pose_t, WHITE));
+			leftArmFill->SetMask(std::make_shared<GroupMask>(&pose_t, "left_arm"));
+			effects.push_back(leftArmFill);
+		}
+
+		// 78 ill
+
+		// 79 play my
+
+		// 80 fight
+		{
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(80), tap.Beats(2), pose_t.GetMarker("marker_right_hand"), BLUE, 2000, 200, false));
+			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(80.5), tap.Beats(2), pose_t.GetMarker("marker_left_hand"), BLUE, 2000, 200, false));
+		}
+
+		// 81 song
+		{
+			auto leftArmFill = std::make_shared<Effect>(&pose_t, tap.Beat(81), tap.Beat(81.5));
+			leftArmFill->SetTexture(std::make_shared<SolidTexture>(&pose_t, BLUE));
+			leftArmFill->SetMask(std::make_shared<GroupMask>(&pose_t, "left_arm"));
+			effects.push_back(leftArmFill);
+		}
+
+		// 83 inna
+
+		// 84 don really
+
+		{ // white hand orb
+			auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(84), tap.Beat(84.5));
+			orbEffect->SetMask(std::make_shared<OrbMask>(&pose_t, pose_t.GetMarker("marker_right_hand"), 300));
+			orbEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, WHITE));
+
+			effects.push_back(orbEffect);
+		}
+
+		// 85 care if
+
+		// 86 no body
+
+		{ // white hand orb
+			auto orbEffect = std::make_shared<Effect>(&pose_t, tap.Beat(86), tap.Beat(86.5));
+			orbEffect->SetMask(std::make_shared<OrbMask>(&pose_t, pose_t.GetMarker("marker_right_hand"), 300));
+			orbEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, WHITE));
+
+			effects.push_back(orbEffect);
+		}
+
+		// 87 else be
+
+		// 88 liee // reach back
+
+		{
+			auto handWash = std::make_shared<Effect>(&pose_t, tap.Beat(88), tap.Beat(92));
+			auto handwashMask = std::make_shared<BandMask>(&pose_t, 0, x_axis, 100);
+			Loc rh = pose_t.GetMarker("marker_right_hand");
+
+			handwashMask->AddDriver([handwashMask, rh, &tap](timestamp t) {
+				Ease<int>(&handwashMask->m_center, t, 0, rh.x, tap.Beat(88), tap.Beat(90), EaseType::BEIZIER);
+				Ease<int>(&handwashMask->m_center, t, rh.x, 0, tap.Beat(90), tap.Beat(92), EaseType::BEIZIER);
+
+				}
+			);
+
+			handWash->SetMask(handwashMask);
+			handWash->SetMask(std::make_shared<GroupMask>(&pose_t, "arms"));
+
+			handWash->SetTexture(std::make_shared<LinearRainbowTexture>(&pose_t, pose_t.GetMarker("center"), x_axis));
+
+			effects.push_back(handWash);
+		}
+
+		// 91 -vs cause
+
+		// 92 i've still
+
+		// 93  got
+
+		// 94 allotta fight
+
+		// 95 is my 
+
+		// 96 fight (hit)
+
+		// 96.5 (hit)
+
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(96), tap.Beats(1), pose_t.GetMarker("marker_right_hand"), RED, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(96.5), tap.Beats(1), pose_t.GetMarker("marker_left_hand"), RED, 2000, 200, false));
+
+
+		// 97 song
+
+		// 98 take
+
+		// 99 back my
+
+		// 100 life (hit)
+
+		// 100.5 (hit)
+
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(100), tap.Beats(1), pose_t.GetMarker("marker_right_hand"), GREEN, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(100.5), tap.Beats(1), pose_t.GetMarker("marker_left_hand"), GREEN, 2000, 200, false));
+
+
+		// 101 song
+
+		// 102 prove
+
+		// 103 im all
+
+		// 104 right (hit)
+
+		// 104.5 (hit)
+
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(104), tap.Beats(1), pose_t.GetMarker("marker_right_hand"), BLUE, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(104.5), tap.Beats(1), pose_t.GetMarker("marker_left_hand"), BLUE, 2000, 200, false));
+
+		// 105 so
+
+		// 108 ng (hit)
+
+		// 108.5 (hit)
+
+		// 109 (hit)
+
+		// 109.5 (hit)
+
+		// 110 my (hit)
+
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(108), tap.Beats(1), pose_t.GetMarker("center"), RED, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(108.5), tap.Beats(1), pose_t.GetMarker("center"), GREEN, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(109), tap.Beats(1), pose_t.GetMarker("center"), BLUE, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(109.5), tap.Beats(1), pose_t.GetMarker("center"), GREY, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(110), tap.Beats(1), pose_t.GetMarker("center"), WHITE, 2000, 200, false));
+
+
+		// 111 powers
+
+		// 112 turned (big drop)
+
+		// 113 on
+
+		// 114 starting right
+
+		// 115 now ill
+
+		// 116 be str
+
+		// 117 ong
+
+		// 118 ill
+
+		// 119 play my
+
+		// 120 fight
+
+		// 121 song
+
+		// 123 anna
+
+		// 124 don't really
+
+		// 125 care if
+
+		// 126 nobody
+
+		// 127 else be-
+
+		// 128 -lieve-
+
+		// 131 -s cause
+
+		// 132 i've still
+
+		// 133 got a
+
+		// 134 lotta fight
+
+		// 135 left in
+
+		// 136 me
+
+		// 139 no
+
+		// 140 i've still got a lotta fight left in me
+
+
 		{
 		}
 
@@ -341,9 +686,10 @@ int main()
 		auto stop = std::chrono::high_resolution_clock::now();
 
 		duration dur = duration_cast(stop - start);
-		int milliseconds = dur.count();
+		long long milliseconds = dur.count();
 
-		std::cout << "fps: " << ((milliseconds == 0) ? -1 : (1000 / milliseconds)) << std::endl;
+		if (milliseconds)
+			std::cout << "Estimated RPi fps: " << (1000 / (milliseconds * 3)) << std::endl;
 
 		// remove dead effects
 		effects.erase(std::remove_if(effects.begin(), effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), effects.end());
@@ -353,7 +699,15 @@ int main()
 		if (pose_default.RenderToScreen(false, beat) == 27)
 			break;
 
-		buffer.Black();
+		for (LED& led : buffer.leds)
+		{
+			led.hsv.v *= 0.9f;
+			led.hsv.s *= 0.9f;
+		}
+
+
+
+		//buffer.Black();
 	}
 
 
