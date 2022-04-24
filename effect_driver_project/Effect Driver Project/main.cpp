@@ -332,14 +332,9 @@ int main()
 				effects.push_back(distortEffect);
 			}
 		}
-		//glowing eyes bit, to be replaced with actual eyes
-		{
-			auto eyeGlowEffect = std::make_shared<Effect>(&pose_default, tap.Beat(52), tap.Beat(56));
-			eyeGlowEffect->SetTexture(std::make_shared<SolidTexture>(&pose_default, WHITE));
-			eyeGlowEffect->SetMask(std::make_shared<GroupMask>(&pose_default, "eyes"));
-			effects.push_back(eyeGlowEffect);
-		}
 
+		effects.push_back(std::make_shared< GroupSolid>(&pose_default, tap.Beat(52), tap.Beat(144), "eyes_v"));
+	
 		//56 punch fight
 		{
 			effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(56), tap.Beats(1), pose_t.GetMarker("marker_right_hand"), BLUE, 2000, 100, false));
@@ -450,7 +445,7 @@ int main()
 
 		{
 			auto chestGlowEffect = std::make_shared<Effect>(&pose_t, tap.Beat(73), tap.Beat(76));
-			auto fadeMask = std::make_shared< GlowMask>(&pose_t, pose_t.GetMarker("center"), 1000);
+			auto fadeMask = std::make_shared< GlowMask>(&pose_t, pose_t.GetMarker("chest"), 1000);
 
 			fadeMask->AddDriver([fadeMask, &tap](timestamp t) {
 				Ease<int>(&fadeMask->m_maxDistance, t, 1000, 0, tap.Beat(73), tap.Beat(76));
@@ -546,7 +541,7 @@ int main()
 			handWash->SetMask(handwashMask);
 			handWash->SetMask(std::make_shared<GroupMask>(&pose_t, "arms"));
 
-			handWash->SetTexture(std::make_shared<LinearRainbowTexture>(&pose_t, pose_t.GetMarker("center"), x_axis));
+			handWash->SetTexture(std::make_shared<LinearRainbowTexture>(&pose_t, pose_t.GetMarker("chest"), x_axis));
 
 			effects.push_back(handWash);
 		}
@@ -562,6 +557,22 @@ int main()
 		// 95 is my 
 
 		// 96 fight (hit)
+
+		{
+			//persistent rainbow thing
+
+			auto rainbowSpinEffect = std::make_shared< RainbowSpin>(&pose_t, pose_t.GetMarker("chest"), tap.Beat(96.5), tap.Beat(108), y_axis);
+			auto orbMask = std::make_shared<OrbMask>(&pose_t, pose_t.GetMarker("chest"), 100);
+			orbMask->AddDriver([orbMask, &tap](timestamp t) {
+				Ease<int>(&orbMask->m_diameter, t, 100, 200, tap.Beat(96.5), tap.Beat(97));
+				Ease<int>(&orbMask->m_diameter, t, 200, 300, tap.Beat(100.5), tap.Beat(101));
+				Ease<int>(&orbMask->m_diameter, t, 300, 400, tap.Beat(104.5), tap.Beat(105));
+				});
+
+			rainbowSpinEffect->SetMask(orbMask);
+
+			effects.push_back(rainbowSpinEffect);
+		}
 
 		// 96.5 (hit)
 
@@ -608,18 +619,30 @@ int main()
 
 		// 110 my (hit)
 
-		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(108), tap.Beats(1), pose_t.GetMarker("center"), RED, 2000, 200, false));
-		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(108.5), tap.Beats(1), pose_t.GetMarker("center"), GREEN, 2000, 200, false));
-		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(109), tap.Beats(1), pose_t.GetMarker("center"), BLUE, 2000, 200, false));
-		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(109.5), tap.Beats(1), pose_t.GetMarker("center"), GREY, 2000, 200, false));
-		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(110), tap.Beats(1), pose_t.GetMarker("center"), WHITE, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(108), tap.Beats(1), pose_t.GetMarker("chest"), RED, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(108.5), tap.Beats(1), pose_t.GetMarker("chest"), GREEN, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(109), tap.Beats(1), pose_t.GetMarker("chest"), BLUE, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(109.5), tap.Beats(1), pose_t.GetMarker("chest"), GREY, 2000, 200, false));
+		effects.push_back(std::make_shared<Ripple>(&pose_t, tap.Beat(110), tap.Beats(1), pose_t.GetMarker("chest"), WHITE, 2000, 200, false));
 
 
 		// 111 powers
 
 		// 112 turned (big drop)
 
+		{
+			auto rainbowStaticEffect = std::make_shared<Effect>(&pose_t, tap.Beat(112), tap.Beat(114));
+			rainbowStaticEffect->SetTexture(std::make_shared<RadialRainbowTexture>(&pose_t, pose_t.GetMarker("chest"), y_axis));
+			effects.push_back(rainbowStaticEffect);
+		}
+
+		effects.push_back(std::make_shared<DimmerEffect>(&pose_t, tap.Beat(112), tap.Beats(1), 0.75f));
+
 		// 113 on
+		
+		for(int beat = 113; beat < 134; ++beat)
+			effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(beat), tap.Beats(3), GetRandomLoc(&pose_t, true), 1000, 200));
+
 
 		// 114 starting right
 
@@ -627,7 +650,12 @@ int main()
 
 		// 116 be str
 
+		Loc pose_t_right_bicep = { -389, 13, 373 };
+		Loc pose_t_left_bicep = { 389, 13, 373 };
+
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(116), tap.Beats(2), pose_t_right_bicep, 2000, 200, false));
 		// 117 ong
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(117), tap.Beats(2), pose_t_left_bicep, 2000, 200, false));
 
 		// 118 ill
 
@@ -635,27 +663,57 @@ int main()
 
 		// 120 fight
 
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(120), tap.Beats(1), pose_t.GetMarker("marker_left_hand"), 2000, 200, false));
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(120.5), tap.Beats(1), pose_t.GetMarker("marker_right_hand"), 2000, 200, false));
+
 		// 121 song
+
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(121), tap.Beats(2), pose_t.GetMarker("chest"), 2000, 200, false));
 
 		// 123 anna
 
 		// 124 don't really
 
+		{
+			auto a = std::make_shared<RainbowSpin>(&pose_t, pose_t.GetMarker("center"), tap.Beat(128), tap.Beat(134), z_axis, 2.0f);
+			auto m = std::make_shared< GroupMask>(&pose_t, "main");
+			m->AddDriver([m, &tap](timestamp t) {
+				Ease<float>(&m->m_intensity, t, 1.0f, 0.0f, tap.Beat(132), tap.Beat(140));
+				});
+			a->SetMask(m);
+
+			effects.push_back(a);
+		}
+
+
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(124), tap.Beats(4), pose_t.GetMarker("marker_right_hand"), 2000, 200, false));
+
 		// 125 care if
 
 		// 126 nobody
+
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(126), tap.Beats(4), pose_t.GetMarker("marker_left_hand"), 2000, 200, false));
+
 
 		// 127 else be-
 
 		// 128 -lieve-
 
+
+
 		// 131 -s cause
 
 		// 132 i've still
 
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(132), tap.Beats(2), pose_t.GetMarker("marker_left_hand"), 2000, 200, false));
+
 		// 133 got a
 
 		// 134 lotta fight
+
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(134), tap.Beats(5), pose_t.GetMarker("marker_right_hand"), 2000, 200, false));
+		effects.push_back(std::make_shared<RainbowRipple>(&pose_t, tap.Beat(134), tap.Beats(5), pose_t.GetMarker("chest"), 2000, 200, false));
+
 
 		// 135 left in
 
@@ -665,9 +723,6 @@ int main()
 
 		// 140 i've still got a lotta fight left in me
 
-
-		{
-		}
 
 		effects.push_back(std::make_shared<BoostEffect>(&pose_default, tap.Beat(0), tap.Beat(144), &tap));
 	}

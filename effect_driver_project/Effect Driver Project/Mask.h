@@ -41,7 +41,7 @@ public:
 
 	float m_intensity;
 	bool m_invert;
-	int m_threshold;;
+	int m_threshold;
 	MaskMix m_maskMix = MaskMix::MULTIPLY;
 
 private:

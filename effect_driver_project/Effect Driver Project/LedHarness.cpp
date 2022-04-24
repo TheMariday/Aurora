@@ -59,6 +59,9 @@ Loc Harness::GetMarker(std::string groupName)
 	if (groupName == "center")
 		return { 0,0,0 };
 
+	if (groupName == "chest")
+		return { 0,-84,271 };
+
 	std::vector<LED*> leds = GetGroup(groupName);
 	if (leds.size() == 0)
 	{
