@@ -16,7 +16,6 @@ enum class EffectState
 	STOPPED
 };
 
-
 class Effect : public Drivable
 {
 public:
@@ -108,4 +107,36 @@ private:
 	timestamp m_endTime;
 
 	EffectState m_state = EffectState::READY;
+
+	std::vector<std::shared_ptr<Effect>> m_subEffects;
 };
+
+
+class EffectRunner
+{
+public:
+	EffectRunner()
+	{
+
+	}
+
+	void AddEffect(std::shared_ptr<Effect> e)
+	{
+		m_effects.push_back(e);
+	}
+
+	void Update(timestamp t)
+	{
+		for (auto e : m_effects)
+			e->Update(t);
+
+		//remove dead sub effects
+		m_effects.erase(std::remove_if(m_effects.begin(), m_effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), m_effects.end());
+
+	}
+
+private:
+	std::vector<std::shared_ptr<Effect>> m_effects;
+
+};
+

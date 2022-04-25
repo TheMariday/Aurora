@@ -1,10 +1,7 @@
 #pragma once
 #include "Effect.h"
-#include "Mask.h"
 #include "Metronome.h"
 #include "Easer.h"
-#include "Texture.h"
-
 #include "Masks.h"
 #include "Textures.h"
 #include "colors.h"
@@ -47,7 +44,7 @@ public:
 			});
 
 		SetMask(ringMask);
-
+								    
 		auto rainbowTexture = std::make_shared<RadialRainbowTexture>(harness, center, y_axis);
 
 		SetTexture(rainbowTexture);
@@ -114,7 +111,7 @@ public:
 class BoostEffect : public Effect
 {
 public:
-	BoostEffect(Harness* harness, timestamp start, timestamp end, Metronome* tap) :
+	BoostEffect(Harness* harness, timestamp start, timestamp end, std::shared_ptr<Metronome> tap) :
 		Effect(harness, start, end), m_tap(tap)
 	{
 	}
@@ -136,7 +133,7 @@ public:
 	}
 private:
 	int m_lastBeat = -1;
-	Metronome* m_tap;
+	std::shared_ptr<Metronome> m_tap;
 	float m_intensity = 0.4f;
 
 };

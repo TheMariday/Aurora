@@ -47,6 +47,8 @@ public:
 
 	void CopyGroups(Harness* otherHarness);
 
+	Loc GetRandomLoc(bool backOnly = false);
+
 private:
 	std::map<std::string, std::vector<LED*>> m_group;
 	std::map<LED*, Loc> m_loc;

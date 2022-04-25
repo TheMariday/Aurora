@@ -59,9 +59,6 @@ Loc Harness::GetMarker(std::string groupName)
 	if (groupName == "center")
 		return { 0,0,0 };
 
-	if (groupName == "chest")
-		return { 0,-84,271 };
-
 	std::vector<LED*> leds = GetGroup(groupName);
 	if (leds.size() == 0)
 	{
@@ -133,17 +130,24 @@ int Harness::RenderToScreen(bool wait, int beat)
 
 void Harness::CopyGroups(Harness* otherHarness)
 {
-
 	for (auto const& group : otherHarness->GetGroups())
 	{
 		std::string groupName = group.first;
 		std::vector<LED*> leds = group.second;
 
-		if (m_group.find(groupName) == m_group.end()) // if group is not in local groups
-		{
-			//add it
-			m_group[groupName] = leds;
-		}
+		m_group[groupName] = leds;
+		
 	}
+}
 
+Loc Harness::GetRandomLoc(bool backOnly)
+{
+	std::vector<LED*> leds = GetGroup("main");
+	int random = rand() % leds.size();
+	Loc loc = GetLoc(leds[random]);
+
+	if (backOnly && loc.y < 0)
+		return GetRandomLoc(backOnly);
+	else
+		return loc;
 }
