@@ -41,7 +41,7 @@ public:
 
 		UpdateDrivers(t);
 
-		for (std::shared_ptr<Mask> m : m_masks)
+		for (std::shared_ptr<Mask>& m : m_masks)
 			m->UpdateDrivers(t);
 
 		m_pTexture->UpdateDrivers(t);
@@ -134,6 +134,8 @@ public:
 		m_effects.erase(std::remove_if(m_effects.begin(), m_effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), m_effects.end());
 
 	}
+
+	std::shared_ptr<Metronome> tap;
 
 private:
 	std::vector<std::shared_ptr<Effect>> m_effects;

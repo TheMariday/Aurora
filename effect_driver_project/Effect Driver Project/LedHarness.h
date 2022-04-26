@@ -41,7 +41,7 @@ public:
 
 	bool InGroup(std::string groupName, LED* pLED);
 
-	int RenderToScreen(bool wait = true, int beat = 0);
+	virtual bool Render();
 
 	std::map<std::string, std::vector<LED*>> GetGroups() { return m_group; };
 

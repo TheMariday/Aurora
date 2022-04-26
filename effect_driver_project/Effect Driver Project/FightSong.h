@@ -11,6 +11,35 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 	fireTexture->AddDriver([fireTexture, tap](timestamp t) {
 		Cycle<float>(&fireTexture->m_hsv.h, t, 0.0f, 0.15f, tap->Beat(0), tap->Beats(0), CycleType::RANDOM);
 		});
+	/*
+	eyes_default
+	eyes_angry
+	eyes_heart
+	eyes_chevron
+	eyes_cross
+	eyes_lids
+	eyes_big
+	eyes_rings
+	*/
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(48), tap->Beat(56), "eyes_default"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(56), tap->Beat(60), "eyes_angry"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(60), tap->Beat(64), "eyes_default"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(64), tap->Beat(72), "eyes_v"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(72), tap->Beat(77), "eyes_angry"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(72), tap->Beat(80), "eyes_chevron"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(80), tap->Beat(84), "eyes_angry"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(84), tap->Beat(96), "eyes_default"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(96), tap->Beat(108), "eyes_rings"));
+
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(112), tap->Beat(120), "eyes_angry"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(120), tap->Beat(124), "eyes_v"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(124), tap->Beat(132), "eyes_big"));
+	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(132), tap->Beat(144), "eyes_big"));
+
+
+
+
+
 
 	//	0	
 	{
@@ -53,7 +82,6 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 		auto twinkleMask = std::make_shared<RandomMask>(harness, 0.0f);
 		twinkleMask->AddDriver([twinkleMask, tap](timestamp t)
 			{
-				twinkleMask->m_prob = 0.5f;
 				Ease<float>(&twinkleMask->m_prob, t, 0.0f, 0.1f, tap->Beat(11), tap->Beat(13));
 				Ease<float>(&twinkleMask->m_prob, t, 0.1f, 0.0f, tap->Beat(13), tap->Beat(15));
 			}
@@ -128,8 +156,6 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"), 300);
 
 			orbMask->AddDriver([orbMask, tap](timestamp t) {
-				std::cout << "driver hit" << std::endl;
-				std::cout << orbMask->m_intensity << std::endl;
 				Ease<float>(&orbMask->m_intensity, t, 0.0f, 1.0f, tap->Beat(22), tap->Beat(24));
 				Ease<float>(&orbMask->m_intensity, t, 1.0f, 0.0f, tap->Beat(24), tap->Beat(30));
 				});
@@ -299,7 +325,6 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 		}
 	}
 
-	er->AddEffect(std::make_shared< GroupSolid>(harness, tap->Beat(52), tap->Beat(144), "eyes_v"));
 
 	//56 punch fight
 	{
