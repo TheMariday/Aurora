@@ -98,9 +98,8 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 		{
 			auto handWash = std::make_shared<Effect>(harness, tap->Beat(15), tap->Beat(17));
 			auto handwashMask = std::make_shared<BandMask>(harness, 0, x_axis, 100);
-			Loc hand = harness->GetMarker("marker_right_hand");
-			handwashMask->AddDriver([handwashMask, hand, tap](timestamp t) {
-				Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap->Beat(15), tap->Beat(17));
+			handwashMask->AddDriver([handwashMask, harness, tap](timestamp t) {
+				Ease<int>(&handwashMask->m_center, t, 0, harness->GetMarker("marker_right_hand").x, tap->Beat(15), tap->Beat(17));
 				}
 			);
 
@@ -114,9 +113,8 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 		{
 			auto handWash = std::make_shared<Effect>(harness, tap->Beat(15), tap->Beat(17));
 			auto handwashMask = std::make_shared<BandMask>(harness, 0, x_axis, 100);
-			Loc hand = harness->GetMarker("marker_left_hand");
-			handwashMask->AddDriver([handwashMask, hand, tap](timestamp t) {
-				Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap->Beat(15), tap->Beat(17));
+			handwashMask->AddDriver([handwashMask, harness, tap](timestamp t) {
+				Ease<int>(&handwashMask->m_center, t, 0, harness->GetMarker("marker_left_hand").x, tap->Beat(15), tap->Beat(17));
 				}
 			);
 
@@ -134,10 +132,8 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 		{
 			auto handWash = std::make_shared<Effect>(harness, tap->Beat(19), tap->Beat(22));
 			auto handwashMask = std::make_shared<BandMask>(harness, 0, x_axis, 100);
-			Loc rightHand = harness->GetMarker("marker_right_hand");
-			Loc leftHand = harness->GetMarker("marker_left_hand");
-			handwashMask->AddDriver([handwashMask, rightHand, leftHand, tap](timestamp t) {
-				Ease<int>(&handwashMask->m_center, t, rightHand.x, leftHand.x, tap->Beat(19), tap->Beat(22), EaseType::BEIZIER);
+			handwashMask->AddDriver([handwashMask, harness, tap](timestamp t) {
+				Ease<int>(&handwashMask->m_center, t, harness->GetMarker("marker_right_hand").x, harness->GetMarker("marker_left_hand").x, tap->Beat(19), tap->Beat(22), EaseType::BEIZIER);
 				}
 			);
 
@@ -186,21 +182,19 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 
 	//	34	one match that i can make an explosion
 	{
-		{ // fire hand orb
-			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(32), tap->Beat(40));
-			Loc rh = harness->GetMarker("marker_right_hand");
-			Loc lh = harness->GetMarker("marker_left_hand");
-			auto orbMask = std::make_shared<OrbMask>(harness, rh, 300);
+		// fire hand orb
+		auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(32), tap->Beat(36));
+		auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"), 300);
 
-			orbEffect->SetMask(orbMask);
-			orbEffect->SetTexture(fireTexture);
+		orbMask->AddDriver([orbMask, harness, tap](timestamp t) {
+			LocEase(&orbMask->m_center, t, harness->GetMarker("marker_right_hand"), harness->GetMarker("marker_left_hand"), tap->Beat(35.5), tap->Beat(36));
+			});
 
-			er->AddEffect(orbEffect);
+		orbEffect->SetMask(orbMask);
+		orbEffect->SetTexture(fireTexture);
 
-			orbMask->AddDriver([orbMask, &rh, &lh, tap](timestamp t) {
-				Ease<int>(&orbMask->m_center.x, t, rh.x, lh.x, tap->Beat(35.5), tap->Beat(36));
-				});
-		}
+		er->AddEffect(orbEffect);
+
 	}
 
 	//	36	-plosion and all the
@@ -231,19 +225,14 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 	//	40	things i didn't say
 
 	{
-		Loc leftHip = harness->GetMarker("marker_left_hip");
-		Loc rightHip = harness->GetMarker("marker_right_hip");
-		Loc leftFoot = harness->GetMarker("marker_left_foot");
-		Loc rightFoot = harness->GetMarker("marker_right_foot");
-
 		{ // fire hand orb left
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(40), tap->Beat(40.5));
 			orbEffect->SetTexture(fireTexture);
 
-			auto orbMask = std::make_shared<OrbMask>(harness, leftHip, 300);
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_left_hip"), 300);
 
-			orbMask->AddDriver([orbMask, &leftHip, &leftFoot, tap](timestamp t) {
-				LocEase(&orbMask->m_center, t, leftHip, leftFoot, tap->Beat(40), tap->Beat(40.5));
+			orbMask->AddDriver([orbMask, harness, tap](timestamp t) {
+				LocEase(&orbMask->m_center, t, harness->GetMarker("marker_left_hip"), harness->GetMarker("marker_left_foot"), tap->Beat(40), tap->Beat(40.5));
 				});
 
 			orbEffect->SetMask(orbMask);
@@ -255,10 +244,10 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(41), tap->Beat(41.5));
 			orbEffect->SetTexture(fireTexture);
 
-			auto orbMask = std::make_shared<OrbMask>(harness, leftHip, 300);
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hip"), 300);
 
-			orbMask->AddDriver([orbMask, &rightHip, &rightFoot, tap](timestamp t) {
-				LocEase(&orbMask->m_center, t, rightHip, rightFoot, tap->Beat(41), tap->Beat(41.5));
+			orbMask->AddDriver([orbMask, harness, tap](timestamp t) {
+				LocEase(&orbMask->m_center, t, harness->GetMarker("marker_right_hip"), harness->GetMarker("marker_right_foot"), tap->Beat(41), tap->Beat(41.5));
 				});
 
 			orbEffect->SetMask(orbMask);
@@ -281,13 +270,10 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 	//		this time
 	//		this is my
 	{
-		Loc rh = harness->GetMarker("marker_right_hand");
-		Loc lh = harness->GetMarker("marker_left_hand");
-
 		{ // white left hand orb
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(42), tap->Beat(54));
 			orbEffect->SetTexture(std::make_shared<SolidTexture>(harness, WHITE));
-			auto orbMask = std::make_shared<OrbMask>(harness, lh);
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_left_hand"));
 			orbMask->AddDriver([orbMask, tap](timestamp t) {
 				Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap->Beat(42), tap->Beat(52));
 				Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap->Beat(52), tap->Beat(54));
@@ -299,7 +285,7 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 		{ // white right hand orb
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(43), tap->Beat(54));
 			orbEffect->SetTexture(std::make_shared<SolidTexture>(harness, WHITE));
-			auto orbMask = std::make_shared<OrbMask>(harness, rh);
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"));
 			orbMask->AddDriver([orbMask, tap](timestamp t) {
 				Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap->Beat(43), tap->Beat(52));
 				Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap->Beat(52), tap->Beat(54));
@@ -380,9 +366,8 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 	{
 		auto handWash = std::make_shared<Effect>(harness, tap->Beat(64), tap->Beat(65));
 		auto handwashMask = std::make_shared<BandMask>(harness, 0, x_axis, 100);
-		Loc hand = harness->GetMarker("marker_right_hand");
-		handwashMask->AddDriver([handwashMask, hand, tap](timestamp t) {
-			Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap->Beat(64), tap->Beat(65));
+		handwashMask->AddDriver([handwashMask, harness, tap](timestamp t) {
+			Ease<int>(&handwashMask->m_center, t, 0, harness->GetMarker("marker_right_hand").x, tap->Beat(64), tap->Beat(65));
 			}
 		);
 		handWash->SetTexture(blueTexture);
@@ -396,9 +381,8 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 	{
 		auto handWash = std::make_shared<Effect>(harness, tap->Beat(64.5), tap->Beat(65.5));
 		auto handwashMask = std::make_shared<BandMask>(harness, 0, x_axis, 100);
-		Loc hand = harness->GetMarker("marker_left_hand");
-		handwashMask->AddDriver([handwashMask, hand, tap](timestamp t) {
-			Ease<int>(&handwashMask->m_center, t, 0, hand.x, tap->Beat(64.5), tap->Beat(65.5));
+		handwashMask->AddDriver([handwashMask, harness, tap](timestamp t) {
+			Ease<int>(&handwashMask->m_center, t, 0, harness->GetMarker("marker_left_hand").x, tap->Beat(64.5), tap->Beat(65.5));
 			}
 		);
 		handWash->SetTexture(blueTexture);
@@ -520,11 +504,10 @@ void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
 	{
 		auto handWash = std::make_shared<Effect>(harness, tap->Beat(88), tap->Beat(92));
 		auto handwashMask = std::make_shared<BandMask>(harness, 0, x_axis, 100);
-		Loc rh = harness->GetMarker("marker_right_hand");
 
-		handwashMask->AddDriver([handwashMask, rh, tap](timestamp t) {
-			Ease<int>(&handwashMask->m_center, t, 0, rh.x, tap->Beat(88), tap->Beat(90), EaseType::BEIZIER);
-			Ease<int>(&handwashMask->m_center, t, rh.x, 0, tap->Beat(90), tap->Beat(92), EaseType::BEIZIER);
+		handwashMask->AddDriver([handwashMask, harness, tap](timestamp t) {
+			Ease<int>(&handwashMask->m_center, t, 0, harness->GetMarker("marker_right_hand").x, tap->Beat(88), tap->Beat(90), EaseType::BEIZIER);
+			Ease<int>(&handwashMask->m_center, t, harness->GetMarker("marker_right_hand").x, 0, tap->Beat(90), tap->Beat(92), EaseType::BEIZIER);
 
 			}
 		);
