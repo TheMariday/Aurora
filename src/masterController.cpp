@@ -24,14 +24,12 @@ bool TEF::Aurora::MasterController::Start()
 	{
 		if (!StartHeadset()) return false;
 		m_headset.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
-
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("tail", "enabled").value_or(false))
 	{
 		if (!StartTail()) return false;
 		m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
-
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -89,7 +87,6 @@ bool TEF::Aurora::MasterController::StartEffectController()
 		return false;
 	}
 
-	m_effectRunner.SetFPS(60);
 	m_connectedRunnable.emplace_back(&m_effectRunner);
 
 	return true;

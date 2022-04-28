@@ -91,13 +91,13 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\Effect Driver Project\LedHarness.cpp" />
     <ClCompile Include="lib\easywsclient\easywsclient.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\batteryMonitor.cpp" />
     <ClCompile Include="src\button.cpp" />
     <ClCompile Include="src\cli.cpp" />
     <ClCompile Include="src\dacMCP3008.cpp" />
-    <ClCompile Include="src\effect.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\fadecandyServerComms.cpp" />
     <ClCompile Include="src\MasterControllerCommands.cpp" />
@@ -110,17 +110,28 @@
     <ClCompile Include="src\userControl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Effect Driver Project\colors.h" />
+    <ClInclude Include="include\Effect Driver Project\Drivable.h" />
+    <ClInclude Include="include\Effect Driver Project\Easer.h" />
+    <ClInclude Include="include\Effect Driver Project\Effect.h" />
+    <ClInclude Include="include\Effect Driver Project\Effects.h" />
+    <ClInclude Include="include\Effect Driver Project\FightSong.h" />
+    <ClInclude Include="include\Effect Driver Project\hsv2rgb.h" />
+    <ClInclude Include="include\Effect Driver Project\LED.h" />
+    <ClInclude Include="include\Effect Driver Project\LedHarness.h" />
+    <ClInclude Include="include\Effect Driver Project\Mask.h" />
+    <ClInclude Include="include\Effect Driver Project\Masks.h" />
+    <ClInclude Include="include\Effect Driver Project\Metronome.h" />
+    <ClInclude Include="include\Effect Driver Project\Texture.h" />
+    <ClInclude Include="include\Effect Driver Project\Textures.h" />
+    <ClInclude Include="include\Effect Driver Project\utils.h" />
     <ClInclude Include="include\tef\aurora\batteryMonitor.h" />
     <ClInclude Include="include\tef\aurora\button.h" />
     <ClInclude Include="include\tef\aurora\cli.h" />
     <ClInclude Include="include\tef\aurora\cmd.h" />
     <ClInclude Include="include\tef\aurora\dacMCP3008.h" />
-    <ClInclude Include="include\tef\aurora\effect.h" />
-    <ClInclude Include="include\tef\aurora\effects\debugEffect.h" />
-    <ClInclude Include="include\tef\aurora\effects\rainbowEffect.h" />
     <ClInclude Include="include\tef\aurora\error.h" />
     <ClInclude Include="include\tef\aurora\fadecandyServerComms.h" />
-    <ClInclude Include="include\tef\aurora\led.h" />
     <ClInclude Include="include\tef\aurora\properties.h" />
     <ClInclude Include="include\tef\aurora\runnable.h" />
     <ClInclude Include="include\tef\aurora\effectRunner.h" />

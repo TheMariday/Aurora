@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "Texture.h"
 #include "Mask.h"
+#include <algorithm>
 
 enum class EffectState
 {

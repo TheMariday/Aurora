@@ -3,12 +3,21 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 
 Harness::Harness(LedBuffer* ledBuffer, std::string calibrationFile) : m_led_buffer(ledBuffer)
 {
+	if (calibrationFile.empty()) return;
+	if (!ledBuffer) return;
+
 	std::ifstream file(calibrationFile);
-	if (!file.is_open()) return;
+	if (!file.is_open())
+	{
+		std::cout << "failed to load calibration file" << std::endl;
+		return;
+	}
+	
 
 	std::string line, word;
 

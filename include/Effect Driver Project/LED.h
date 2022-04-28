@@ -1,5 +1,6 @@
 #pragma once
 #include "hsv2rgb.h"
+#include "cmath"
 //#include "utils.h"
 
 template <class T>

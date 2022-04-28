@@ -277,6 +277,17 @@ bool TEF::Aurora::SmartFuse::StopAll()
 	return true;
 }
 
+
+bool TEF::Aurora::SmartFuse::StartAll()
+{
+	for (int i = 0; i < m_channels.size(); ++i)
+	{
+		SetFet(i, true);
+	}
+	return true;
+}
+
+
 bool TEF::Aurora::SmartFuse::Calibrate(unsigned int channel, unsigned int measurementZero, float measurementScale)
 {
 	if (channel >= m_channels.size())
@@ -295,6 +306,8 @@ bool TEF::Aurora::SmartFuse::Calibrate(unsigned int channel, unsigned int measur
 bool TEF::Aurora::SmartFuse::CheckConnected()
 {
 	Ping();
+
+	if (m_safety_disable) return true;
 
 	for (unsigned int channel = 0; channel < m_channels.size(); channel++)
 	{

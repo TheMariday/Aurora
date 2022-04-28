@@ -1,7 +1,8 @@
 #pragma once
 #include "Effects.h"
+#include "tef/aurora/effectRunner.h"
 
-void FightSong(EffectRunner* er, Harness* harness, timestamp song_start)
+void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_start)
 {
 	std::shared_ptr<Metronome> tap = std::make_shared< Metronome>(song_start, 88.02171202f, 4);
 

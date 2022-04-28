@@ -10,9 +10,6 @@
     <Filter Include="lib">
       <UniqueIdentifier>{7d073518-95a1-492f-bbf1-baa1a15da13b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="data">
-      <UniqueIdentifier>{a6a48ad5-2c56-4c51-b8da-a91d8fa4c78e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="effects">
       <UniqueIdentifier>{b45c8682-12e3-4ffd-adee-c8d37d5c95d5}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,9 @@
     </Filter>
     <Filter Include="lib\tomlplusplus">
       <UniqueIdentifier>{d56cedc8-e130-4bdd-9a9a-317c0b061d5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="effect_system">
+      <UniqueIdentifier>{c75964f7-ffbc-4085-b5d0-eefa52016ee3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -60,9 +60,6 @@
     <ClCompile Include="src\runnable.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\effect.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="lib\easywsclient\easywsclient.cpp">
       <Filter>lib\easywsclient</Filter>
     </ClCompile>
@@ -84,6 +81,9 @@
     </ClCompile>
     <ClCompile Include="src\cli.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="include\Effect Driver Project\LedHarness.cpp">
+      <Filter>effect_system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -186,15 +186,6 @@
     <ClInclude Include="include\tef\aurora\testSuite.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\effect.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tef\aurora\led.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tef\aurora\effects\debugEffect.h">
-      <Filter>effects</Filter>
-    </ClInclude>
     <ClInclude Include="include\tef\aurora\properties.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -219,11 +210,53 @@
     <ClInclude Include="lib\tomlplusplus\toml.hpp">
       <Filter>lib\tomlplusplus</Filter>
     </ClInclude>
-    <ClInclude Include="include\tef\aurora\effects\rainbowEffect.h">
-      <Filter>effects</Filter>
-    </ClInclude>
     <ClInclude Include="include\tef\aurora\cli.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\colors.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Drivable.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Easer.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Effect.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Effects.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\FightSong.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\hsv2rgb.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\LED.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\LedHarness.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Mask.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Masks.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Metronome.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Texture.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Textures.h">
+      <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\utils.h">
+      <Filter>effect_system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
