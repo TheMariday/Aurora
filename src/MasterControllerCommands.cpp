@@ -1,5 +1,5 @@
 #include "tef/aurora/masterController.h"
-#include "tef/aurora/effects/rainbowEffect.h"
+#include "Effect Driver Project/FightSong.h"
 
 void TEF::Aurora::MasterController::SetupVoiceCommands()
 {
@@ -117,38 +117,21 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "";
 		});
 
-
-	m_userControl.RegisterVoid("start rainbow", CONFIRM, [this]()
-		{
-			std::shared_ptr<TEF::Aurora::Effect> rainbowEffect = std::make_shared<TEF::Aurora::Effects::RainbowEffect>();
-
-			m_effectRunner.AddEffect("rainbow", rainbowEffect);
-
-			rainbowEffect->Start();
-
-			return "rainbow effect started";
-		});
-
-	m_userControl.RegisterVoid("stop rainbow", CONFIRM, [this]()
-		{
-			std::shared_ptr<TEF::Aurora::Effect> rainbowEffect;
-
-			if (!m_effectRunner.GetEffect("rainbow", rainbowEffect))
-				return "failed to find rainbow effect, has it been added?";
-
-			rainbowEffect->Stop();
-
-			m_effectRunner.RemoveEffect("rainbow");
-
-			return "rainbow effect stopped";
-		});
-
 	m_userControl.RegisterBool("fuse safety", CONFIRM, [this](bool enabled)
 		{
 			// temporary adition to enable all channels until i think up something better
-			for (unsigned int channel = 1; channel <= 5; ++channel)
+			for (unsigned int channel = 0; channel < 8; ++channel)
 				m_smartFuse.SetFet(channel, !enabled);
 
 			return enabled ? "fuse safety enabled" : "fuse safety disabled";
+		});
+
+	m_userControl.RegisterVoid("fight song", CONFIRM, [this]()
+		{
+			timestamp now = Now();
+
+			FightSong(&m_effectRunner, &m_effectRunner.m_harness, now);
+
+			return "fight song enabled";
 		});
 }

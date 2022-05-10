@@ -1,20 +1,24 @@
 #include "tef/aurora/effectRunner.h"
 #include <spdlog/spdlog.h>
+#include <stdio.h>
+#include <iostream>
 
 TEF::Aurora::EffectRunner::EffectRunner()
 {
-
+	SetFPS(60);
 }
 
 TEF::Aurora::EffectRunner::~EffectRunner()
 {
 	spdlog::info("Effect Runner being destroyed, stopping mainloop");
+	StopAll();
 	Stop();
 	spdlog::info("Setting all leds to black");
-	Black();
+	m_ledBuffer.Black();
+	WriteToFC();
 }
 
-bool TEF::Aurora::EffectRunner::Connect(std::string address)
+bool TEF::Aurora::EffectRunner::Connect(std::string address, SmartFuse* smartFuse)
 {
 	if (!m_opc.resolve(address.c_str()))
 	{
@@ -28,104 +32,63 @@ bool TEF::Aurora::EffectRunner::Connect(std::string address)
 		return false;
 	}
 
-	for (int i = 0; i < m_ledCount; i++)
-	{
-		m_leds.emplace_back();
-		m_leds.back().index = i;
-	}
+	m_smartFuse = smartFuse;
 
-
-	// Set up an empty framebuffer, with OPC packet header
-	uint16_t frameBytes = (uint16_t)(m_ledCount * 3);
-
-	m_frameBuffer.resize(sizeof(OPCClient::Header) + frameBytes);
-	OPCClient::Header::view(m_frameBuffer).init(0, 0, frameBytes);
-
+	m_harness = Harness(&m_ledBuffer, "/home/pi/led_positions.csv");
+	
 	m_connected = true;
 
 	return true;
-}
-
-void TEF::Aurora::EffectRunner::Black()
-{
-	for (LED& led : m_leds)
-		led.Black();
-
-	WriteToFC();
-	WriteToFC();
 }
 
 bool TEF::Aurora::EffectRunner::Disable()
 {
 	m_enabled = false;
 	StopAll();
-	Black();
+	m_ledBuffer.Black();
+	WriteToFC();
 	return true;
 }
 
 bool TEF::Aurora::EffectRunner::StopAll()
 {
-	for (auto const& [order, uidToEffect] : m_effects)
-		for (auto const& [uid, effect] : uidToEffect)
-			effect->Stop();
+	for (auto e : m_effects)
+		e->Stop();
 
 	return true;
 }
 
-bool TEF::Aurora::EffectRunner::AddEffect(std::string uid, std::shared_ptr<Effect> effect, int order)
+bool TEF::Aurora::EffectRunner::AddEffect(std::shared_ptr<Effect> effect)
 {
-	if (m_effects[order].find(uid) != m_effects[order].end()) {
-		spdlog::warn("Effect Runner has tried to register an effect over an existing one");
+	if (m_effects.size() == 0)
+	{
+		if (m_smartFuse)
+			m_smartFuse->StartAll();
 	}
-
-	m_effects[order][uid] = effect;
+	m_effects.push_back(effect);
 
 	return true;
 }
-
-bool TEF::Aurora::EffectRunner::GetEffect(std::string uid, std::shared_ptr<Effect>& effect)
-{
-	for (auto const& [order, uidToEffect] : m_effects)
-	{
-		if (uidToEffect.find(uid) != uidToEffect.end())
-		{
-			effect = uidToEffect.at(uid);
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool TEF::Aurora::EffectRunner::RemoveEffect(std::string uid)
-{
-	int effectsRemoved = 0;
-	for (auto& [order, uidToEffect] : m_effects)
-	{
-		effectsRemoved += uidToEffect.erase(uid);
-	}
-
-	return effectsRemoved;
-}
-
 
 bool TEF::Aurora::EffectRunner::MainLoopCallback()
 {
-	for (LED& led : m_leds)
-		led.Black();
+	timestamp t = Now();
 
-	// This takes advantage of the fact that maps are ordered by key by default
-	if (m_enabled)
+	for (LED& led : m_ledBuffer.leds)
 	{
-		for (auto const& [order, uidToEffect] : m_effects)
-		{
-			for (auto const& [uid, effect] : uidToEffect)
-			{
-				if (effect->IsRunning())
-					effect->Render(m_leds);
-			}
-		}
+		led.hsv.v *= 0.9f;
+		led.hsv.s *= 0.9f;
 	}
+
+	for (auto e : m_effects)
+		e->Update(t);
+
+	if(m_effects.size())
+		std::cout << "effect runner running" << std::endl;
+
+	//remove dead sub effects
+	int effectSizePrior = m_effects.size();
+	m_effects.erase(std::remove_if(m_effects.begin(), m_effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), m_effects.end());
 
 	return WriteToFC();
 }
@@ -137,19 +100,7 @@ bool TEF::Aurora::EffectRunner::WriteToFC()
 		return false;
 	}
 
-	uint8_t* dest = OPCClient::Header::view(m_frameBuffer).data();
-
-	for (auto& led : m_leds) {
-
-		for (float c : led.RGB())
-		{
-			c *= 255;
-			c = std::max<float>(c, 0);
-			c = std::min<float>(c, 255);
-			*(dest++) = (uint8_t)c;
-		}
-	}
-
-	m_opc.write(m_frameBuffer);
+	m_ledBuffer.UpdateFrameBuffer();
+	m_opc.write(m_ledBuffer.m_frameBuffer);
 	return true;
 }

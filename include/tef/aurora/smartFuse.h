@@ -34,6 +34,8 @@ namespace TEF::Aurora {
 
 		bool StopAll();
 
+		bool StartAll();
+
 		bool Calibrate(unsigned int channel, unsigned int measurementZero, float measurementScale);
 
 		bool CheckConnected();
@@ -62,6 +64,8 @@ namespace TEF::Aurora {
 		std::vector<Channel> m_channels;
 
 		std::mutex m_fuseLock;
+
+		bool m_safety_disable = true;
 
 	};
 

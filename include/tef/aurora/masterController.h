@@ -9,6 +9,7 @@
 #include "tef/aurora/error.h"
 #include "tef/aurora/smartFuse.h"
 #include "tef/aurora/cli.h"
+#include "Effect Driver Project/LedHarness.h"
 
 namespace TEF::Aurora {
 
