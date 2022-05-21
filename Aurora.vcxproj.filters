@@ -225,12 +225,6 @@
     <ClInclude Include="include\Effect Driver Project\Effect.h">
       <Filter>effect_system</Filter>
     </ClInclude>
-    <ClInclude Include="include\Effect Driver Project\Effects.h">
-      <Filter>effect_system</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Effect Driver Project\FightSong.h">
-      <Filter>effect_system</Filter>
-    </ClInclude>
     <ClInclude Include="include\Effect Driver Project\hsv2rgb.h">
       <Filter>effect_system</Filter>
     </ClInclude>
@@ -252,11 +246,17 @@
     <ClInclude Include="include\Effect Driver Project\Texture.h">
       <Filter>effect_system</Filter>
     </ClInclude>
-    <ClInclude Include="include\Effect Driver Project\Textures.h">
-      <Filter>effect_system</Filter>
-    </ClInclude>
     <ClInclude Include="include\Effect Driver Project\utils.h">
       <Filter>effect_system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\FightSong.h">
+      <Filter>effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Textures.h">
+      <Filter>effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Effects.h">
+      <Filter>effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

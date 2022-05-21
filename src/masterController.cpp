@@ -15,7 +15,7 @@ TEF::Aurora::MasterController::~MasterController()
 {
 }
 
-bool TEF::Aurora::MasterController::Start()
+bool TEF::Aurora::MasterController::Start(bool cliEnabled)
 {
 	// Setup all our lovely voice commands
 	SetupVoiceCommands();
@@ -29,7 +29,6 @@ bool TEF::Aurora::MasterController::Start()
 	if (TEF::Aurora::Properties::GetProperty<bool>("tail", "enabled").value_or(false))
 	{
 		if (!StartTail()) return false;
-		m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_engine_up.wav");
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -59,8 +58,8 @@ bool TEF::Aurora::MasterController::Start()
 		if (!StartEffectController()) return false;
 	}
 
-
-	StartCLI();
+	if(cliEnabled)
+		StartCLI();
 
 	for (Runnable* runnable : m_connectedRunnable)
 	{
@@ -68,7 +67,6 @@ bool TEF::Aurora::MasterController::Start()
 		runnable->Run();
 	}
 
-	m_tailbass.PlayAudio("/home/pi/media/cyclops/AI_welcome.wav");
 	m_headset.PlayAudio("/home/pi/media/cyclops/AI_welcome.wav");
 	std::this_thread::sleep_for(std::chrono::seconds(3));
 
@@ -319,14 +317,16 @@ bool TEF::Aurora::MasterController::ClearFault()
 
 bool TEF::Aurora::MasterController::Report(Error e)
 {
+	/* this is a bad idea
 	if (e.level == ErrorLevel::Critical && !m_fault)
 	{
 		CriticalFault();
 		m_faultError = e;
 		GetNotifier()->AddSpeech("Critical Shutdown in effect");
+		GetNotifier()->AddSpeech(m_faultError.str());
 	}
-
-	GetNotifier()->AddSpeech(m_faultError.str());
+	*/
+	GetNotifier()->AddSpeech(e.str());
 
 	return false;
 }

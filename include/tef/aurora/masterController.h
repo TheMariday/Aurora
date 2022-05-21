@@ -19,7 +19,7 @@ namespace TEF::Aurora {
 		MasterController();
 		~MasterController();
 
-		bool Start();
+		bool Start(bool cliEnabled = true);
 
 		bool StartEffectController();
 		bool StartHeadset();

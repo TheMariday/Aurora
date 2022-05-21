@@ -87,7 +87,7 @@ bool TEF::Aurora::EffectRunner::MainLoopCallback()
 		std::cout << "effect runner running" << std::endl;
 
 	//remove dead sub effects
-	int effectSizePrior = m_effects.size();
+	//int effectSizePrior = m_effects.size();
 	m_effects.erase(std::remove_if(m_effects.begin(), m_effects.end(), [](const std::shared_ptr<Effect>& x) {return x->HasStopped(); }), m_effects.end());
 
 	return WriteToFC();
