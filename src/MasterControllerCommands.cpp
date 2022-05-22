@@ -1,5 +1,6 @@
 #include "tef/aurora/masterController.h"
 #include "Effect Driver Project/FightSong.h"
+#include "Effect Driver Project/Eyes.h"
 
 void TEF::Aurora::MasterController::SetupVoiceCommands()
 {
@@ -96,18 +97,10 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "";
 		});
 
-	m_userControl.RegisterString("play", { "eminem", "test" }, CONFIRM, [this](std::string audioName)
+	m_userControl.RegisterVoid("stop", CONFIRM, [this]()
 		{
-			std::string filename;
-
-			if (audioName == "eminem")
-				filename = "/home/pi/media/test/eminem.wav";
-
-			if (audioName == "speaker test")
-				filename = "/home/pi/media/test/thx.wav";
-
-			m_tailbass.PlayAudio(filename);
-
+			m_tailbass.Stop();
+			m_effectRunner.StopAll();
 			return "";
 		});
 
@@ -144,6 +137,8 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 	m_userControl.RegisterVoid("say gaze", CONFIRM, [this]()
 		{
 			m_tailbass.PlayAudio("/home/pi/media/voice_lines/gaze_into_the_iris.wav");
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, Now(), Now() + std::chrono::seconds(2), "main", YELLOW));
+
 			return "";
 		});
 
@@ -168,12 +163,15 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 	m_userControl.RegisterVoid("say hello friend", CONFIRM, [this]()
 		{
 			m_tailbass.PlayAudio("/home/pi/media/voice_lines/hello_friend.wav");
+			SetEyes(&m_effectRunner, Now(), std::chrono::seconds(5), "eyes_heart", WHITE);
+
 			return "";
 		});
 
 	m_userControl.RegisterVoid("say violence", CONFIRM, [this]()
 		{
 			m_tailbass.PlayAudio("/home/pi/media/voice_lines/i_am_programmed_to_avoid_violence.wav");
+			SetEyes(&m_effectRunner, Now() + std::chrono::seconds(3), std::chrono::seconds(5), "eyes_angry", RED);
 			return "";
 		});
 
@@ -203,6 +201,8 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 
 	m_userControl.RegisterVoid("say my name", CONFIRM, [this]()
 		{
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, Now(), Now() + std::chrono::seconds(2), "heart", RED));
+
 			m_tailbass.PlayAudio("/home/pi/media/voice_lines/my_name_is_highbeam.wav");
 			return "";
 		});
@@ -227,6 +227,10 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 
 	m_userControl.RegisterVoid("say stand clear", CONFIRM, [this]()
 		{
+			timestamp now = Now();
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, now + std::chrono::seconds(3), "left_hand", RED));
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, now + std::chrono::seconds(3), "right_hand", RED));
+
 			m_tailbass.PlayAudio("/home/pi/media/voice_lines/please_stand_clear.wav");
 			return "";
 		});
@@ -274,6 +278,67 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 		});
 
 
+	m_userControl.RegisterVoid("play blood hound", CONFIRM, [this]()
+		{
+			m_tailbass.PlayAudio("/home/pi/media/sfx/bloodhound.wav");
+
+			timestamp now = Now();
+			timestamp drop = now + std::chrono::milliseconds(1500);
+			timestamp end = now + std::chrono::seconds(7);
+
+			SetEyes(&m_effectRunner, drop, std::chrono::seconds(6), "eyes_angry", RED);
+
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, drop, "left_hand", RED));
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, drop, "right_hand", RED));
+
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, drop, std::chrono::seconds(1), "main", RED));
+
+
+			return "";
+		});
+
+	m_userControl.RegisterVoid("play blue screen", CONFIRM, [this]()
+		{
+			m_tailbass.PlayAudio("/home/pi/media/sfx/bluescreen.wav");
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, Now(), std::chrono::seconds(1), "head", BLUE));
+			return "";
+		});
+
+	m_userControl.RegisterVoid("play electric", CONFIRM, [this]()
+		{
+			m_tailbass.PlayAudio("/home/pi/media/sfx/electric.wav");
+			SetEyes(&m_effectRunner, Now(), std::chrono::seconds(1), "eyes_big", BLUE);
+			return "";
+		});
+
+	m_userControl.RegisterVoid("play growl", CONFIRM, [this]()
+		{
+			m_tailbass.PlayAudio("/home/pi/media/sfx/growl.wav");
+			SetEyes(&m_effectRunner, Now(), std::chrono::seconds(3), "eyes_angry", RED);
+			return "";
+		});
+
+	m_userControl.RegisterVoid("play siren", CONFIRM, [this]()
+		{
+			m_tailbass.PlayAudio("/home/pi/media/sfx/siren.wav");
+
+			timestamp now = Now();
+
+			for (int i = 0; i < 3; ++i)
+			{
+				timestamp t = now + std::chrono::seconds(i);
+
+				m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, t, std::chrono::milliseconds(50), "eye_left", RED));
+				m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, t + std::chrono::milliseconds(150), std::chrono::milliseconds(50), "eye_left", RED));
+				t += std::chrono::milliseconds(500);
+				m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, t, std::chrono::milliseconds(50), "eye_right", RED));
+				m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, t + std::chrono::milliseconds(150), std::chrono::milliseconds(50), "eye_right", BLUE));
+			}
+
+
+			return "";
+		});
+
 
 	m_userControl.RegisterBool("fuse safety", CONFIRM, [this](bool enabled)
 		{
@@ -284,15 +349,21 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return enabled ? "fuse safety enabled" : "fuse safety disabled";
 		});
 
-	m_userControl.RegisterVoid("fight song", CONFIRM, [this]()
+	m_userControl.RegisterVoid("effect fight song", CONFIRM, [this]()
 		{
 			timestamp now = Now();
 
-			for (unsigned int channel = 0; channel < 8; ++channel)
-				m_smartFuse.SetFet(channel, true);
-
 			FightSong(&m_effectRunner, &m_effectRunner.m_harness, now);
 
-			return "fight song enabled";
+			return "fight song started, good luck sir";
+		});
+
+	m_userControl.RegisterVoid("effect calibration", CONFIRM, [this]()
+		{
+			timestamp now = Now();
+
+			m_effectRunner.AddEffect(std::make_shared<CalibrationEffect>(&m_effectRunner.m_harness));
+
+			return "calibration started";
 		});
 }

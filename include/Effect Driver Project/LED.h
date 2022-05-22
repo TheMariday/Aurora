@@ -154,6 +154,11 @@ inline RGB HSV2RGB(HSV hsv)
 	hsv.v = limits<float>(hsv.v, 0.0f, 1.0f);
 
 	CHSV chsv;
+
+	if (hsv.h < 0) hsv.h += static_cast<int>(hsv.h) + 1;
+
+	if (hsv.h > 1) hsv.h -= static_cast<int>(hsv.h);
+
 	chsv.hue = static_cast<uint8_t>(hsv.h * 255);
 	chsv.sat = static_cast<uint8_t>(hsv.s * 255);
 	chsv.val = static_cast<uint8_t>(hsv.v * 255);

@@ -5,6 +5,7 @@
 
 #include "tef/aurora/properties.h"
 #include "tef/aurora/effects/rainbowEffect.h"
+#include "Effect Driver Project/Eyes.h"
 
 
 TEF::Aurora::MasterController::MasterController()
@@ -58,7 +59,7 @@ bool TEF::Aurora::MasterController::Start(bool cliEnabled)
 		if (!StartEffectController()) return false;
 	}
 
-	if(cliEnabled)
+	if (cliEnabled)
 		StartCLI();
 
 	for (Runnable* runnable : m_connectedRunnable)
@@ -70,8 +71,8 @@ bool TEF::Aurora::MasterController::Start(bool cliEnabled)
 	m_headset.PlayAudio("/home/pi/media/cyclops/AI_welcome.wav");
 	std::this_thread::sleep_for(std::chrono::seconds(3));
 
-
 	spdlog::info("Master controller started successfully");
+
 
 	return true;
 }
@@ -79,11 +80,21 @@ bool TEF::Aurora::MasterController::Start(bool cliEnabled)
 bool TEF::Aurora::MasterController::StartEffectController()
 {
 
-	if (!m_effectRunner.Connect("localhost"))
+	int tries = 0;
+	while ((m_effectRunner.Connect("localhost", &m_smartFuse) == false) && tries < 10)
+	{
+		spdlog::error("failed to connect to effect runner, retrying ({})", tries);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		++tries;
+	}
+
+	if (tries >= 10)
 	{
 		spdlog::error("failed to connect to effect runner");
 		return false;
 	}
+
+	m_effectRunner.AddEffect(std::make_shared<Eyes>(&m_effectRunner.m_harness));
 
 	m_connectedRunnable.emplace_back(&m_effectRunner);
 

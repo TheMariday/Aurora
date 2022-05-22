@@ -38,7 +38,11 @@ public:
 			break;
 		}
 
-		double normAngle = fmod(static_cast<float>(radAngle / (M_PI * 2)) + m_offset, 1.0f);
+		double t = static_cast<float>(radAngle / (M_PI * 2)) + m_offset;
+
+		if (t < 0) t += static_cast<int>(t) + 1;
+
+		double normAngle = abs(fmod(t, 1.0));
 		if (m_flip)
 			normAngle = 1 - normAngle;
 

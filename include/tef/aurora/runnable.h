@@ -17,6 +17,7 @@ namespace TEF::Aurora
 
 		void RegisterErrorHandler(std::function<void(Error)> handler) { m_errorHandler = handler; };
 
+		bool IsConnected();
 
 	protected:
 		Runnable();
@@ -24,7 +25,6 @@ namespace TEF::Aurora
 		virtual bool MainLoopCallback();
 		bool Report(Error e);
 		void Stop();
-		bool IsConnected();
 
 		std::atomic<bool> m_connected = false;
 

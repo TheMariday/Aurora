@@ -258,6 +258,9 @@
     <ClInclude Include="include\Effect Driver Project\Effects.h">
       <Filter>effects</Filter>
     </ClInclude>
+    <ClInclude Include="include\Effect Driver Project\Eyes.h">
+      <Filter>effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\svl\LICENSE">
