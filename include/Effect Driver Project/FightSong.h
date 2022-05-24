@@ -626,7 +626,7 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 	// 113 on
 
 	for (int beat = 113; beat < 134; ++beat)
-		er->AddEffect(std::make_shared<RainbowRipple>(harness, tap->Beat(beat), tap->Beats(3), harness->GetRandomLoc(true), 1000, 200));
+		er->AddEffect(std::make_shared<RainbowRipple>(harness, tap->Beat(beat), tap->Beats(3), harness->GetRandomLoc(), 1000, 200));
 
 
 	// 114 starting right

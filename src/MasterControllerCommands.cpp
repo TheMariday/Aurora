@@ -1,6 +1,8 @@
 #include "tef/aurora/masterController.h"
 #include "Effect Driver Project/FightSong.h"
 #include "Effect Driver Project/Eyes.h"
+#include "Effect Driver Project/Easer.h"
+
 
 void TEF::Aurora::MasterController::SetupVoiceCommands()
 {
@@ -271,6 +273,12 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "";
 		});
 
+	m_userControl.RegisterVoid("stay back", CONFIRM, [this]()
+		{
+			m_tailbass.PlayAudio("/home/pi/media/voice_lines/perimeter_breach.wav");
+			return "";
+		});
+
 	m_userControl.RegisterVoid("system shutdown", CONFIRM, [this]()
 		{
 			m_quit = true;
@@ -339,16 +347,6 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "";
 		});
 
-
-	m_userControl.RegisterBool("fuse safety", CONFIRM, [this](bool enabled)
-		{
-			// temporary adition to enable all channels until i think up something better
-			for (unsigned int channel = 0; channel < 8; ++channel)
-				m_smartFuse.SetFet(channel, !enabled);
-
-			return enabled ? "fuse safety enabled" : "fuse safety disabled";
-		});
-
 	m_userControl.RegisterVoid("effect fight song", CONFIRM, [this]()
 		{
 			timestamp now = Now();
@@ -358,12 +356,43 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "fight song started, good luck sir";
 		});
 
-	m_userControl.RegisterVoid("effect calibration", CONFIRM, [this]()
+	m_userControl.RegisterVoid("play calibration", CONFIRM, [this]()
 		{
 			timestamp now = Now();
 
 			m_effectRunner.AddEffect(std::make_shared<CalibrationEffect>(&m_effectRunner.m_harness));
 
 			return "calibration started";
+		});
+
+	m_userControl.RegisterVoid("play splash", INSTANT_TRIGGER, [this]()
+		{
+			timestamp now = Now();
+			auto loc = m_effectRunner.m_harness.GetRandomLoc();
+			m_effectRunner.AddEffect(std::make_shared<RainbowRipple>(&m_effectRunner.m_harness, now, std::chrono::seconds(1), loc, 1000, 200));
+
+			return "";
+		});
+
+	m_userControl.RegisterVoid("play rainbow", INSTANT_TRIGGER, [this]()
+		{
+			timestamp now = Now();
+			timestamp end = now + std::chrono::seconds(5);
+
+			Harness* harness = &m_effectRunner.m_harness;
+
+			auto a = std::make_shared<RainbowSpin>(harness, harness->GetMarker("center"), now, end, x_axis, 2.0f);
+			
+			auto fadeMask = std::make_shared< GlowMask>(harness, harness->GetMarker("center"), 1000);
+
+			fadeMask->AddDriver([fadeMask, now, end](timestamp t) {
+				Ease<int>(&fadeMask->m_maxDistance, t, 0, 2000, now, end);
+				}
+			);
+			a->SetMask(fadeMask);
+
+			m_effectRunner.AddEffect(a);
+
+			return "rainbow started";
 		});
 }

@@ -95,7 +95,7 @@ bool TEF::Aurora::EffectRunner::MainLoopCallback()
 		if (m_effects.size() == 1 && effectSizePrior > 1) // if we've just lost an effect and down to just 1 effect, which is the eyes
 		{
 			m_smartFuse->StopAll();
-			spdlog::info("closing fuse system");
+			spdlog::info("closing fuse system"); // doesn't allow fade out :(
 		}
 	}
 

@@ -202,7 +202,7 @@ std::string TEF::Aurora::Sound::SpeechToCommand(std::string speech)
 	// that don't support 22050. Well it produces garbled nonsense if you try.
 	// This could be flicked on and off to reduce over-processing audio for devices that do support 22050hz sample rates but I can't be bothered
 
-	return "espeak '" + speech + "' -z --stdout | sox -t wav -r 22050 - -r 44100 -t wav - | aplay -D " + m_device;
+	return "espeak '" + speech + "' -z -s 250 --stdout | sox -t wav -r 22050 - -r 44100 -t wav - | aplay -D " + m_device;
 }
 
 std::string TEF::Aurora::Sound::AudioToCommand(std::string audio)

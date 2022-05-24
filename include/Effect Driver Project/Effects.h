@@ -59,7 +59,8 @@ public:
 	GroupSolid(Harness* harness, timestamp start, duration dur, std::string group, HSV hsv = WHITE)
 		: Effect(harness, start, start + dur)
 	{
-		GroupSolid(harness, start, start + dur, group, hsv);
+		SetTexture(std::make_shared<SolidTexture>(harness, hsv));
+		SetMask(std::make_shared<GroupMask>(harness, group));
 	}
 
 	GroupSolid(Harness* harness, timestamp start, timestamp end, std::string group, HSV hsv = WHITE)
