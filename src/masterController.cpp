@@ -36,27 +36,47 @@ bool TEF::Aurora::MasterController::Start(bool cliEnabled)
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("buttons", "enabled").value_or(false))
 	{
-		if (!StartButtons()) return false;
+		if (!StartButtons())
+		{
+			m_headset.AddSpeech("Master controller failed to start button system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("battery", "enabled").value_or(false))
 	{
-		if (!StartBattery()) return false;
+		if (!StartBattery())
+		{
+			m_headset.AddSpeech("Master controller failed to start battery system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("fuse", "enabled").value_or(false))
 	{
-		if (!StartFuse()) return false;
+		if (!StartFuse())
+		{
+			m_headset.AddSpeech("Master controller failed to start fuse system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("speech", "enabled").value_or(false))
 	{
-		if (!StartSpeech()) return false;
+		if (!StartSpeech())
+		{
+			m_headset.AddSpeech("Master controller failed to start speech recognition system");
+			return false;
+		}
 	}
 
 	if (TEF::Aurora::Properties::GetProperty<bool>("fadecandy", "enabled").value_or(false))
 	{
-		if (!StartEffectController()) return false;
+		if (!StartEffectController())
+		{
+			m_headset.AddSpeech("Master controller failed to start effect controller system");
+			return false;
+		}
 	}
 
 	if (cliEnabled)

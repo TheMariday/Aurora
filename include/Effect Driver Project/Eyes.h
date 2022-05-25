@@ -11,7 +11,13 @@
 inline void SetEyes(TEF::Aurora::EffectRunner* er, timestamp start, duration dur, std::string type, HSV col = WHITE)
 {
 	er->AddEffect(std::make_shared< GroupSolid>(&er->m_harness, start, start + dur, "eyes", BLACK)); // overrides the default eye effects
-	er->AddEffect(std::make_shared< GroupSolid>(&er->m_harness, start, start + dur, "eyes_default", col));
+	er->AddEffect(std::make_shared< GroupSolid>(&er->m_harness, start, start + dur, type, col));
+}
+
+inline void SetEyes(TEF::Aurora::EffectRunner* er, timestamp start, timestamp end, std::string type, HSV col = WHITE)
+{
+	er->AddEffect(std::make_shared< GroupSolid>(&er->m_harness, start, end, "eyes", BLACK)); // overrides the default eye effects
+	er->AddEffect(std::make_shared< GroupSolid>(&er->m_harness, start, end, type, col));
 }
 
 

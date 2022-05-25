@@ -86,7 +86,7 @@ public:
 		auto rainbowTexture = std::make_shared<RadialRainbowTexture>(harness, center, ax);
 
 		rainbowTexture->AddDriver([rainbowTexture, start, end, cycles](timestamp t) {
-			Ease<float>(&rainbowTexture->m_offset, t, 0.0f, cycles, start, end);
+			Ease<float>(&rainbowTexture->m_offset, t, 0.0f, -cycles, start, end);
 			});
 
 		SetTexture(rainbowTexture);
@@ -113,6 +113,17 @@ public:
 	}
 
 	float m_dimmer;
+};
+
+
+class EmptyEffect : public Effect
+{
+public:
+	EmptyEffect(Harness* harness, timestamp start, timestamp end) :
+		Effect(harness, start, end)
+	{
+		SetMask(std::make_shared<EmptyMask>(harness));
+	}
 };
 
 class BoostEffect : public Effect
@@ -145,7 +156,6 @@ private:
 
 };
 
-
 class CalibrationEffect : public Effect
 {
 public:
@@ -153,8 +163,9 @@ public:
 	CalibrationEffect(Harness* harness) : Effect(harness, Now(), Now() + std::chrono::seconds(3))
 	{
 		auto xBandMask = std::make_shared<BandMask>(harness, -1000, x_axis, 100);
-
-		xBandMask->AddDriver([xBandMask, harness](timestamp t) { Ease<int>(&xBandMask->m_center, t, -1000, 1000, Now(), Now() + std::chrono::seconds(3)); });
+		auto start = Now();
+		auto end = start + std::chrono::seconds(3);
+		xBandMask->AddDriver([xBandMask, harness, start, end](timestamp t) { Ease<int>(&xBandMask->m_center, t, -1000, 1000, start, end); });
 
 		SetTexture(std::make_shared<SolidTexture>(harness, RED));
 		SetMask(xBandMask);

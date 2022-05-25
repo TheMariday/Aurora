@@ -159,10 +159,23 @@ public:
 	float m_prob;
 };
 
+class EmptyMask : public Mask
+{
+public:
+	EmptyMask(Harness* harness) : Mask(harness)
+	{
+	}
+
+	float GetAlpha(LED* pLED) override
+	{
+		return 0;
+	}
+};
+
 class RadialMask : public Mask
 {
 public:
-	RadialMask(Harness* harness, int bands = 5, Loc center = { 0,0,0 }, axis ax = z_axis, bool flip = false) :
+	RadialMask(Harness* harness, int bands = 5, Loc center = { 0,0,0 }, axis ax = z_axis, bool flip = true) :
 		Mask(harness), m_center(center), m_axis(ax), m_flip(flip), m_bands(bands) {}
 
 	float GetAlpha(LED* pLED) override

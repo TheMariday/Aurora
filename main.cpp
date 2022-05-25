@@ -18,8 +18,11 @@ int main(int argc, char** argv)
 	// if there are no args, then enable the cli
 	bool cliEnabled = argc == 1;
 
-	mc.Start(cliEnabled);
-	mc.Spin();
+	bool success = mc.Start(cliEnabled);
+	if(success)
+		mc.Spin();
+	else
+		std::this_thread::sleep_for(std::chrono::seconds(5)); // pause for a moment
 
 	return 1;
 }

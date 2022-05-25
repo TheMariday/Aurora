@@ -100,7 +100,9 @@ public:
 	virtual void Stop() { m_state = EffectState::STOPPED; }; // this can be overridden for unstoppable effects XD
 	bool HasStopped() { return m_state == EffectState::STOPPED; };
 	timestamp GetStartTime() { return m_startTime; }
+	timestamp GetEndTime() { return m_endTime; };
 	Harness* GetHarness() { return m_harness; }
+
 
 private:
 

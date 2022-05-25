@@ -23,6 +23,8 @@ namespace TEF::Aurora {
 
 		bool AddEffect(std::shared_ptr<Effect> effect);
 
+		void SetBrightness(float v);
+
 		Harness m_harness;
 
 	private:

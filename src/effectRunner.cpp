@@ -2,6 +2,7 @@
 #include <spdlog/spdlog.h>
 #include <stdio.h>
 #include <iostream>
+#include "Effect Driver Project/Effects.h"
 
 TEF::Aurora::EffectRunner::EffectRunner()
 {
@@ -66,11 +67,20 @@ bool TEF::Aurora::EffectRunner::AddEffect(std::shared_ptr<Effect> effect)
 	{
 		m_smartFuse->StartAll();
 		spdlog::info("opening fuse system");
+		 
+		m_effects.push_back(std::make_shared<EmptyEffect>(&m_harness, effect->GetStartTime(), effect->GetEndTime() + std::chrono::seconds(2))); // this is a dud effect to allow effects to fade out, this is such a hack
 	}
 
 	m_effects.push_back(effect);
 
 	return true;
+}
+
+void TEF::Aurora::EffectRunner::SetBrightness(float v)
+{
+	if (v > 1.0f) v = 1.0f;
+	if (v < 0.0f) v = 0.0f;
+	m_ledBuffer.m_brightness = v;
 }
 
 bool TEF::Aurora::EffectRunner::MainLoopCallback()
@@ -95,7 +105,7 @@ bool TEF::Aurora::EffectRunner::MainLoopCallback()
 		if (m_effects.size() == 1 && effectSizePrior > 1) // if we've just lost an effect and down to just 1 effect, which is the eyes
 		{
 			m_smartFuse->StopAll();
-			spdlog::info("closing fuse system"); // doesn't allow fade out :(
+			spdlog::info("closing fuse system"); // doesn't allow fade out :( oh no i have an idea
 		}
 	}
 

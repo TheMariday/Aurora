@@ -284,7 +284,7 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 		{ // white left hand orb
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(42), tap->Beat(54));
 			orbEffect->SetTexture(std::make_shared<SolidTexture>(harness, WHITE));
-			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_left_hand"));
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"));
 			orbMask->AddDriver([orbMask, tap](timestamp t) {
 				Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap->Beat(42), tap->Beat(52));
 				Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap->Beat(52), tap->Beat(54));
@@ -296,7 +296,7 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 		{ // white right hand orb
 			auto orbEffect = std::make_shared<Effect>(harness, tap->Beat(43), tap->Beat(54));
 			orbEffect->SetTexture(std::make_shared<SolidTexture>(harness, WHITE));
-			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_right_hand"));
+			auto orbMask = std::make_shared<OrbMask>(harness, harness->GetMarker("marker_left_hand"));
 			orbMask->AddDriver([orbMask, tap](timestamp t) {
 				Ease<int>(&orbMask->m_diameter, t, 300, 1500, tap->Beat(43), tap->Beat(52));
 				Ease<int>(&orbMask->m_diameter, t, 1500, 0, tap->Beat(52), tap->Beat(54));
@@ -634,6 +634,21 @@ void FightSong(TEF::Aurora::EffectRunner* er, Harness* harness, timestamp song_s
 	// 115 now ill
 
 	// 116 be str
+	{
+		auto rightArmFill = std::make_shared<Effect>(harness, tap->Beat(116), tap->Beat(118));
+		rightArmFill->SetTexture(std::make_shared<RadialRainbowTexture>(harness, harness->GetMarker("marker_right_bicep"), y_axis));
+		rightArmFill->SetMask(std::make_shared<GroupMask>(harness, "right_arm"));
+		er->AddEffect(rightArmFill);
+	}
+
+// 77 strong
+
+	{
+		auto rightArmFill = std::make_shared<Effect>(harness, tap->Beat(117), tap->Beat(118));
+		rightArmFill->SetTexture(std::make_shared<RadialRainbowTexture>(harness, harness->GetMarker("marker_left_bicep"), y_axis));
+		rightArmFill->SetMask(std::make_shared<GroupMask>(harness, "left_arm"));
+		er->AddEffect(rightArmFill);
+	}
 
 	er->AddEffect(std::make_shared<RainbowRipple>(harness, tap->Beat(116), tap->Beats(2), harness->GetMarker("marker_right_bicep"), 2000, 200, false));
 	// 117 ong

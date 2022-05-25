@@ -34,8 +34,7 @@ public:
 		uint8_t* dest = OPCClient::Header::view(m_frameBuffer).data();
 
 		for (auto& led : leds) {
-
-			RGB rgb = HSV2RGB(led.hsv);
+			RGB rgb = HSV2RGB(led.hsv, m_brightness);
 			for (int i = 0; i < 3; ++i)
 			{
 				int v = rgb[i];
@@ -49,6 +48,7 @@ public:
 	std::vector<LED> leds;
 	std::vector<uint8_t> m_frameBuffer;
 
+	float m_brightness = 1.0f;
 };
 
 class Harness

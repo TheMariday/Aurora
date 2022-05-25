@@ -148,7 +148,7 @@ inline int Distance(const Loc& a, const Loc& b)
 	return static_cast<int>(sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2)));
 }
 
-inline RGB HSV2RGB(HSV hsv)
+inline RGB HSV2RGB(HSV hsv, float brightness)
 {
 	hsv.s = limits<float>(hsv.s, 0.0f, 1.0f);
 	hsv.v = limits<float>(hsv.v, 0.0f, 1.0f);
@@ -161,7 +161,7 @@ inline RGB HSV2RGB(HSV hsv)
 
 	chsv.hue = static_cast<uint8_t>(hsv.h * 255);
 	chsv.sat = static_cast<uint8_t>(hsv.s * 255);
-	chsv.val = static_cast<uint8_t>(hsv.v * 255);
+	chsv.val = static_cast<uint8_t>(hsv.v * brightness * 255);
 	CRGB crgb;
 	hsv2rgb_rainbow(chsv, crgb);
 	RGB rgb = { crgb.r, crgb.g, crgb.b };
