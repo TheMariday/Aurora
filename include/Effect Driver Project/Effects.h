@@ -160,12 +160,12 @@ class CalibrationEffect : public Effect
 {
 public:
 
-	CalibrationEffect(Harness* harness) : Effect(harness, Now(), Now() + std::chrono::seconds(3))
+	CalibrationEffect(Harness* harness) : Effect(harness, Now(), Now() + std::chrono::seconds(5))
 	{
-		auto xBandMask = std::make_shared<BandMask>(harness, -1000, x_axis, 100);
+		auto xBandMask = std::make_shared<BandMask>(harness, -160, x_axis, 50);
 		auto start = Now();
-		auto end = start + std::chrono::seconds(3);
-		xBandMask->AddDriver([xBandMask, harness, start, end](timestamp t) { Ease<int>(&xBandMask->m_center, t, -1000, 1000, start, end); });
+		auto end = start + std::chrono::seconds(5);
+		xBandMask->AddDriver([xBandMask, harness, start, end](timestamp t) { Ease<int>(&xBandMask->m_center, t, -160, 160, start, end); });
 
 		SetTexture(std::make_shared<SolidTexture>(harness, RED));
 		SetMask(xBandMask);

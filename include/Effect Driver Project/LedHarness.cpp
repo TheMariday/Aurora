@@ -116,7 +116,7 @@ void Harness::CopyGroups(Harness* otherHarness)
 
 Loc Harness::GetRandomLoc(bool backOnly)
 {
-	std::vector<LED*> leds = GetGroup("main");
+	std::vector<LED*> leds = GetGroup("head");
 	int random = rand() % leds.size();
 	Loc loc = GetLoc(leds[random]);
 

@@ -112,8 +112,6 @@ int TEF::Aurora::DacButton::VoltageToState(float volts)
 {
 	if (volts < 1.1)
 		return DOWN;
-	else if (volts < 2.2)
-		return UP;
 	else
-		return DISCONNECTED;
+		return UP;
 }

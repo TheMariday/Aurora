@@ -3,6 +3,8 @@
 #include "Effect Driver Project/Eyes.h"
 #include "Effect Driver Project/Easer.h"
 
+#define NOSE Loc(0, -330, 567)
+
 
 void TEF::Aurora::MasterController::SetupVoiceCommands()
 {
@@ -50,6 +52,17 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "I am ready, lets do this!";
 		});
 
+	m_userControl.RegisterVoid("hello", INSTANT, [this]()
+		{
+			return "Hello! I am Highbeams Voice Automated Control system, or h vac for short. To see what commands you can use, please refer to my specification sheet next to me. Simply hold the blue button, say the command, then release. Use the green button to confirm your command when prompted.";
+		});
+
+	m_userControl.RegisterVoid("statistics", CONFIRM, [this]()
+		{
+			return "Highbeam, Fullsuit class, Version 4. LED count, three thousand one hundred and thirty six. Maximum current delivery, one hundred and sixty amps. Sound system, stereo 10 watt drivers. Battery life : 1 hour. Current maximum bid. Unknown.";
+		});
+
+	/*
 	m_userControl.RegisterVoid("get battery levels", INSTANT, [this]()
 		{
 			std::vector<Cell> cells;
@@ -101,7 +114,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			m_tailbass.Stop();
 			return "";
 		});
-
+    */
 	m_userControl.RegisterVoid("stop", CONFIRM, [this]()
 		{
 			m_tailbass.Stop();
@@ -283,24 +296,15 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "";
 		});
 
-	m_userControl.RegisterVoid("stay back", CONFIRM, [this]()
+	
+	m_userControl.RegisterVoid("system restart", CONFIRM, [this]()
 		{
-			timestamp now = Now();
-			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, now + std::chrono::seconds(3), "left_hand", RED));
-			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, now + std::chrono::seconds(3), "right_hand", RED));
+			m_headset.PlayAudio("/home/pi/media/cyclops/AI_engine_down.wav", true);
 
-			SetEyes(&m_effectRunner, now, std::chrono::seconds(6), "eyes_cross", RED);
-
-			m_tailbass.PlayAudio("/home/pi/media/voice_lines/perimeter_breach.wav");
-			return "";
-		});
-
-	m_userControl.RegisterVoid("system shutdown", CONFIRM, [this]()
-		{
 			m_quit = true;
 			return "";
 		});
-
+	
 
 	m_userControl.RegisterVoid("play blood hound", CONFIRM, [this]()
 		{
@@ -312,10 +316,10 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 
 			SetEyes(&m_effectRunner, drop, std::chrono::seconds(6), "eyes_angry", RED);
 
-			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, end, "left_hand", RED));
-			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, end, "right_hand", RED));
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, end, "left_eye", RED));
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, now, end, "right_eye", RED));
 
-			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, drop, std::chrono::seconds(1), "main", RED));
+			m_effectRunner.AddEffect(std::make_shared< GroupSolid>(&m_effectRunner.m_harness, drop, std::chrono::seconds(1), "head", RED));
 
 
 			return "";
@@ -374,22 +378,22 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			return "";
 		});
 
-	m_userControl.RegisterVoid("effect fight song", CONFIRM, [this]()
+	m_userControl.RegisterVoid("play fight song", CONFIRM, [this]()
 		{
 			timestamp now = Now();
-
+			m_tailbass.PlayAudio("/home/pi/media/sfx/fight_song.wav");
 			FightSong(&m_effectRunner, &m_effectRunner.m_harness, now);
 
 			return "good luck sir";
 		});
 
-	m_userControl.RegisterVoid("play calibration", CONFIRM, [this]()
+	m_userControl.RegisterVoid("play wipe", CONFIRM, [this]()
 		{
 			timestamp now = Now();
 
 			m_effectRunner.AddEffect(std::make_shared<CalibrationEffect>(&m_effectRunner.m_harness));
 
-			return "calibration started";
+			return "wipe started";
 		});
 
 	m_userControl.RegisterVoid("play splash", INSTANT_TRIGGER, [this]()
@@ -400,6 +404,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 
 			return "";
 		});
+
 
 	m_userControl.RegisterVoid("play iron man", CONFIRM, [this]()
 		{
@@ -414,7 +419,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			Harness* harness = &m_effectRunner.m_harness;
 
 			auto fireballEffect = std::make_shared<Effect>(harness, start, end);
-			auto fadeMask = std::make_shared< GlowMask>(harness, harness->GetMarker("marker_right_hand"), 200);
+			auto fadeMask = std::make_shared< GlowMask>(harness, NOSE, 200);
 
 			fadeMask->AddDriver([fadeMask, drop1, drop2](timestamp t) {
 				Ease<int>(&fadeMask->m_maxDistance, t, 100, 1000, drop1, drop2);
@@ -431,7 +436,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 
 		});
 
-	m_userControl.RegisterString("play handshake", { "red", "green","blue", "rainbow" }, CONFIRM, [this](std::string col)
+	m_userControl.RegisterString("play magic", { "red", "green","blue", "rainbow" }, CONFIRM, [this](std::string col)
 		{
 			m_tailbass.PlayAudio("/home/pi/media/sfx/magic.wav");
 
@@ -446,7 +451,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 #
 			auto handshakeEffect = std::make_shared<Effect>(harness, start, end);
 
-			auto m = std::make_shared< GlowMask>(harness, harness->GetMarker("marker_right_hand"), 1000);
+			auto m = std::make_shared< GlowMask>(harness, NOSE, 1000);
 
 			m->AddDriver([m, start, drop](timestamp t) {
 				Ease<int>(&m->m_maxDistance, t, 0, 2000, start, drop);
@@ -470,7 +475,7 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 			}
 			if (col == "rainbow")
 			{
-				handshakeEffect->SetTexture(std::make_shared<RadialRainbowTexture>(harness, harness->GetMarker("marker_right_hand"), y_axis));
+				handshakeEffect->SetTexture(std::make_shared<RadialRainbowTexture>(harness, NOSE, y_axis));
 			}
 
 			m_effectRunner.AddEffect(handshakeEffect);
@@ -487,9 +492,9 @@ void TEF::Aurora::MasterController::SetupVoiceCommands()
 
 			Harness* harness = &m_effectRunner.m_harness;
 
-			auto a = std::make_shared<RainbowSpin>(harness, harness->GetMarker("center"), now, end, y_axis, 2.0f);
+			auto a = std::make_shared<RainbowSpin>(harness, NOSE, now, end, y_axis, 2.0f);
 
-			auto fadeMask = std::make_shared< GlowMask>(harness, harness->GetMarker("center"), 1000);
+			auto fadeMask = std::make_shared< GlowMask>(harness, NOSE, 1000);
 
 			fadeMask->AddDriver([fadeMask, now, end](timestamp t) {
 				Ease<int>(&fadeMask->m_maxDistance, t, 0, 2000, now, end);
